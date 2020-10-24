@@ -25,6 +25,7 @@
 #include <time.h>
 #include "fsLow.h"
 #include "mfs.h"
+#include "fsInit.h"
 
 int main (int argc, char *argv[])
 	{	
@@ -66,6 +67,8 @@ int main (int argc, char *argv[])
 	free (buf);
 	free(buf2);
 	closePartitionSystem();
+	formatVolume(filename);
+	test();
 	return 0;	
 	}
 	

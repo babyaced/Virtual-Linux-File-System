@@ -17,6 +17,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdio.h>
+
 
 #include "b_io.h"
 
@@ -33,7 +35,7 @@ typedef u_int32_t uint32_t;
 #endif
 
 
-struct fs_diriteminfo
+struct fs_diriteminfo  //get names of diritems //for ls
 	{
     unsigned short d_reclen;    /* length of this record */
     unsigned char fileType;    
@@ -41,9 +43,10 @@ struct fs_diriteminfo
 	};
 
 
-typedef struct
+typedef struct  //keeps track of File control block iterations through directory //iterator function //for ls
 	{
 	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
+	
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
@@ -52,8 +55,8 @@ typedef struct
 
 int fs_mkdir(const char *pathname, mode_t mode);
 int fs_rmdir(const char *pathname);
-fdDir * fs_opendir(const char *name);
-struct fs_diriteminfo *fs_readdir(fdDir *dirp);
+fdDir * fs_opendir(const char *name);  
+struct fs_diriteminfo *fs_readdir(fdDir *dirp); //every time I call read it will return the next diritem info //returns name
 int fs_closedir(fdDir *dirp);
 
 char * fs_getcwd(char *buf, size_t size);
@@ -64,7 +67,7 @@ int fs_delete(char* filename);	//removes a file
 
 
 
-struct fs_stat
+struct fs_stat  //file stats//metadata
 	{
 	off_t     st_size;    		/* total size, in bytes */
 	blksize_t st_blksize; 		/* blocksize for file system I/O */
@@ -76,7 +79,9 @@ struct fs_stat
 	/* add additional attributes here for your file system */
 	};
 
-int fs_stat(const char *path, struct fs_stat *buf);
+int fs_stat(const char *path, struct fs_stat *buf); 
+
+void test();
 
 #endif
 
