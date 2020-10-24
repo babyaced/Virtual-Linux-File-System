@@ -46,8 +46,9 @@ int main (int argc, char *argv[])
 		return -1;
 		}
 		
-	retVal = startPartitionSystem (filename, &volumeSize, &blockSize);	
-	printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
+	retVal = startPartitionSystem (filename, &volumeSize, &blockSize);
+	closePartitionSystem();	
+	/*printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
 	
 	char * buf = malloc(blockSize *2);
 	char * buf2 = malloc(blockSize *2);
@@ -63,12 +64,13 @@ int main (int argc, char *argv[])
 		}
 	else
 		printf("FAILURE on Write/Read\n");
-		
+	
+
 	free (buf);
 	free(buf2);
-	closePartitionSystem();
+	*/
 	formatVolume(filename);
-	test();
+	
 	return 0;	
 	}
 	
