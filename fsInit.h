@@ -5,7 +5,7 @@
 #include "fsLow.h"
 
 
-typedef struct vcb{
+typedef struct{
     uint64_t blockCount; //number of blocks in volume
     uint64_t sizeOfBlocks;//size of blocks
     uint64_t freeBlockCount;//free block count
