@@ -1,0 +1,23 @@
+[33mcommit 3c5706cfa8fa36923c33f271fb455cd43b31bf22[m[33m ([m[1;36mHEAD -> [m[1;32mvcb[m[33m, [m[1;31morigin/vcb[m[33m)[m
+Author: Daniel <babyaced>
+Date:   Sat Oct 24 16:29:07 2020 -0700
+
+    added rough version of bitvector for free space list
+
+[33mcommit 1d7ef9492422bb89a64c7c0f1c253a6302eb019c[m[33m ([m[1;32mbitVector[m[33m)[m
+Author: Daniel <babyaced>
+Date:   Fri Oct 23 20:38:52 2020 -0700
+
+    able to successfully read/write vcb but stack error
+
+[33mcommit a9ca670863ff6e050414b1960d5ed33e43dc2a82[m
+Author: Daniel <babyaced>
+Date:   Fri Oct 23 17:46:29 2020 -0700
+
+    laying out/starting to work on vcb
+
+[33mcommit 50bf6fbdc3fc8cdb2323eaebecee96cde21baf21[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m, [m[1;32mdaniel[m[33m)[m
+Author: bierman <3708391+bierman@users.noreply.github.com>
+Date:   Mon Oct 12 15:00:00 2020 -0700
+
+    Initial commit

@@ -14,16 +14,25 @@ typedef struct{
     //free block pointers
     uint64_t freeFCBCount;//free FCB count
     //FCB pointers
+    //free space list pointer
     //root directory pointer
 }vcb;
 
 typedef struct{
     unsigned int* freeSpaceBitmap;
     uint64_t freeSpaceListSize;
+    uint64_t blocksUsed;
 }fSL;
+
+typedef struct{
+    
+}rootDir;
 
 void formatVolume(char* volumeName);
 vcb* initVCB(uint64_t volSize, uint64_t blockSize);
-fSL* initfSL(uint64_t volSize, uint64_t blockSize);
+fSL* initFSL(uint64_t volSize, uint64_t blockSize);
+rootDir* initRD(uint64_t blockSize, uint64_t blocks, fSL* fsl);
+
+int findFreeBlocks(fSL* fsl, uint64_t blocksNeeded);
 
 #endif
