@@ -15,24 +15,36 @@ typedef struct{
     uint64_t freeFCBCount;//free FCB count
     //FCB pointers
     //free space list pointer
-    //root directory pointer
-}vcb;
+    uint64_t rootDirLocation; //root directory pointer/index
+}vCB;
 
 typedef struct{
-    unsigned int* freeSpaceBitmap;
-    uint64_t freeSpaceListSize;
-    uint64_t blocksUsed;
-}fSL;
+    char name[255];
+    uint64_t parentLocation;
+    uint64_t location;
+    uint64_t sizeInBytes;
+    uint64_t sizeInBlocks;
+    //hash_table dirEnts[HASH_TABLE_SIZE]
+}dir;
 
 typedef struct{
     
-}rootDir;
+}dirEnt;
+
+typedef struct{
+    unsigned int* freeSpaceBitmap;
+    uint64_t freeSpaceBits;
+    uint64_t location;
+    uint64_t fslBlocksUsed;
+}fSL;
 
 void formatVolume(char* volumeName);
-vcb* initVCB(uint64_t volSize, uint64_t blockSize);
-fSL* initFSL(uint64_t volSize, uint64_t blockSize);
-rootDir* initRD(uint64_t blockSize, uint64_t blocks, fSL* fsl);
+void initVCB(uint64_t volSize, uint64_t blockSize);
+void initFSL(uint64_t volSize, uint64_t blockSize);
+void initRD();
+dir* initDir(uint64_t block);
 
-int findFreeBlocks(fSL* fsl, uint64_t blocksNeeded);
+int findFreeBlocks(uint64_t blocksNeeded);
+void setFreeBlocks(int startingIndex,int count);
 
 #endif
