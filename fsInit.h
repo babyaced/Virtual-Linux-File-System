@@ -1,9 +1,6 @@
 #ifndef _FSINIT_H
 #define _FSINIT_H
-#include <stdio.h>
-
-#include "fsLow.h"
-
+#include "mfs.h"
 
 typedef struct{
     //volume name
@@ -15,21 +12,14 @@ typedef struct{
     uint64_t freeFCBCount;//free FCB count
     //FCB pointers
     //free space list pointer
-    uint64_t rootDirLocation; //root directory pointer/index
+
+    uint64_t rdLoc; //root directory pointer/index
+    uint64_t rdBlkCnt;        //blocks taken up by root directory
+
+    //uint64_t fslLoc;  //free space list pointer/index
+    uint64_t fslBlkCnt;    //blocks taken up by free space list
+    uint64_t fslBytes;
 }vCB;
-
-typedef struct{
-    char name[255];
-    uint64_t parentLocation;
-    uint64_t location;
-    uint64_t sizeInBytes;
-    uint64_t sizeInBlocks;
-    //hash_table dirEnts[HASH_TABLE_SIZE]
-}dir;
-
-typedef struct{
-    
-}dirEnt;
 
 typedef struct{
     unsigned int* freeSpaceBitmap;
@@ -42,9 +32,5 @@ void formatVolume(char* volumeName);
 void initVCB(uint64_t volSize, uint64_t blockSize);
 void initFSL(uint64_t volSize, uint64_t blockSize);
 void initRD();
-dir* initDir(uint64_t block);
-
-int findFreeBlocks(uint64_t blocksNeeded);
-void setFreeBlocks(int startingIndex,int count);
 
 #endif

@@ -81,7 +81,7 @@ struct fs_stat  //file stats//metadata
 
 int fs_stat(const char *path, struct fs_stat *buf); 
 
-void test();
+//void test();
 
 #endif
 

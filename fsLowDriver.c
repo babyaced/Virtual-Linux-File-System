@@ -23,8 +23,8 @@
 #include <errno.h>
 #include <math.h>
 #include <time.h>
-#include "fsLow.h"
-#include "mfs.h"
+//#include "fsLow.h"
+//#include "mfs.h"
 #include "fsInit.h"
 
 int main (int argc, char *argv[])
@@ -46,8 +46,8 @@ int main (int argc, char *argv[])
 		return -1;
 		}
 		
-	retVal = startPartitionSystem (filename, &volumeSize, &blockSize);
-	closePartitionSystem();	
+	//retVal = startPartitionSystem (filename, &volumeSize, &blockSize);
+	//closePartitionSystem();	
 	/*printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
 	
 	char * buf = malloc(blockSize *2);
