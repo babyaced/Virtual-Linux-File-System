@@ -16,21 +16,23 @@ void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     fsl->freeSpaceBitmap = malloc(bmSize + 1);
     retVal = LBAread(fsl,5,1);*/
 
-    int bytesNeeded = sizeof(dir) + sizeof(dirEnt);
+    int bytesNeeded = sizeof(dir);
     int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
     int dirStartBlock = findFreeBlocks(vcb,fsl,blocksNeeded); //find next available blocks
     
     dir* d = malloc(bytesNeeded);
     d->sizeInBlocks = blocksNeeded;
     d->sizeInBytes = bytesNeeded;
-    d->location = dirStartBlock;
+    d->loc = dirStartBlock;
     if(block == 0){
-        d->parentLocation = dirStartBlock;  //parent is itself
-        vcb->rdLoc = d->parentLocation;
+        d->parentLoc = dirStartBlock;  //parent is itself
+        vcb->rdLoc = d->parentLoc;
     }
     else{
-        d->parentLocation = block; // parent is at block index passed in
+        d->parentLoc = block; // parent is at block index passed in
     }
+
+    initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
     printf("Current free block: %ld\n", d->sizeInBlocks + dirStartBlock);
     //free(vcb);
@@ -38,4 +40,16 @@ void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     /*dir* d2 = malloc(bytesNeeded);
     retVal = LBAread(d2,d->sizeInBlocks,dirStartBlock);
     printf("D2 size in blocks: %d\n", d2->sizeInBlocks);*/
+}
+
+void initDirEntries(dir* d){
+    int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
+    printf("Length: %d\n",length);
+    for(int i = 0; i < length; i++){
+        d->dirEnts[i] = malloc(sizeof(dirEnt));
+        d->dirEnts[i]->parentLoc = d->parentLoc;
+        d->dirEnts[i]->loc = d->loc;
+        d->dirEnts[i]->sizeInBlocks = 0;
+        d->dirEnts[i]->sizeInBytes = 0;
+    }
 }
