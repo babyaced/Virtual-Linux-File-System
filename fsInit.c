@@ -14,7 +14,7 @@
 
 static fSL* fsl;
 static vCB* vcb;
-static dir* rd;
+//static dir* rd;
 
 
 void formatVolume(char* volumeName){
@@ -33,23 +33,10 @@ void formatVolume(char* volumeName){
     free(fsl->freeSpaceBitmap);
     free(fsl);
     
-    
-
-    
-    
-
-    
-
-    //vcb->rootDirLocation = rd->parentLocation;
-
-      // write VCB to disk
-    
-    //dir* rd2; //= malloc(sizeof(rd->sizeInBytes));
+    //dir* rd2; = malloc(sizeof(rd->sizeInBytes));
     //retVal = LBAread(rd,rd->sizeInBlocks,fsl->fslBlocksUsed +1);
 
-    //printf("%lu\n",rd2->parentLocation);
-    retVal = closePartitionSystem();
-
+    //printf("%lu\n",rd2->parentLocation)
 }
 
 void initVCB(uint64_t volSize, uint64_t blockSize){
@@ -78,7 +65,7 @@ void initFSL(uint64_t volSize, uint64_t blockSize){
     fsl->freeSpaceBitmap = malloc(bmSize);
     fsl->freeSpaceBits = bmSize;
     fsl->fslBlocksUsed = (fsl->freeSpaceBits/blockSize) + 1;
-    initBM(fsl->freeSpaceBitmap, bmSize);  //Need to correctly indicate blocks taken by VCB and freespaceList
+    initBM(fsl->freeSpaceBitmap, blockCount);  //Need to correctly indicate blocks taken by VCB and freespaceList
     printf("Size of FSL: %ld\n",sizeof(fsl));
     int retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
 }

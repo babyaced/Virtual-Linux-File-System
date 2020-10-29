@@ -26,6 +26,7 @@
 //#include "fsLow.h"
 //#include "mfs.h"
 #include "fsInit.h"
+#include "dirMgr.h"
 
 int main (int argc, char *argv[])
 	{	
@@ -70,6 +71,40 @@ int main (int argc, char *argv[])
 	free(buf2);
 	*/
 	formatVolume(filename);
+
+	//Testing LBARead
+	int retval = 0;
+	vCB* vcb = malloc(512);
+	retVal = LBAread(vcb,1,0);
+
+	printf("VCB Block Count: %lu\n", vcb->blockCount);
+	printf("VCB Free Block Count:  %lu\n", vcb->freeBlockCount);
+	printf("VCB Block Count: %lu\n", vcb->sizeOfBlocks);
+	printf("VCB fslBlkCnt: %lu\n", vcb->fslBlkCnt);
+	printf("VCB fslBytes: %lu\n", vcb->fslBytes);
+
+	fSL* fsl = malloc(sizeof(fSL));
+	//fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
+	retVal = LBAread(fsl,vcb->fslBlkCnt,1);
+	
+
+	printf("FSL Block Count: %lu\n", fsl->freeSpaceBits);
+	printf("FSL Blocks Used:  %lu\n", fsl->fslBlocksUsed);
+	printf("FSL Location: %lu\n", fsl->location);
+
+	dir* rd = malloc(sizeof(dir));
+
+	retVal = LBAread(rd,vcb->rdBlkCnt,vcb->rdLoc);
+	printf("Rd loc: %lu\n", rd->loc);
+	printf("Rd parent loc: %lu\n", rd->parentLoc);
+	printf("Rd  size in blocks: %lu\n", rd->sizeInBlocks);
+	printf("Rd  size in bytes: %lu\n", rd->sizeInBytes);
+
+	free(vcb);
+	free(fsl);
+	//free(rd);
+
+	retVal = closePartitionSystem();
 	
 	return 0;	
 	}

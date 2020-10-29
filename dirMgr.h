@@ -6,14 +6,14 @@
 
 
 typedef struct{
-    char name[255];
+    char name[256];
     uint64_t parentLoc;
     uint64_t loc;
     uint64_t sizeInBytes;
     uint64_t sizeInBlocks;
-    short int type;
-    //dir* dirEnts[TABLE_SIZE];
-    //file*?
+    short int type;  //0 for file, 1 for directory
+    uint64_t fileIndex; //can be file or directory
+    uint64_t fileBlkCnt; //can be file or directory
 }dirEnt;
 
 

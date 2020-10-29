@@ -35,6 +35,7 @@ void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
     printf("Current free block: %ld\n", d->sizeInBlocks + dirStartBlock);
+    free(d);
     //free(vcb);
     //free(d);
     /*dir* d2 = malloc(bytesNeeded);
