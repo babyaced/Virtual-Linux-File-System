@@ -26,11 +26,7 @@
 #include <ctype.h>
 #include "dirMgr.h"
 
-#define TABLE_SIZE 10000 //Good balance between runtime and memory usage
-//pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;  //Initialize Mutex Lock
-
-
-
+#define TABLE_SIZE 54 //maximum size to keep dirEnt under 512 bytes
 
 unsigned int hash(char* dirEntName) {   
 	char* lower = (char*)malloc(sizeof(dirEntName));
@@ -48,19 +44,19 @@ unsigned int hash(char* dirEntName) {
 }
 
 //find word in table
-dirEnt* hash_table_lookup(char* dirEntName) {
+dirEnt* hash_table_lookup(char* dirEntName, dir* d) { //pass by value or pass by reference?
 	int index = hash(dirEntName);
-	dirEnt *tmp = hash_table[index];
+	dirEnt* tmp = d->dirEnts[index];
 	while (tmp != NULL && strcasecmp(tmp->name, dirEntName) != 0) { //while there is a word at tmp and word at tmp is not equal to word
 		tmp = tmp->next; //go to next in linked list
 	}
 	return tmp;
 }
 
-bool hash_table_insert(dirEnt* dE) {
+bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by reference?
 	if (dE == NULL) return false;
     dirEnt *tmp;
-    tmp = hash_table_lookup(dE->name);
+    tmp = hash_table_lookup(dE->name, d);
     if(tmp != NULL){  //If word exists at that pointer 
 		//pthread_mutex_lock(&lock);
 		//pthread_mutex_unlock(&lock);
@@ -68,11 +64,13 @@ bool hash_table_insert(dirEnt* dE) {
     }
     else{  // add new entry to hashtable
         int index = hash(dE->name);
-	    dE->next = hash_table[index]; 
-	    hash_table[index] = dE;
+	    dE->next = d->dirEnts[index]; 
+	    d->dirEnts[index] = dE;
 	    return true;
     }
+}
 
+int hash_table_find_free(dir* d){
 }
 
 /*void process_top_ten()

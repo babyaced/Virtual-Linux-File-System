@@ -2,7 +2,7 @@
 #define _DIR_MGR_H
 #include "fsInit.h"
 
-#define TABLE_SIZE 54  //maximum size to keep dirEnt Size under 512 bytes
+#define TABLE_SIZE 54  //maximum size to keep dir Size under 512 bytes
 
 
 typedef struct{
@@ -13,7 +13,8 @@ typedef struct{
     uint64_t sizeInBlocks;
     short int type;  //0 for file, 1 for directory
     uint64_t fileIndex; //can be file or directory
-    uint64_t fileBlkCnt; //can be file or directory
+    uint64_t fileBlkCnt; //can be file or directory //contiguous
+    struct dirEnt* next; //in case of collisions
 }dirEnt;
 
 
@@ -29,5 +30,6 @@ typedef struct{
 
 void initDir(vCB* vcb, fSL* fsl,uint64_t block);
 void initDirEntries(dir* d);
+int findFreeDirEnt(dir* d);
 
 #endif

@@ -1,7 +1,10 @@
 #include <stdlib.h>
+#include <string.h>
 #include "dirMgr.h"
 #include "freeMgr.h"
 #include "fsInit.h"
+
+#define TABLE_SIZE 54 
 
 void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     int retVal;
@@ -27,9 +30,11 @@ void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     if(block == 0){
         d->parentLoc = dirStartBlock;  //parent is itself
         vcb->rdLoc = d->parentLoc;
+        //strcpy(d->name,'root');
     }
     else{
         d->parentLoc = block; // parent is at block index passed in
+        //strcpy(d->name, whatever is passed in)
     }
 
     initDirEntries(d);
@@ -43,7 +48,7 @@ void initDir(vCB* vcb, fSL* fsl,uint64_t block){
     printf("D2 size in blocks: %d\n", d2->sizeInBlocks);*/
 }
 
-void initDirEntries(dir* d){
+void initDirEntries(dir* d){ 
     int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
     printf("Length: %d\n",length);
     for(int i = 0; i < length; i++){
@@ -53,4 +58,38 @@ void initDirEntries(dir* d){
         d->dirEnts[i]->sizeInBlocks = 0;
         d->dirEnts[i]->sizeInBytes = 0;
     }
+}
+
+int findFreeDirEnt(dir* d){
+    int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
+    //search through d->dirEnts for next free dirEnt
+    //searching with hashtable should allow unique, and therefore, free entry to be found
+    //if not, hashtable will iterate through links until it finds free bit or entry with no size
+}
+
+
+int findDir(char* dirName){
+    //for now start at root and iterate through directories
+    //split directory name into parts
+    char* token;
+    char* remainder = dirName;
+
+    //root
+    vCB* vcb = malloc(512);
+    int retVal;
+    retVal = LBAread(vcb,1,0); // to find root directory
+    int rootDirLoc = vcb->rdLoc;  //hold root dir index
+    int rootDirBlks = vcb->rdBlkCnt;
+    free(vcb);
+
+    dir* rootDir = malloc(sizeof(dir)); //allocate memory for dir
+    retVal = LBAread(rootDir,vcb->rdBlkCnt,vcb->rdLoc);
+    //how to find dir if dir not directly in rootDir
+    while((token = strtok_r(remainder, "/",&remainder))){
+        printf("Token: %s\n", token);
+
+    }
+
+
+    //returns logical block index
 }

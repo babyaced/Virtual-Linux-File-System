@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <math.h>
 #include <time.h>
+#include "b_io.h"
 //#include "fsLow.h"
 //#include "mfs.h"
 #include "fsInit.h"
@@ -102,6 +103,11 @@ int main (int argc, char *argv[])
 
 	free(vcb);
 	free(fsl);
+	
+	//testing b_open()
+	retVal = b_open("root/test",0);
+
+
 	//free(rd);
 
 	retVal = closePartitionSystem();

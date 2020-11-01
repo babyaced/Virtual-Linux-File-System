@@ -53,7 +53,6 @@ void initVCB(uint64_t volSize, uint64_t blockSize){
         printf("Malloc Failed\n");
     }
     int retVal = LBAwrite(vcb,1,0);
-    
 }
 
 void initFSL(uint64_t volSize, uint64_t blockSize){

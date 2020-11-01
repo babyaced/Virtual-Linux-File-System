@@ -1,0 +1,1 @@
+void newDirEnt(dir* d); //insert new entry into hashtable and write to disk
