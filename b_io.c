@@ -159,4 +159,21 @@ int b_seek (int fd, off_t offset, int whence){
 void b_close (int fd){
     //closePartitionSystem?
     //free everything associated with fd?
+    openFileTable* oft = &openFileTables[fd];
+    printf("Currently closing this file: %d\n", fd);
+
+    if(oft->ourBufferOffset > 0 /* && possibly check for file mode here */) {
+        /* check if we have enough free space, if we do, write last chunk
+			else, return */
+        if (/*block index(?) has enough free space*/) {
+	//do the last write
+        } else {
+            return;
+        }
+    }
+
+    //close
+    //free buffer
+    //set buffer to null;
+    openFileTables->linuxFD = -1;
 }
