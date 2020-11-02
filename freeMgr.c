@@ -11,8 +11,8 @@ int findFreeBlocks(vCB *vcb,  fSL *fsl, int blocksNeeded){
     for(int i = 0; i < fsl->freeSpaceBits;i++){
         if(freeBlockCounter == blocksNeeded)
             return i - blocksNeeded;
-        if(!checkBit(fsl->freeSpaceBitmap,i))
-            freeBlockCounter++;
+        if(!checkBit(fsl->freeSpaceBitmap,i))  //if bit is free(0)
+            freeBlockCounter++;  //increment contigious free block counter
     }
 }
 
@@ -25,10 +25,10 @@ void setFreeBlocks(vCB *vcb, fSL *fsl, int startingIndex,int count){
     /*retVal = LBAread(vcb,1,0);
     retVal = LBAread(fsl,vcb->fslBlkCnt,1);*/
     
-    for(int i = startingIndex; i < count + startingIndex; i++){
-        setBit(fsl->freeSpaceBitmap,i);
+    for(int i = startingIndex; i < count + startingIndex; i++){  //for blocks written to LBA
+        setBit(fsl->freeSpaceBitmap,i);                          //set freeSpaceBitmap bits to occupied(1)
     }
-    retVal = LBAwrite(fsl,vcb->fslBlkCnt,1);
+    retVal = LBAwrite(fsl,vcb->fslBlkCnt,1);                     //write new free space list to LBA
 //    free(vcb);
 //    free(fsl);
 }

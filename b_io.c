@@ -60,7 +60,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     //return lba index as "fd"
 }
 
-int b_read (int fd, char * buffer, int count)
+int b_read (int fd, char * buffer, int count)  //this is copy of bierman's version 
 	{
 	int bytesRead;				// for our reads
 	int bytesReturned;			// what we will return

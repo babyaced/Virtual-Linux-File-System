@@ -6,7 +6,7 @@
 
 #define TABLE_SIZE 54 
 
-void initDir(vCB* vcb, fSL* fsl,int block){
+void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directoryEnt this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
     
     /*vCB* vcb = malloc(sizeof(vCB));
@@ -90,10 +90,10 @@ int findDir(char* dirName){
         printf("Token: %s\n", token);  //prints next directory
         //hash_table_lookup(token,dir->dirEnts)
         //if not found
-        //return to caller with error // return -1
+            //return to caller with error // return -1
         //retVal = LBAread(dirEnt, dirEnt->fileBlkCnt, dirEnt->fileIndex);
     }
 
 
-    //returns logical block index
+    //returns logical block index of dirEnt
 }
