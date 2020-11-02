@@ -133,6 +133,19 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 }
 
 int b_write (int fd, char * buffer, int count){
+	
+    if (areWeInitialized == 0) 
+	b_init();  //Initialize system for write
+
+	// check that fd is between 0 and (MAX_OPEN_FILES-1)
+    if ((fd < 0) || (fd >= MAX_OPEN_FILES)) {
+        return (-1); 					//invalid file descriptor
+    }
+		
+    if (openFileTables[fd].linuxFD == -1) {	//File not open for this descriptor
+		return -1;
+    }
+	
     // get block position from fd struct
     int lbaPosition = 1;
     // int count converts to lbaCount
