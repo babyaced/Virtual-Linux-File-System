@@ -133,7 +133,12 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 }
 
 int b_write (int fd, char * buffer, int count){
-    return 0;
+    // get block position from fd struct
+    int lbaPosition = 1;
+    // int count converts to lbaCount
+    int lbaCount = 4;
+    int retVal = LBAwrite(buffer, lbaCount, lbaPosition);
+    return retVal;
 }
 int b_seek (int fd, off_t offset, int whence){
     return 0;
