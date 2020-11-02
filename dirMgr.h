@@ -4,31 +4,33 @@
 
 #define TABLE_SIZE 54  //maximum size to keep dir Size under 512 bytes
 
+typedef struct dirEnt dirEnt;
 
-typedef struct{
-    char name[256];
-    uint64_t parentLoc;
-    uint64_t loc;
-    uint64_t sizeInBytes;
-    uint64_t sizeInBlocks;
+
+struct dirEnt{
+    char name[255];
+    int parentLoc;
+    int loc;
+    int sizeInBytes;
+    int sizeInBlocks;
     short int type;  //0 for file, 1 for directory
-    uint64_t fileIndex; //can be file or directory
-    uint64_t fileBlkCnt; //can be file or directory //contiguous
-    struct dirEnt* next; //in case of collisions
-}dirEnt;
+    int fileIndex; //can be file or directory
+    int fileBlkCnt; //can be file or directory //contiguous
+    dirEnt* next; //in case of collisions
+};
 
 
 typedef struct{
     char name[255];
-    uint64_t parentLoc;
-    uint64_t loc;
-    uint64_t sizeInBytes;
-    uint64_t sizeInBlocks;
+    int parentLoc;
+    int loc;
+    int sizeInBytes;
+    int sizeInBlocks;
     dirEnt* dirEnts[TABLE_SIZE];
 }dir;
 
 
-void initDir(vCB* vcb, fSL* fsl,uint64_t block);
+void initDir(vCB* vcb, fSL* fsl,int block);
 void initDirEntries(dir* d);
 int findFreeDirEnt(dir* d);
 

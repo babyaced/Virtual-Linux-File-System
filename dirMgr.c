@@ -6,7 +6,7 @@
 
 #define TABLE_SIZE 54 
 
-void initDir(vCB* vcb, fSL* fsl,uint64_t block){
+void initDir(vCB* vcb, fSL* fsl,int block){
     int retVal;
     
     /*vCB* vcb = malloc(sizeof(vCB));
@@ -79,15 +79,19 @@ int findDir(char* dirName){
     int retVal;
     retVal = LBAread(vcb,1,0); // to find root directory
     int rootDirLoc = vcb->rdLoc;  //hold root dir index
-    int rootDirBlks = vcb->rdBlkCnt;
+    int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
     free(vcb);
 
-    dir* rootDir = malloc(sizeof(dir)); //allocate memory for dir
-    retVal = LBAread(rootDir,vcb->rdBlkCnt,vcb->rdLoc);
+    //dir* dir = malloc(720); //allocate memory for dir
+    //retVal = LBAread(dir,vcb->rdBlkCnt,vcb->rdLoc);
+    //hash_table_lookup
     //how to find dir if dir not directly in rootDir
-    while((token = strtok_r(remainder, "/",&remainder))){
-        printf("Token: %s\n", token);
-
+    while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
+        printf("Token: %s\n", token);  //prints next directory
+        //hash_table_lookup(token,dir->dirEnts)
+        //if not found
+        //return to caller with error // return -1
+        //retVal = LBAread(dirEnt, dirEnt->fileBlkCnt, dirEnt->fileIndex);
     }
 
 

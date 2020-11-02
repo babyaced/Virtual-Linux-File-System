@@ -1,6 +1,6 @@
 #include "freeMgr.h"
 
-int findFreeBlocks(vCB *vcb,  fSL *fsl, uint64_t blocksNeeded){
+int findFreeBlocks(vCB *vcb,  fSL *fsl, int blocksNeeded){
     //access vcb to get fsl->location
     int retVal;
     //fSL* fsl;// = malloc(vcb->fslBytes);

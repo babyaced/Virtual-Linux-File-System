@@ -88,10 +88,13 @@ int main (int argc, char *argv[])
 	//fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
 	retVal = LBAread(fsl,vcb->fslBlkCnt,1);
 	
+	free(vcb);
 
 	printf("FSL Block Count: %lu\n", fsl->freeSpaceBits);
 	printf("FSL Blocks Used:  %lu\n", fsl->fslBlocksUsed);
 	printf("FSL Location: %lu\n", fsl->location);
+
+	free(fsl);
 
 	dir* rd = malloc(sizeof(dir));
 
@@ -101,11 +104,12 @@ int main (int argc, char *argv[])
 	printf("Rd  size in blocks: %lu\n", rd->sizeInBlocks);
 	printf("Rd  size in bytes: %lu\n", rd->sizeInBytes);
 
-	free(vcb);
-	free(fsl);
+
+	//free(rd);
+	
 	
 	//testing b_open()
-	retVal = b_open("root/test",0);
+	retVal = b_open("root/test/daniel/poo",0);
 
 
 	//free(rd);

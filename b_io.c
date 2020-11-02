@@ -106,13 +106,13 @@ int b_read (int fd, char * buffer, int count)
 		if (part2 > B_CHUNK_SIZE)
 			{
 			int blocks = part2 / B_CHUNK_SIZE; // calculate number of blocks they want
-			bytesRead = LBAread (buffer+part1,1,openFileTables[fd].linuxFD);
+			bytesRead = LBAread (buffer+part1,blocks,openFileTables[fd].linuxFD);
 			part3 = bytesRead;
 			part2 = part2 - part3;  //part 2 is now < B_CHUNK_SIZE, or file is exusted
 			}				
 		
 		//try to read B_CHUNK_SIZE bytes into our buffer
-		bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].linuxFD);
+		bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].linuxFD);  //keep as 1 block for now
 		
 		// error handling here...  if read fails
 		

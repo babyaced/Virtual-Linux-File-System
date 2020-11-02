@@ -3,7 +3,7 @@
 #include "fsInit.h"
 
 
-int findFreeBlocks(vCB* vcb,fSL* fsl,uint64_t blocksNeeded);
+int findFreeBlocks(vCB* vcb,fSL* fsl,int blocksNeeded);
 void setFreeBlocks(vCB* vcb,fSL* fsl,int startingIndex,int count);
 
 #endif 
