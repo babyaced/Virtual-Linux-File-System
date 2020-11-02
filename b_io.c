@@ -19,14 +19,14 @@
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20
 
-typedef struct fd {
+typedef struct FD {
     int lbaPosition;
     char* buffer;
     int ourBufferOffset;
     int bytesInBuffer;
-}fd;
+}FD;
 
-fd openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
+FD openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
 
 int areWeInitialized = 0;	//Indicates that this has not been initialized
 
@@ -162,4 +162,21 @@ int b_seek (int fd, off_t offset, int whence){
 void b_close (int fd){
     //closePartitionSystem?
     //free everything associated with fd?
+    FD* oft = &openFileTables[fd];
+    printf("Currently closing this file: %d\n", fd);
+
+    if(oft->ourBufferOffset > 0 /* && possibly check for file mode here */) {
+        /* check if we have enough free space, if we do, write last chunk
+			else, return */
+        if (/*block index(?) has enough free space*/) {
+	//do the last write
+        } else {
+            return;
+        }
+    }
+
+    //close
+    //free buffer
+    //set buffer to null;
+    openFileTables->lbaPosition = -1;
 }
