@@ -12,8 +12,8 @@
 
 #define DIR_ENTS_INIT_SIZE 10
 
-static fSL* fsl;
-static vCB* vcb;
+static fSL* fsl;  //only global for this file
+static vCB* vcb;  //only global for this file
 //static dir* rd;
 
 
