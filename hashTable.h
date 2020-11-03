@@ -73,6 +73,15 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
 int hash_table_find_free(dir* d){
 }
 
+/*int dir_ent_lookup(char* token, dir* d){
+	int index = hash(token);
+	dirEnt* tmp = d->dirEnts[index];
+	while (tmp != NULL && strcasecmp(tmp->name, token) != 0) { //while there is a word at tmp and word at tmp is not equal to word
+		tmp = tmp->next; //go to next in linked list
+	}
+	return tmp->fileIndex;
+}*/
+
 /*void process_top_ten()
 {
 	int max = 0;

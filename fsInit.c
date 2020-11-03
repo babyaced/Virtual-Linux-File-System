@@ -30,8 +30,12 @@ void formatVolume(char* volumeName){
     setFreeBlocks(vcb, fsl, 1,fsl->fslBlocksUsed);
     initDir(vcb,fsl,0);
     free(vcb);
+    vcb = NULL;
     free(fsl->freeSpaceBitmap);
+    fsl->freeSpaceBitmap = NULL;
+
     free(fsl);
+    fsl = NULL;
     
     //dir* rd2; = malloc(sizeof(rd->sizeInBytes));
     //retVal = LBAread(rd,rd->sizeInBlocks,fsl->fslBlocksUsed +1);

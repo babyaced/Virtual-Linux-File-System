@@ -3,6 +3,7 @@
 #include "dirMgr.h"
 #include "freeMgr.h"
 #include "fsInit.h"
+#include"hashTable.h"
 
 #define TABLE_SIZE 54 
 
@@ -41,6 +42,7 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
     printf("Current free block: %ld\n", d->sizeInBlocks + dirStartBlock);
     free(d);
+    d = NULL;
     //free(vcb);
     //free(d);
     /*dir* d2 = malloc(bytesNeeded);
@@ -68,32 +70,37 @@ int findFreeDirEnt(dir* d){
 }
 
 
-int findDir(char* dirName){
+int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
     //split directory name into parts
     char* token;
     char* remainder = dirName;
 
-    //root
+    //get root directory(temporary for testing) //real version will just read directory passed in to this function
     vCB* vcb = malloc(512);
     int retVal;
     retVal = LBAread(vcb,1,0); // to find root directory
     int rootDirLoc = vcb->rdLoc;  //hold root dir index
     int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
     free(vcb);
+    vcb = NULL;
 
-    //dir* dir = malloc(720); //allocate memory for dir
-    //retVal = LBAread(dir,vcb->rdBlkCnt,vcb->rdLoc);
+    /*dir* d ;//= malloc(sizeof(dir)+ 54*sizeof(dirEnt)); //allocate memory for dir // 720 is temporary
+    dirEnt* de = malloc(sizeof(dirEnt));
+    retVal = LBAread(d,vcb->rdBlkCnt,vcb->rdLoc); // read into our dir function
     //hash_table_lookup
-    //how to find dir if dir not directly in rootDir
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         printf("Token: %s\n", token);  //prints next directory
-        //hash_table_lookup(token,dir->dirEnts)
-        //if not found
-            //return to caller with error // return -1
-        //retVal = LBAread(dirEnt, dirEnt->fileBlkCnt, dirEnt->fileIndex);
+        de = hash_table_lookup(token,d->dirEnts);  //look up the name in directory entries of d
+        if(de == NULL)
+            return -1;  //return errorCode
+        retVal = LBAread(de, de->sizeInBlocks, de->loc);  //read directory entry (NOT FILE ITSELF) into dirEnt
+        if(de->type == 1) //if directory entry is a directory
+            retVal = LBAread(d, de->fileBlkCnt,de->fileIndex);//read new starting directory into d
     }
 
-
-    //returns logical block index of dirEnt
+    return de->fileIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
+                         //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
+                         //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)*/
+    return 0; //so it runs
 }

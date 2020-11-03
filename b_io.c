@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <dirMgr.h>
 #include "b_io.h"
+#include "dirMgr.h"
 
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20
@@ -54,7 +55,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     printf("Base Name: %s\n",basename(baseName)); // will return file name
 
     //pass dirname into findDir(function)
-    int dirIndex = findDir(dirName);
+    int dirIndex = findDirEnt(dirName);
 
     //read 
     //return lba index as "fd"
