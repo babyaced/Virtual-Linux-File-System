@@ -18,17 +18,19 @@ static vCB* vcb;  //only global for this file
 
 
 void formatVolume(char* volumeName){
-	uint64_t volumeSize;
-	uint64_t blockSize;
+	int volumeSize;
+	int blockSize;
     int retVal;
 
     retVal = startPartitionSystem(volumeName,&volumeSize, &blockSize);
 
     initFSL(volumeSize, blockSize);
+    retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
     initVCB(volumeSize, blockSize);
     setFreeBlocks(vcb,fsl,0,1);
     setFreeBlocks(vcb, fsl, 1,fsl->fslBlocksUsed);
     initDir(vcb,fsl,0);
+    retVal = LBAwrite(vcb,1,0);
     free(vcb);
     vcb = NULL;
     free(fsl->freeSpaceBitmap);
@@ -43,8 +45,8 @@ void formatVolume(char* volumeName){
     //printf("%lu\n",rd2->parentLocation)
 }
 
-void initVCB(uint64_t volSize, uint64_t blockSize){
-    printf("Block Size = %lu\n", blockSize);
+void initVCB(int volSize, int blockSize){
+    printf("Block Size = %d\n", blockSize);
     vcb = malloc(blockSize);
     if(vcb){
         vcb->sizeOfBlocks = blockSize;
@@ -56,10 +58,9 @@ void initVCB(uint64_t volSize, uint64_t blockSize){
     }else{
         printf("Malloc Failed\n");
     }
-    int retVal = LBAwrite(vcb,1,0);
 }
 
-void initFSL(uint64_t volSize, uint64_t blockSize){
+void initFSL(int volSize, int blockSize){
     
     int blockCount = volSize/ blockSize;
     int bmSize = blockCount/8;  //number of blocks divided by bits per byte
@@ -70,7 +71,7 @@ void initFSL(uint64_t volSize, uint64_t blockSize){
     fsl->fslBlocksUsed = (fsl->freeSpaceBits/blockSize) + 1;
     initBM(fsl->freeSpaceBitmap, blockCount);  //Need to correctly indicate blocks taken by VCB and freespaceList
     printf("Size of FSL: %ld\n",sizeof(fsl));
-    int retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
+    
 }
 
 /*void initRD(){

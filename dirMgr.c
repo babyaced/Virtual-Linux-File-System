@@ -31,6 +31,8 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
     if(block == 0){
         d->parentLoc = dirStartBlock;  //parent is itself
         vcb->rdLoc = d->parentLoc;
+        vcb->rdBlkCnt = d->sizeInBlocks;
+        vcb->rdLoc = d->loc;
         //strcpy(d->name,'root');
     }
     else{
@@ -40,7 +42,7 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
 
     initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
-    printf("Current free block: %ld\n", d->sizeInBlocks + dirStartBlock);
+    printf("Current free block: %d\n", d->sizeInBlocks + dirStartBlock);
     free(d);
     d = NULL;
     //free(vcb);
