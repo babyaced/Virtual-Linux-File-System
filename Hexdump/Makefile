@@ -37,7 +37,7 @@
 ROOTNAME=hexdump
 HW=
 FOPTION=
-RUNOPTIONS=
+RUNOPTIONS= 
 CC=gcc
 CFLAGS= -g -I.
 LIBS =pthread
