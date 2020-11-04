@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <dirMgr.h>
 #include "b_io.h"
+#include "dirMgr.h"
 
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20
@@ -57,7 +58,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     printf("Base Name: %s\n",basename(baseName)); // will return file name
 
     //pass dirname into findDir(function)
-    int dirIndex = findDir(dirName);
+    int dirIndex = findDirEnt(dirName);
 
     //read 
     //return lba index as "fd"
@@ -176,6 +177,7 @@ int b_seek (int fd, off_t offset, int whence){
 void b_close (int fd){
     //closePartitionSystem?
     //free everything associated with fd?
+
     FD* oft = &openFileTables[fd];
     printf("Currently closing this file: %d\n", fd);
 
@@ -205,6 +207,9 @@ void b_close (int fd){
     openFileTables[fd].linuxFd = -1;
 
 
+
+    //FD* oft = &openFileTables[fd];
+    //printf("Currently closing this file: %d\n", fd);
 
     // if(oft->ourBufferOffset > 0 /* && possibly check for file mode here */) {
     //     /* check if we have enough free space, if we do, write last chunk
