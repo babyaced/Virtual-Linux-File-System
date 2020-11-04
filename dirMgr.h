@@ -26,7 +26,7 @@ typedef struct{
     int loc;
     int sizeInBytes;
     int sizeInBlocks;
-    //dirEnt* dirEnts[TABLE_SIZE];
+    dirEnt* dirEnts[TABLE_SIZE];
 }dir;
 
 
@@ -34,5 +34,6 @@ void initDir(vCB* vcb, fSL* fsl,int block);
 void initDirEntries(dir* d);
 int findFreeDirEnt(dir* d);
 int findDirEnt(char* dirName);
+void addDirEnt(char* name, short type, dir* parentDir, int parentBlock, int block);
 
 #endif

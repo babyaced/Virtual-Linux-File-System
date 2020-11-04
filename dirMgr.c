@@ -3,11 +3,11 @@
 #include "dirMgr.h"
 #include "freeMgr.h"
 #include "fsInit.h"
-#include"hashTable.h"
+#include "hashTable.h"
 
 #define TABLE_SIZE 54 
 
-void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directoryEnt this is called from //this is mostly likely called from user accessible "mkdir" function)
+void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
     
     /*vCB* vcb = malloc(sizeof(vCB));
@@ -41,9 +41,9 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
         //strcpy(d->name, whatever is passed in)
     }
 
-    //initDirEntries(d);
+    initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
-    //printf("Current free block: %d\n", d->sizeInBlocks + dirStartBlock);
+    printf("Current free block: %d\n", d->sizeInBlocks + dirStartBlock);
     printf("Freeing: %d bytes\n", bytesNeeded);
     free(d);
     d = NULL;
@@ -54,7 +54,7 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
     printf("D2 size in blocks: %d\n", d2->sizeInBlocks);*/
 }
 
-/*void initDirEntries(dir* d){ 
+void initDirEntries(dir* d){ 
     int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
     printf("Length: %d\n",length);
     for(int i = 0; i < length; i++){
@@ -65,7 +65,7 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
         d->dirEnts[i]->sizeInBytes = 0;
     }
     printf("Size of dirEnt[length-1]: %d\n",sizeof(d->dirEnts[length-1]));
-}*/
+}
 
 int findFreeDirEnt(dir* d){
     //int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
@@ -93,15 +93,15 @@ int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from
     int sizeOfDirEnts = 54*sizeof(dirEnt*);
     printf("Size of Dir: %d\n", sizeOfDir);
     printf("Size of Dir Ents: %d\n", sizeOfDirEnts);
-    dir* d = malloc(sizeOfDir+ sizeOfDirEnts); //allocate memory for dir // 720 is temporary
-    printf("Mallocing: %d Bytes\n", sizeOfDir + sizeOfDirEnts);
+    dir* d = malloc(sizeOfDir); //allocate memory for dir // 720 is temporary
+    printf("Mallocing: %d Bytes\n", sizeOfDir);
     dirEnt* de = malloc(sizeof(dirEnt*));
     printf("Mallocing: %d Bytes\n", sizeof(dirEnt*));
     retVal = LBAread(d,vcb->rdBlkCnt,vcb->rdLoc); // read into our dir function
     //hash_table_lookup
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         printf("Token: %s\n", token);  //prints next directory
-        //de = hash_table_lookup(token,d->dirEnts);  //look up the name in directory entries of d
+        de = hash_table_lookup(token,d->dirEnts);  //look up the name in directory entries of d
         if(de == NULL)
             return -1;  //return errorCode
         retVal = LBAread(de, de->sizeInBlocks, de->loc);  //read directory entry (NOT FILE ITSELF) into dirEnt
@@ -111,9 +111,31 @@ int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from
     free(vcb);
     printf("Freeing: %d Bytes\n", 512);
     vcb = NULL;
+    printf("Freeing: %d Bytes\n", sizeOfDir);
+    free(d);
+    d = NULL;
+    printf("Freeing: %d Bytes\n", sizeof(dirEnt*));
+    free(de);
+    de = NULL;
 
-    return de->fileIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
+
+    //return de->fileIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
                          //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
                          //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)
     return 0; //so it runs
+}
+
+void addDirEnt(char* name, short type, dir* parentDir ,int parentBlock, int block){
+    bool success;
+
+    if(type ==1)  // if type of directory entry is directory
+    {
+        //call initDir(vcb, fsl,parentBlock)  //needs to return block of dir
+        //hash_table_insert(name,parentDir->dirEnts)  //need to edit hash_table_insert to take other info (ie. location)
+    }
+    else if(type == 0)//else if type is file
+    {
+        //success = hash_table_insert(dirEnt* dE,dir* parentDir);  //need to edit hash_table_insert to take other info (ie. location)
+    }
+    
 }

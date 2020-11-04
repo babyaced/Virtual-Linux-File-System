@@ -22,7 +22,6 @@
 
 #include "b_io.h"
 
-#include <dirent.h>
 #define FT_REGFILE	DT_REG
 #define FT_DIRECTORY DT_DIR
 #define FT_LINK	DT_LNK
@@ -80,8 +79,6 @@ struct fs_stat  //file stats//metadata
 	};
 
 int fs_stat(const char *path, struct fs_stat *buf); 
-
-//void test();
 
 #endif
 
