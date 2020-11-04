@@ -177,6 +177,37 @@ int b_seek (int fd, off_t offset, int whence){
 void b_close (int fd){
     //closePartitionSystem?
     //free everything associated with fd?
+
+    FD* oft = &openFileTables[fd];
+    printf("Currently closing this file: %d\n", fd);
+
+    //dummy variable
+    int blockIndex;
+    int lbaCount;
+    int linuxFD;
+
+    //writing the left over bytes
+    if(oft->ourBufferOffset > 0 && oft->bytesInBuffer > 0){
+        printf("The file was in write mode.\n");
+        if(blockIndex = -1){
+            //
+            printf("We do not have enough free space.\n");
+            return 0;
+        }else {
+            //writes remainder bytes into a new block
+            printf("writing the leftover bytes now.\n");
+            LBAwrite(buffer, lbaCount, lbaPosition);
+        }
+    }
+
+    //idk if we are allowed to use clse() and not sure if we have a linuxFD or similar variable
+    close(openFileTables[fd].linuxFD); //not sure what our linux file handler variable is
+    free(openFileTables[fd].buffer); //or if we are supposed to have one
+    openFileTables[fd].buffer = NULL;
+    openFileTables[fd].linuxFd = -1;
+
+
+
     //FD* oft = &openFileTables[fd];
     //printf("Currently closing this file: %d\n", fd);
 
