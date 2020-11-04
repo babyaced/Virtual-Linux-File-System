@@ -187,7 +187,7 @@ void b_close (int fd){
     int linuxFD;
 
     //writing the left over bytes
-    if(oft->ourBufferOffset > 0 && oft->bytesInBuffer > 0){
+    /*if(oft->ourBufferOffset > 0 && oft->bytesInBuffer > 0){
         printf("The file was in write mode.\n");
         if(blockIndex = -1){
             //
@@ -204,7 +204,7 @@ void b_close (int fd){
     close(openFileTables[fd].linuxFD); //not sure what our linux file handler variable is
     free(openFileTables[fd].buffer); //or if we are supposed to have one
     openFileTables[fd].buffer = NULL;
-    openFileTables[fd].linuxFd = -1;
+    openFileTables[fd].linuxFd = -1;*/
 
 
 
