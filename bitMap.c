@@ -7,6 +7,7 @@ void setBit(unsigned int* array, int bitToSet){
     unsigned int inUse = 1;
     inUse = inUse << bitPos;
     array[index] = array[index] | inUse;
+    //printf("Index %d\n", index);
 }
 
 void clearBit(unsigned int* array, int bitToClear){
@@ -16,6 +17,7 @@ void clearBit(unsigned int* array, int bitToClear){
     unsigned int inUse = 0;
     inUse = inUse << bitPos;
     array[index] = array[index] | inUse;
+    //printf("Index %d\n", index);
 }
 
 int checkBit(unsigned int* array, int bitToCheck){
@@ -35,7 +37,9 @@ void initBM(unsigned int* array, int bmSize){
     for(int i = 0; i < bmSize; i++)
     {
         clearBit(array,i);
+        //printf("Bit %d\n",i);
     }
+    //printf("Array Length: %d\n", sizeof(&array)/sizeof(array[0]));
 }
 
 void printBits(int n){

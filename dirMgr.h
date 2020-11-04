@@ -26,7 +26,7 @@ typedef struct{
     int loc;
     int sizeInBytes;
     int sizeInBlocks;
-    dirEnt* dirEnts[TABLE_SIZE];
+    //dirEnt* dirEnts[TABLE_SIZE];
 }dir;
 
 

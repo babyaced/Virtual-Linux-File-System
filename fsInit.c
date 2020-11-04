@@ -14,7 +14,6 @@
 
 static fSL* fsl;  //only global for this file
 static vCB* vcb;  //only global for this file
-//static dir* rd;
 
 
 void formatVolume(char* volumeName){
@@ -31,30 +30,29 @@ void formatVolume(char* volumeName){
     setFreeBlocks(vcb, fsl, 1,fsl->fslBlocksUsed);
     initDir(vcb,fsl,0);
     retVal = LBAwrite(vcb,1,0);
+    printf("Freeing: %d bytes\n", blockSize);
     free(vcb);
     vcb = NULL;
+    printf("Freeing: %d bytes\n", sizeof(fsl->freeSpaceBitmap));
     free(fsl->freeSpaceBitmap);
+    
     fsl->freeSpaceBitmap = NULL;
 
+    printf("Freeing: %d bytes\n", sizeof(fsl));
     free(fsl);
     fsl = NULL;
-    
-    //dir* rd2; = malloc(sizeof(rd->sizeInBytes));
-    //retVal = LBAread(rd,rd->sizeInBlocks,fsl->fslBlocksUsed +1);
-
-    //printf("%lu\n",rd2->parentLocation)
 }
 
 void initVCB(int volSize, int blockSize){
-    printf("Block Size = %d\n", blockSize);
+    printf("Mallocing: %d bytes\n", blockSize);
     vcb = malloc(blockSize);
     if(vcb){
         vcb->sizeOfBlocks = blockSize;
         vcb->freeBlockCount = volSize/ blockSize;
         vcb->blockCount = volSize/ blockSize;
         vcb->fslBlkCnt = fsl->fslBlocksUsed;
-        vcb->fslBytes = fsl->freeSpaceBits;
-        printf("Size of VCB: %ld\n",sizeof(vcb));
+        vcb->fslBytes = fsl->freeSpaceBytes;
+        //printf("Size of VCB: %ld\n",sizeof(vcb));
     }else{
         printf("Malloc Failed\n");
     }
@@ -63,15 +61,20 @@ void initVCB(int volSize, int blockSize){
 void initFSL(int volSize, int blockSize){
     
     int blockCount = volSize/ blockSize;
-    int bmSize = blockCount/8;  //number of blocks divided by bits per byte
-    printf("FSL Size: %d\n", bmSize);  //for mallocing bytes when retrieving data
+    int bmSize = blockCount/8 +1;
+    int bmElements = (blockCount/32) +1;  //number of blocks divided by bits in int
+    //printf("FSL Size: %d\n", bmSize);  //for mallocing bytes when retrieving data
     fsl = malloc(sizeof(fSL));
-    fsl->freeSpaceBitmap = malloc(bmSize);
-    fsl->freeSpaceBits = bmSize;
-    fsl->fslBlocksUsed = (fsl->freeSpaceBits/blockSize) + 1;
-    initBM(fsl->freeSpaceBitmap, blockCount);  //Need to correctly indicate blocks taken by VCB and freespaceList
-    printf("Size of FSL: %ld\n",sizeof(fsl));
-    
+    printf("Mallocing: %d bytes\n", sizeof(fSL));
+    //int bmElements = bmSize
+    fsl->freeSpaceBitmap = calloc(bmElements,sizeof(fsl->freeSpaceBitmap[0]));
+    printf("Size of Free Space Bitmap: %d\n", sizeof(fsl->freeSpaceBitmap));
+    printf("Mallocing: %d bytes\n", bmSize);
+    fsl->freeSpaceBytes = bmSize;
+    fsl->freeSpaceBits = blockCount;
+    fsl->fslBlocksUsed = (fsl->freeSpaceBytes/blockSize) + 1;
+    //initBM(fsl->freeSpaceBitmap, blockCount);  //Need to correctly indicate blocks taken by VCB and freespaceList
+    //printf("Size of FSL: %ld\n",sizeof(fsl));
 }
 
 /*void initRD(){

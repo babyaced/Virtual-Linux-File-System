@@ -8,7 +8,7 @@ int findFreeBlocks(vCB *vcb,  fSL *fsl, int blocksNeeded){
     //retVal = LBAread(fsl,vcb->fslBlkCnt,1);
 
     int freeBlockCounter = 0;
-    for(int i = 0; i < fsl->freeSpaceBits;i++){
+    for(int i = 0; i < fsl->freeSpaceBytes;i++){ 
         if(freeBlockCounter == blocksNeeded)
             return i - blocksNeeded;
         if(!checkBit(fsl->freeSpaceBitmap,i))  //if bit is free(0)

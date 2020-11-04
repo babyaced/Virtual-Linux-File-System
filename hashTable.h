@@ -28,7 +28,7 @@
 
 #define TABLE_SIZE 54 //maximum size to keep dirEnt under 512 bytes
 
-unsigned int hash(char* dirEntName) {   
+/*unsigned int hash(char* dirEntName) {   
 	char* lower = (char*)malloc(sizeof(dirEntName));
 	for(int i = 0; dirEntName[i]; i++){
   		lower[i] = tolower(dirEntName[i]);  // Ensures that case is ignored

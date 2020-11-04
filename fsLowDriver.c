@@ -76,43 +76,56 @@ int main (int argc, char *argv[])
 	//Testing LBARead
 	int retval = 0;
 	vCB* vcb = malloc(512);
+	printf("Mallocing: %d bytes\n", 512);
 	retVal = LBAread(vcb,1,0);
 
-	printf("VCB Block Count: %d\n", vcb->blockCount);
+	/*printf("VCB Block Count: %d\n", vcb->blockCount);
 	printf("VCB Free Block Count:  %d\n", vcb->freeBlockCount);
 	printf("VCB Block Count: %d\n", vcb->sizeOfBlocks);
 	printf("VCB fslBlkCnt: %d\n", vcb->fslBlkCnt);
 	printf("VCB fslBytes: %d\n", vcb->fslBytes);
 	printf("VCB Root Directory Block Count: %d\n", vcb->rdBlkCnt);
-	printf("VCB Root Directory Location: %d\n", vcb->rdLoc);
+	printf("VCB Root Directory Location: %d\n", vcb->rdLoc);*/
 
+	printf("Mallocing: %d bytes\n", sizeof(fSL));
 	fSL* fsl = malloc(sizeof(fSL));
-	//fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
+	printf("Mallocing: %d bytes\n", vcb->fslBytes);
+	fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
+
 	retVal = LBAread(fsl,vcb->fslBlkCnt,1);
 	
 
 
-	printf("FSL Block Count: %d\n", fsl->freeSpaceBits);
+	/*printf("FSL Block Count: %d\n", fsl->freeSpaceBits);
 	printf("FSL Blocks Used:  %d\n", fsl->fslBlocksUsed);
-	printf("FSL Location: %d\n", fsl->location);
+	printf("FSL Location: %d\n", fsl->location);*/
 
+	printf("Freeing: %d bytes\n", sizeof(fSL));
 	free(fsl);
 	fsl= NULL;
 
-	dir* rd = malloc(sizeof(dir));
+	dir* d = malloc(sizeof(dir));
+	printf("Mallocing: %d bytes\n", sizeof(dir));
 
-	retVal = LBAread(rd,vcb->rdBlkCnt,vcb->rdLoc);
-	printf("Rd loc: %d\n", rd->loc);
-	printf("Rd parent loc: %d\n", rd->parentLoc);
-	printf("Rd  size in blocks: %d\n", rd->sizeInBlocks);
-	printf("Rd  size in bytes: %d\n", rd->sizeInBytes);
+	retVal = LBAread(d,vcb->rdBlkCnt,vcb->rdLoc);
+	/*printf("Rd loc: %d\n", d->loc);
+	printf("Rd parent loc: %d\n", d->parentLoc);
+	printf("Rd  size in blocks: %d\n", d->sizeInBlocks);
+	printf("Rd  size in bytes: %d\n", d->sizeInBytes);*/
 
+	printf("Freeing: %d bytes\n", 512);
 	free(vcb);
 	vcb= NULL;
 
+	/*for(int i = 0; i < 54; i++){
+        free(rd->dirEnts[i]);
+		rd->dirEnts[i] = NULL;
+    }
 
-	//free(rd);
-	rd = NULL;
+	free(rd->dirEnts);*/
+	//printf("Mallocing: %d bytes\n", sizeof(dir));
+	//free(d);
+	//d = NULL;
 	
 	
 	//testing b_open()

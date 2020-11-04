@@ -23,6 +23,7 @@ typedef struct{
 
 typedef struct{
     unsigned int* freeSpaceBitmap;
+    int freeSpaceBytes;
     int freeSpaceBits;
     int location;
     int fslBlocksUsed;
