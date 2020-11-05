@@ -22,7 +22,7 @@
 
 typedef struct FD {
     int lbaPosition;
-    char* buffer;
+    char* buffer[B_CHUNK_SIZE+2];
     int ourBufferOffset;
     int bytesInBuffer;
 }FD;
@@ -39,7 +39,7 @@ void b_init()
 	{
 		//do something with oftables
 		openFileTables[i].lbaPosition = -1;
-		openFileTables[i].bytesInBuffer = 0;
+		openFileTables[i].bytesInBuffer = -1; // used to tell buffer is empty but not used yet
 		openFileTables[i].ourBufferOffset = 0;
 	}
 }
@@ -150,13 +150,63 @@ int b_write (int fd, char * buffer, int count){
 		return -1;
     }
 */
+
+    //hardcoding values for testing
+    //openFileTables[fd].lbaPosition = 1;
+    if (areWeInitialized == 0) b_init();  //Initialize our system
+    //  openFileTables[fd].buffer = malloc(2048);
+    //  openFileTables[fd].bytesInBuffer = -1;
+    //  openFileTables[fd].ourBufferOffset = 0;
+    //memcpy(openFileTables[fd].buffer, buffer, 100);
+    //printf("\n\n%s\n\n", openFileTables[fd].buffer);
+
+    int bytesWritten = 0;
+    int bufferSpace = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;
+    if (bufferSpace < 0) bufferSpace = 512;// negative buffLen when buffer not used yet
+
+    if (count<=bufferSpace){
+        memcpy(openFileTables[fd].buffer, buffer, count);
+        printf("\n%s\n", openFileTables[fd].buffer);
+        openFileTables[fd].bytesInBuffer += count;
+        bytesWritten =+ count;
+    }
+
+    else if (bufferSpace>0){
+        // memcpy until end of buffer
+        memcpy(openFileTables[fd].buffer, buffer, bufferSpace);
+        printf("%s", openFileTables[fd].buffer);
+        openFileTables[fd].bytesInBuffer += bufferSpace;
+        bytesWritten =+ bufferSpace;
+
+        while (count - bytesWritten >= B_CHUNK_SIZE) {
+            //printf("straight write\n");
+            memcpy(openFileTables[fd].buffer, buffer+bytesWritten, bufferSpace);
+            printf("%s", openFileTables[fd].buffer);
+            bytesWritten += B_CHUNK_SIZE;
+            //printf("%d\n", bytesWritten);
+        }
+
+        // memcopy remaing bytes to buffer
+    }
+
+
+    // LBA write/
+/*
+		// while (count-bytesWritten>B-CHunkSIZE)
+			// LBAwrite from callers buffer
+
+		// Memcpy any leftover bytes in callers buffer
+	}
+*/
     // get block position from oft struct
-    int lbaPosition = 1;
+    int lbaPosition = 7;
     // int count converts to lbaCount
-    int lbaCount = 4;// test
-    int retVal = LBAwrite(buffer, lbaCount, lbaPosition);
+    int lbaCount = 1;// test
+    int retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition);
+    retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition+1);
     return retVal;
 }
+
 int b_seek (int fd, off_t offset, int whence){
 
     if (areWeInitialized == 0) b_init();  //Initialize our system
