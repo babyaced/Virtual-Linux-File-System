@@ -137,7 +137,7 @@ int main (int argc, char *argv[])
 
 	//free(rd);
 	mode_t mode = NULL;
-	retVal = fs_mkdir("test", mode);
+	//retVal = fs_mkdir("test", mode);
 
 	retVal = closePartitionSystem();
 	

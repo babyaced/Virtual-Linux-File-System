@@ -1,18 +1,54 @@
 #include "mfs.h"
+#include "fsInit.h"
+#include "dirMgr.h"
 
 int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
+    int retVal;
     printf("Path Name: %s\n", pathname);
-    //find free blocks
-    //initDir(pathname,parent block)  //where does parent block come from
-    //write this directory to parent dir's dirEnts
-    return 0;
+    vCB* vcb = malloc(512);
+    retVal = LBAread(vcb,1,0);
+    fSL* fsl = malloc(vcb->fslBytes);
+    retVal = LBAread(fsl,vcb->fslBlkCnt,1);
+
+    /*if(pathname == basename(pathname)) // we are in root
+    {
+        //then we only need to initialize dir
+
+    }*/
+
+    dir* parentDir = malloc(sizeof(dir));
+    int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
+    int dirIndex = initDir(vcb,fsl,parentIndex,basename(pathname));  //where does parent block come from
+    dirEnt* de = malloc(sizeof(dirEnt));
+
+    //initialize directory entry
+    de->parentLoc = parentIndex;
+    de->loc = dirIndex;
+    de->sizeInBlocks = vcb->rdBlkCnt;//need way to get sizeInBlocks //for now just assume same size as rd
+
+    addDirEnt(parentDir,de);//write this directory to parent dir's dirEnts
+    return 0; //not sure what return value is supposed to represent yet
 }
 
 int fs_rmdir(const char *pathname){
-    return 0;
+    int retVal;
+    printf("Path Name: %s\n", pathname);
+    vCB* vcb = malloc(512);
+    retVal = LBAread(vcb,1,0);
+    fSL* fsl = malloc(vcb->fslBytes);
+    retVal = LBAread(fsl,vcb->fslBlkCnt,1);
+
+    //findDirEnt()  //find location of directory at pathname
+    //need to iterate through dirEnts[] of dir and setFreeBlocks for each
+    //clear directory entry //reset to zero values
+    //setFreeBlocks(vcb,fsl, dir->loc, dir->sizeInBlocks)
+    return 0; //not sure what return value is supposed to represent yet
 }
 
 fdDir * fs_opendir(const char *name){
+    //call b_open(name,flags?)? // NO b_open only for opening files
+     //findDirEnt()  //find location of directory at pathname
+    //need to iterate through dirEnts[] of dir and return name for each
     return 0;
 }
  
@@ -28,16 +64,28 @@ char * fs_getcwd(char *buf, size_t size){
     return 0;
 }
 
-int fs_setcwd(char *buf){ //linux chdir
+int fs_setcwd(char *buf){ //linux chdir  //cd
     return 0;
 }
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
-    return 0;
+    dirEnt* de = malloc(sizeof(dirEnt));
+    int index = findDirEnt(path);
+    int retVal = LBAread(de, index,sizeof(dirEnt)/512);
+
+    if(de->type == 1)
+        return 0;
+    return 1;
 }
 
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
-    return 0;
+    dirEnt* de = malloc(sizeof(dirEnt));
+    int index = findDirEnt(path);
+    int retVal = LBAread(de, index,sizeof(dirEnt)/512);
+
+    if(de->type == 0)
+        return 0;
+    return 1;
 }		
 
 int fs_stat(const char *path, struct fs_stat *buf){
@@ -45,5 +93,6 @@ int fs_stat(const char *path, struct fs_stat *buf){
 }
 
 int fs_delete(char* filename){ //removes a file
+    //findDirEnt()  //find location of file at pathname
     return 0;
 }

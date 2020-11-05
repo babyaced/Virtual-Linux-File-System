@@ -28,7 +28,7 @@ void formatVolume(char* volumeName){
     initVCB(volumeSize, blockSize);
     setFreeBlocks(vcb,fsl,0,1);
     setFreeBlocks(vcb, fsl, 1,fsl->fslBlocksUsed);
-    initDir(vcb,fsl,0);
+    initDir(vcb,fsl,0,"root");
     retVal = LBAwrite(vcb,1,0);
     printf("Freeing: %d bytes\n", blockSize);
     free(vcb);

@@ -7,7 +7,7 @@
 
 #define TABLE_SIZE 54 
 
-void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
+int initDir(vCB* vcb, fSL* fsl,int parentBlock, char* name){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
     
     /*vCB* vcb = malloc(sizeof(vCB));
@@ -29,16 +29,18 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
     d->sizeInBlocks = blocksNeeded;
     d->sizeInBytes = bytesNeeded;
     d->loc = dirStartBlock;
-    if(block == 0){
+    if(parentBlock == 0){
         d->parentLoc = dirStartBlock;  //parent is itself
+        d->loc = dirStartBlock;
         vcb->rdLoc = d->parentLoc;
         vcb->rdBlkCnt = d->sizeInBlocks;
         vcb->rdLoc = d->loc;
-        //strcpy(d->name,'root');
+        strcpy(d->name,name);
     }
     else{
-        d->parentLoc = block; // parent is at block index passed in
-        //strcpy(d->name, whatever is passed in)
+        d->parentLoc = parentBlock; // parent is at block index passed in
+        d->loc = dirStartBlock;
+        strcpy(d->name, name);
     }
 
     initDirEntries(d);
@@ -47,6 +49,7 @@ void initDir(vCB* vcb, fSL* fsl,int block){  //pass in block of whatever directo
     printf("Freeing: %d bytes\n", bytesNeeded);
     free(d);
     d = NULL;
+    return dirStartBlock;
     //free(vcb);
     //free(d);
     /*dir* d2 = malloc(bytesNeeded);
@@ -101,12 +104,12 @@ int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from
     //hash_table_lookup
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         printf("Token: %s\n", token);  //prints next directory
-        de = hash_table_lookup(token,d->dirEnts);  //look up the name in directory entries of d
+        /*de = hash_table_lookup(token,d->dirEnts);  //look up the name in directory entries of d
         if(de == NULL)
             return -1;  //return errorCode
         retVal = LBAread(de, de->sizeInBlocks, de->loc);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(de->type == 1) //if directory entry is a directory
-            retVal = LBAread(d, de->fileBlkCnt,de->fileIndex);//read new starting directory into d
+            retVal = LBAread(d, de->fileBlkCnt,de->fileIndex);//read new starting directory into d*/
     }
     free(vcb);
     printf("Freeing: %d Bytes\n", 512);
@@ -125,17 +128,16 @@ int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from
     return 0; //so it runs
 }
 
-void addDirEnt(char* name, short type, dir* parentDir ,int parentBlock, int block){
+void addDirEnt(dir* parentDir, dirEnt* dE){
     bool success;
 
-    if(type ==1)  // if type of directory entry is directory
+    if(dE->type ==1)  // if type of directory entry is directory
     {
-        //call initDir(vcb, fsl,parentBlock)  //needs to return block of dir
         //hash_table_insert(name,parentDir->dirEnts)  //need to edit hash_table_insert to take other info (ie. location)
     }
-    else if(type == 0)//else if type is file
+    else if(dE->type == 0)//else if type is file
     {
-        //success = hash_table_insert(dirEnt* dE,dir* parentDir);  //need to edit hash_table_insert to take other info (ie. location)
+        success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
     }
     
 }

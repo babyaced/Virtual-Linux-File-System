@@ -30,10 +30,10 @@ typedef struct{
 }dir;
 
 
-void initDir(vCB* vcb, fSL* fsl,int block);
+int initDir(vCB* vcb, fSL* fsl,int block, char* name);
 void initDirEntries(dir* d);
 int findFreeDirEnt(dir* d);
 int findDirEnt(char* dirName);
-void addDirEnt(char* name, short type, dir* parentDir, int parentBlock, int block);
+void addDirEnt(dir* parentDir, dirEnt* de);
 
 #endif

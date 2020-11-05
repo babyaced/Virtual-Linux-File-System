@@ -40,7 +40,7 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
     else{  // add new entry to hashtable
         int index = hash(dE->name);
 	    dE->next = d->dirEnts[index]; 
-	    d->dirEnts[index] = dE;
+	    d->dirEnts[index] = &dE;  //add pointer to directory entry to directory's directory entries
 	    return true;
     }
 }

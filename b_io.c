@@ -13,7 +13,6 @@
 #include <libgen.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dirMgr.h>
 #include "b_io.h"
 #include "dirMgr.h"
 
@@ -51,7 +50,7 @@ int b_open (char* filename, int flags){  //cannot open directory
 	// store the lbaPosition in the fd struct  
     char dirName[255];
 	char baseName[255];  
-    strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive!
+    strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive! 
     strcpy(baseName,filename); //makes copy of filename to find baseName //basename() is destructive!
 
     printf("Dir Name: %s\n",dirname(dirName));  //will return whole path minus file name
