@@ -44,6 +44,7 @@ void b_init()
         openFileTables[i].lbaPosition = -1;
         openFileTables[i].bytesInBuffer = -1; // used to tell buffer is empty but not used yet
         openFileTables[i].ourBufferOffset = 0;
+        openFileTables[i].blockInd = 0; // how many blocks we wrote into a file
     }
 }
 
@@ -155,6 +156,7 @@ int b_write (int fd, char * buffer, int count){
 
     int lbaPosition = 7;
     int lbaIndex = 0; // should store this in fd struct
+    openFileTables[fd].blockInd;
 
     int bytesWritten = 0;
     int bufferSpace = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;
@@ -174,7 +176,7 @@ int b_write (int fd, char * buffer, int count){
     else if (bufferSpace>0){
         // memcpy until end of buffer
         memcpy(openFileTables[fd].buffer, buffer, bufferSpace);
-        printf("%s", openFileTables[fd].buffer);
+//        printf("%s", openFileTables[fd].buffer);
         openFileTables[fd].bytesInBuffer += bufferSpace;
         bytesWritten =+ bufferSpace;
 
@@ -183,8 +185,14 @@ int b_write (int fd, char * buffer, int count){
         openFileTables[fd].bytesInBuffer = 0;
 
         while (count - bytesWritten >= B_CHUNK_SIZE) {
+//            memcpy(openFileTables[fd].buffer, buffer+bytesWritten, bufferSpace);
+//            printf("%s", openFileTables[fd].buffer);
+//
             int retVal = LBAwrite(buffer+bytesWritten, 1, lbaPosition + lbaIndex);
             bytesWritten += B_CHUNK_SIZE;
+
+//            printf("\nBytes %d  \n", bytesWritten);
+
             ++ lbaIndex;
         }
     }
@@ -195,8 +203,10 @@ int b_write (int fd, char * buffer, int count){
         ++ lbaIndex;
     }
 
-    printf("\n");
-    printf("returned %d  ", bytesWritten);
+//    int retVal = LBAwrite("~~~Empty Block for Testing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ", 1, lbaPosition + lbaIndex);
+
+//    printf("\n");
+//    printf("returned %d  ", bytesWritten);
     return bytesWritten;
 }
 
