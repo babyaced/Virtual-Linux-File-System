@@ -25,6 +25,9 @@ typedef struct FD {
     char* buffer[B_CHUNK_SIZE+2];
     int ourBufferOffset;
     int bytesInBuffer;
+
+    // need to implement still
+    int blockInd; // the index of last block in the file
 }FD;
 
 FD openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
@@ -34,23 +37,23 @@ int areWeInitialized = 0;	//Indicates that this has not been initialized
 void b_init()
 {
 
-	areWeInitialized = 1;
-	for(int i = 0; i < MAX_OPEN_FILES; i++)
-	{
-		//do something with oftables
-		openFileTables[i].lbaPosition = -1;
-		openFileTables[i].bytesInBuffer = -1; // used to tell buffer is empty but not used yet
-		openFileTables[i].ourBufferOffset = 0;
-	}
+    areWeInitialized = 1;
+    for(int i = 0; i < MAX_OPEN_FILES; i++)
+    {
+        //do something with oftables
+        openFileTables[i].lbaPosition = -1;
+        openFileTables[i].bytesInBuffer = -1; // used to tell buffer is empty but not used yet
+        openFileTables[i].ourBufferOffset = 0;
+    }
 }
 
 
 int b_open (char* filename, int flags){  //cannot open directory
     //startPartitionSystem?
-	
-	// store the lbaPosition in the fd struct  
+
+    // store the lbaPosition in the fd struct
     char dirName[255];
-	char baseName[255];  
+    char baseName[255];
     strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive!
     strcpy(baseName,filename); //makes copy of filename to find baseName //basename() is destructive!
 
@@ -65,103 +68,104 @@ int b_open (char* filename, int flags){  //cannot open directory
 }
 
 int b_read (int fd, char * buffer, int count)  //this is copy of bierman's version 
-	{
-	int bytesRead;				// for our reads
-	int bytesReturned;			// what we will return
-	int part1, part2, part3;	// holds the three potential copy lengths
-	
-	if (areWeInitialized == 0) b_init();  //Initialize our system
+{
+    int bytesRead;				// for our reads
+    int bytesReturned;			// what we will return
+    int part1, part2, part3;	// holds the three potential copy lengths
 
-	// check that fd is between 0 and (MAX_OPEN_FILES-1)
-	if ((fd < 0) || (fd >= MAX_OPEN_FILES))
-		{
-		return (-1); 					//invalid file descriptor
-		}
-		
-	if (openFileTables[fd].lbaPosition == -1)		//File not open for this descriptor
-		{
-		return -1;
-		}	
-		
-	
-	// number of bytes available to copy from buffer
-	int remain = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;	
-	part3 = 0;				//only used if count > B_CHUNK_SIZE
-	if (remain >= count)  	//we have enough in buffer
-		{
-		part1 = count;		// completely buffered
-		part2 = 0;
-		}
-	else
-		{
-		part1 = remain;				//spanning buffer (or first read)
-		part2 = count - remain;
-		}
-				
-	if (part1 > 0)	// memcpy part 1
-		{
-		memcpy (buffer, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part1);
-		openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part1;
-		}
-		
-	if (part2 > 0)		//We need to read to copy more bytes to user
-		{
-		// Handle special case where user is asking for more than a buffer worth
-		if (part2 > B_CHUNK_SIZE)
-			{
-			int blocks = part2 / B_CHUNK_SIZE; // calculate number of blocks they want
-			bytesRead = LBAread (buffer+part1,blocks,openFileTables[fd].lbaPosition);
-			part3 = bytesRead;
-			part2 = part2 - part3;  //part 2 is now < B_CHUNK_SIZE, or file is exusted
-			}				
-		
-		//try to read B_CHUNK_SIZE bytes into our buffer
-		bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].lbaPosition);  //keep as 1 block for now
-		
-		// error handling here...  if read fails
-		
-		openFileTables[fd].bytesInBuffer = bytesRead; //how many bytes are actually in bufferfer
-		
-		if (bytesRead < part2) // not even enough left to satisfy read
-			part2 = bytesRead;
-			
-		if (part2 > 0)	// memcpy bytesRead
-			{
-			memcpy (buffer+part1+part3, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part2);
-			openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part2;
-			}
-			
-		}
-	bytesReturned = part1 + part2 + part3;
-	return (bytesReturned);	
+    if (areWeInitialized == 0) b_init();  //Initialize our system
+
+    // check that fd is between 0 and (MAX_OPEN_FILES-1)
+    if ((fd < 0) || (fd >= MAX_OPEN_FILES))
+    {
+        return (-1); 					//invalid file descriptor
+    }
+
+    if (openFileTables[fd].lbaPosition == -1)		//File not open for this descriptor
+    {
+        return -1;
+    }
+
+
+    // number of bytes available to copy from buffer
+    int remain = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;
+    part3 = 0;				//only used if count > B_CHUNK_SIZE
+    if (remain >= count)  	//we have enough in buffer
+    {
+        part1 = count;		// completely buffered
+        part2 = 0;
+    }
+    else
+    {
+        part1 = remain;				//spanning buffer (or first read)
+        part2 = count - remain;
+    }
+
+    if (part1 > 0)	// memcpy part 1
+    {
+        memcpy (buffer, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part1);
+        openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part1;
+    }
+
+    if (part2 > 0)		//We need to read to copy more bytes to user
+    {
+        // Handle special case where user is asking for more than a buffer worth
+        if (part2 > B_CHUNK_SIZE)
+        {
+            int blocks = part2 / B_CHUNK_SIZE; // calculate number of blocks they want
+            bytesRead = LBAread (buffer+part1,blocks,openFileTables[fd].lbaPosition);
+            part3 = bytesRead;
+            part2 = part2 - part3;  //part 2 is now < B_CHUNK_SIZE, or file is exusted
+        }
+
+        //try to read B_CHUNK_SIZE bytes into our buffer
+        bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].lbaPosition);  //keep as 1 block for now
+
+        // error handling here...  if read fails
+
+        openFileTables[fd].bytesInBuffer = bytesRead; //how many bytes are actually in bufferfer
+
+        if (bytesRead < part2) // not even enough left to satisfy read
+            part2 = bytesRead;
+
+        if (part2 > 0)	// memcpy bytesRead
+        {
+            memcpy (buffer+part1+part3, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part2);
+            openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part2;
+        }
+
+    }
+    bytesReturned = part1 + part2 + part3;
+    return (bytesReturned);
 }
 
 int b_write (int fd, char * buffer, int count){
 
-    if (areWeInitialized == 0) 
-	b_init();  //Initialize system for write
+    if (areWeInitialized == 0)
+        b_init();  //Initialize system for write
 
-	// check that fd is between 0 and (MAX_OPEN_FILES-1)
+    // check that fd is between 0 and (MAX_OPEN_FILES-1)
     if ((fd < 0) || (fd >= MAX_OPEN_FILES)) {
         return (-1); 					//invalid file descriptor
     }
-		// commented out below while testing
+    // commented out below while testing
     if (openFileTables[fd].lbaPosition == -1) {	//File not open for this descriptor
-		//return -1;
+        //return -1;
     }
 
     int lbaPosition = 7;
-    int lbaIndex = 0;
+    int lbaIndex = 0; // should store this in fd struct
 
     int bytesWritten = 0;
     int bufferSpace = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;
-    if (bufferSpace < 0) bufferSpace = 512;// negative buffLen when buffer not used yet
+    if (bufferSpace < 0) {
+        bufferSpace = 512;// negative buffLen when buffer not used yet
+        openFileTables[fd].bytesInBuffer = 0;
+    }
 
     if (count<=bufferSpace){
         memcpy(openFileTables[fd].buffer, buffer, count);
         printf("\n%s\n", openFileTables[fd].buffer);
-
-
 
         openFileTables[fd].bytesInBuffer += count;
         bytesWritten =+ count;
@@ -176,38 +180,23 @@ int b_write (int fd, char * buffer, int count){
 
         int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
         ++ lbaIndex;
+        openFileTables[fd].bytesInBuffer = 0;
 
         while (count - bytesWritten >= B_CHUNK_SIZE) {
-            //printf("straight write\n");
-            memcpy(openFileTables[fd].buffer, buffer+bytesWritten, bufferSpace);
-            printf("%s", openFileTables[fd].buffer);
+            int retVal = LBAwrite(buffer+bytesWritten, 1, lbaPosition + lbaIndex);
             bytesWritten += B_CHUNK_SIZE;
-            //printf("%d\n", bytesWritten);
-            int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
             ++ lbaIndex;
         }
-
-        // memcopy remaing bytes to buffer
     }
 
-
-    // LBA write/
-/*
-		// while (count-bytesWritten>B-CHunkSIZE)
-			// LBAwrite from callers buffer
-
-		// Memcpy any leftover bytes in callers buffer
-	}
-*/
+    if (openFileTables[fd].bytesInBuffer == B_CHUNK_SIZE) {
+        int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
+        openFileTables[fd].bytesInBuffer = 0;
+        ++ lbaIndex;
+    }
 
     printf("\n");
-
-    // get block position from oft struct
-//    int lbaPosition = 7;
-    // int count converts to lbaCount
-    int lbaCount = 1;// test
-    //int retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition);
-    //retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition+1);
+    printf("returned %d  ", bytesWritten);
     return bytesWritten;
 }
 
@@ -267,9 +256,9 @@ void b_close (int fd){
 
     // if(oft->ourBufferOffset > 0 /* && possibly check for file mode here */) {
     //     /* check if we have enough free space, if we do, write last chunk
-	// 		else, return */
+    // 		else, return */
     //     if (/*block index(?) has enough free space*/) {
-	// //do the last write
+    // //do the last write
     //     } else {
     //         return;
     //     }
