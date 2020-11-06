@@ -137,7 +137,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 }
 
 int b_write (int fd, char * buffer, int count){
-/*
+
     if (areWeInitialized == 0) 
 	b_init();  //Initialize system for write
 
@@ -145,20 +145,13 @@ int b_write (int fd, char * buffer, int count){
     if ((fd < 0) || (fd >= MAX_OPEN_FILES)) {
         return (-1); 					//invalid file descriptor
     }
-		
-    if (openFileTables[fd].linuxFD == -1) {	//File not open for this descriptor
-		return -1;
+		// commented out below while testing
+    if (openFileTables[fd].lbaPosition == -1) {	//File not open for this descriptor
+		//return -1;
     }
-*/
 
-    //hardcoding values for testing
-    //openFileTables[fd].lbaPosition = 1;
-    if (areWeInitialized == 0) b_init();  //Initialize our system
-    //  openFileTables[fd].buffer = malloc(2048);
-    //  openFileTables[fd].bytesInBuffer = -1;
-    //  openFileTables[fd].ourBufferOffset = 0;
-    //memcpy(openFileTables[fd].buffer, buffer, 100);
-    //printf("\n\n%s\n\n", openFileTables[fd].buffer);
+    int lbaPosition = 7;
+    int lbaIndex = 0;
 
     int bytesWritten = 0;
     int bufferSpace = openFileTables[fd].bytesInBuffer - openFileTables[fd].ourBufferOffset;
@@ -167,6 +160,9 @@ int b_write (int fd, char * buffer, int count){
     if (count<=bufferSpace){
         memcpy(openFileTables[fd].buffer, buffer, count);
         printf("\n%s\n", openFileTables[fd].buffer);
+
+
+
         openFileTables[fd].bytesInBuffer += count;
         bytesWritten =+ count;
     }
@@ -178,12 +174,17 @@ int b_write (int fd, char * buffer, int count){
         openFileTables[fd].bytesInBuffer += bufferSpace;
         bytesWritten =+ bufferSpace;
 
+        int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
+        ++ lbaIndex;
+
         while (count - bytesWritten >= B_CHUNK_SIZE) {
             //printf("straight write\n");
             memcpy(openFileTables[fd].buffer, buffer+bytesWritten, bufferSpace);
             printf("%s", openFileTables[fd].buffer);
             bytesWritten += B_CHUNK_SIZE;
             //printf("%d\n", bytesWritten);
+            int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
+            ++ lbaIndex;
         }
 
         // memcopy remaing bytes to buffer
@@ -198,13 +199,16 @@ int b_write (int fd, char * buffer, int count){
 		// Memcpy any leftover bytes in callers buffer
 	}
 */
+
+    printf("\n");
+
     // get block position from oft struct
-    int lbaPosition = 7;
+//    int lbaPosition = 7;
     // int count converts to lbaCount
     int lbaCount = 1;// test
-    int retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition);
-    retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition+1);
-    return retVal;
+    //int retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition);
+    //retVal = LBAwrite(openFileTables[fd].buffer, lbaCount, lbaPosition+1);
+    return bytesWritten;
 }
 
 int b_seek (int fd, off_t offset, int whence){
