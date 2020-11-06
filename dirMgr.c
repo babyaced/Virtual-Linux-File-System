@@ -5,9 +5,12 @@
 #include "fsInit.h"
 #include "hashTable.h"
 
-#define TABLE_SIZE 54 
+#define TABLE_SIZE 54
 
-int initDir(vCB* vcb, fSL* fsl,int parentBlock, char* name){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
+extern fSL* fsl;  //global for whole damn program
+extern vCB* vcb;  //global for whole damn program
+
+int initDir(int parentBlock, char* name){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
     
     /*vCB* vcb = malloc(sizeof(vCB));
@@ -22,7 +25,7 @@ int initDir(vCB* vcb, fSL* fsl,int parentBlock, char* name){  //pass in block of
 
     int bytesNeeded = sizeof(dir);
     int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
-    int dirStartBlock = findFreeBlocks(vcb,fsl,blocksNeeded); //find next available blocks
+    int dirStartBlock = findFreeBlocks(blocksNeeded); //find next available blocks
     
     printf("Mallocing: %d bytes\n", bytesNeeded);
     dir* d = malloc(bytesNeeded);
@@ -85,10 +88,7 @@ int findDirEnt(char* dirName){  // will eventually be edited to take in LBA from
     char* remainder = dirName;
 
     //get root directory(temporary for testing) //real version will just read directory passed in to this function
-    vCB* vcb = malloc(512);
-    printf("Mallocing: %d Bytes\n",512);
     int retVal;
-    retVal = LBAread(vcb,1,0); // to find root directory
     int rootDirLoc = vcb->rdLoc;  //hold root dir index
     int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
 

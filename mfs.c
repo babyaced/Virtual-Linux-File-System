@@ -2,13 +2,12 @@
 #include "fsInit.h"
 #include "dirMgr.h"
 
+extern fSL* fsl;  //global for whole damn program
+extern vCB* vcb;  //global for whole damn program
+
 int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     int retVal;
     printf("Path Name: %s\n", pathname);
-    vCB* vcb = malloc(512);
-    retVal = LBAread(vcb,1,0);
-    fSL* fsl = malloc(vcb->fslBytes);
-    retVal = LBAread(fsl,vcb->fslBlkCnt,1);
 
     /*if(pathname == basename(pathname)) // we are in root
     {
@@ -18,7 +17,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
     dir* parentDir = malloc(sizeof(dir));
     int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
-    int dirIndex = initDir(vcb,fsl,parentIndex,basename(pathname));  //where does parent block come from
+    int dirIndex = initDir(parentIndex,basename(pathname));  //where does parent block come from
     dirEnt* de = malloc(sizeof(dirEnt));
 
     //initialize directory entry
@@ -33,10 +32,6 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 int fs_rmdir(const char *pathname){
     int retVal;
     printf("Path Name: %s\n", pathname);
-    vCB* vcb = malloc(512);
-    retVal = LBAread(vcb,1,0);
-    fSL* fsl = malloc(vcb->fslBytes);
-    retVal = LBAread(fsl,vcb->fslBlkCnt,1);
 
     //findDirEnt()  //find location of directory at pathname
     //need to iterate through dirEnts[] of dir and setFreeBlocks for each

@@ -12,8 +12,8 @@
 
 #define DIR_ENTS_INIT_SIZE 10
 
-static fSL* fsl;  //only global for this file
-static vCB* vcb;  //only global for this file
+fSL* fsl;  //global for whole damn program
+vCB* vcb;  //global for whole damn program
 
 
 void formatVolume(char* volumeName){
@@ -26,21 +26,10 @@ void formatVolume(char* volumeName){
     initFSL(volumeSize, blockSize);
     retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
     initVCB(volumeSize, blockSize);
-    setFreeBlocks(vcb,fsl,0,1);
-    setFreeBlocks(vcb, fsl, 1,fsl->fslBlocksUsed);
-    initDir(vcb,fsl,0,"root");
+    setFreeBlocks(0,1);
+    setFreeBlocks(1,fsl->fslBlocksUsed);
+    initDir(0,"root");
     retVal = LBAwrite(vcb,1,0);
-    printf("Freeing: %d bytes\n", blockSize);
-    free(vcb);
-    vcb = NULL;
-    printf("Freeing: %d bytes\n", sizeof(fsl->freeSpaceBitmap));
-    free(fsl->freeSpaceBitmap);
-    
-    fsl->freeSpaceBitmap = NULL;
-
-    printf("Freeing: %d bytes\n", sizeof(fsl));
-    free(fsl);
-    fsl = NULL;
 }
 
 void initVCB(int volSize, int blockSize){

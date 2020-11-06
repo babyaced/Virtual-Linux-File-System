@@ -1,6 +1,10 @@
 #include "freeMgr.h"
+#include "fsInit.h"
 
-int findFreeBlocks(vCB *vcb,  fSL *fsl, int blocksNeeded){
+extern fSL* fsl;  //global for whole damn program
+extern vCB* vcb;  //global for whole damn program
+
+int findFreeBlocks(int blocksNeeded){
     //access vcb to get fsl->location
     int retVal;
     //fSL* fsl;// = malloc(vcb->fslBytes);
@@ -16,7 +20,7 @@ int findFreeBlocks(vCB *vcb,  fSL *fsl, int blocksNeeded){
     }
 }
 
-void setFreeBlocks(vCB *vcb, fSL *fsl, int startingIndex,int count){
+void setFreeBlocks(int startingIndex,int count){
     /*vCB* vcb = malloc(sizeof(vCB));
     fSL* fsl = malloc(sizeof(fSL));
     fsl->freeSpaceBitmap = malloc(vcb->fslBytes);*/

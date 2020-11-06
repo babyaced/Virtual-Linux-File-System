@@ -75,57 +75,57 @@ int main (int argc, char *argv[])
 
 	//Testing LBARead
 	int retval = 0;
-	vCB* vcb = malloc(512);
+	vCB* vcb2 = malloc(512);
 	printf("Mallocing: %d bytes\n", 512);
-	retVal = LBAread(vcb,1,0);
+	retVal = LBAread(vcb2,1,0);
 
-	printf("VCB Block Count: %d\n", vcb->blockCount);
-	printf("VCB Free Block Count:  %d\n", vcb->freeBlockCount);
-	printf("VCB Block Count: %d\n", vcb->sizeOfBlocks);
-	printf("VCB fslBlkCnt: %d\n", vcb->fslBlkCnt);
-	printf("VCB fslBytes: %d\n", vcb->fslBytes);
-	printf("VCB Root Directory Block Count: %d\n", vcb->rdBlkCnt);
-	printf("VCB Root Directory Location: %d\n", vcb->rdLoc);
+	printf("VCB Block Count: %d\n", vcb2->blockCount);
+	printf("VCB Free Block Count:  %d\n", vcb2->freeBlockCount);
+	printf("VCB Block Count: %d\n", vcb2->sizeOfBlocks);
+	printf("VCB fslBlkCnt: %d\n", vcb2->fslBlkCnt);
+	printf("VCB fslBytes: %d\n", vcb2->fslBytes);
+	printf("VCB Root Directory Block Count: %d\n", vcb2->rdBlkCnt);
+	printf("VCB Root Directory Location: %d\n", vcb2->rdLoc);
 
 	printf("Mallocing: %d bytes\n", sizeof(fSL));
-	fSL* fsl = malloc(sizeof(fSL));
-	printf("Mallocing: %d bytes\n", vcb->fslBytes);
-	fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
+	fSL* fsl2 = malloc(sizeof(fSL));
+	printf("Mallocing: %d bytes\n", vcb2->fslBytes);
+	fsl2->freeSpaceBitmap = malloc(vcb2->fslBytes);
 
-	retVal = LBAread(fsl,vcb->fslBlkCnt,1);
+	retVal = LBAread(fsl2,vcb2->fslBlkCnt,1);
 	
 
 
-	printf("FSL Block Count: %d\n", fsl->freeSpaceBits);
-	printf("FSL Blocks Used:  %d\n", fsl->fslBlocksUsed);
-	printf("FSL Location: %d\n", fsl->location);
+	printf("FSL Block Count: %d\n", fsl2->freeSpaceBits);
+	printf("FSL Blocks Used:  %d\n", fsl2->fslBlocksUsed);
+	printf("FSL Location: %d\n", fsl2->location);
 
 	printf("Freeing: %d bytes\n", sizeof(fSL));
-	free(fsl);
-	fsl= NULL;
+	free(fsl2);
+	fsl2= NULL;
 
-	dir* d = malloc(sizeof(dir));
+	dir* d2 = malloc(sizeof(dir));
 	printf("Mallocing: %d bytes\n", sizeof(dir));
 
-	retVal = LBAread(d,vcb->rdBlkCnt,vcb->rdLoc);
-	printf("Rd loc: %d\n", d->loc);
-	printf("Rd parent loc: %d\n", d->parentLoc);
-	printf("Rd  size in blocks: %d\n", d->sizeInBlocks);
-	printf("Rd  size in bytes: %d\n", d->sizeInBytes);
+	retVal = LBAread(d2,vcb2->rdBlkCnt,vcb2->rdLoc);
+	printf("Rd loc: %d\n", d2->loc);
+	printf("Rd parent loc: %d\n", d2->parentLoc);
+	printf("Rd  size in blocks: %d\n", d2->sizeInBlocks);
+	printf("Rd  size in bytes: %d\n", d2->sizeInBytes);
 
 	printf("Freeing: %d bytes\n", 512);
-	free(vcb);
-	vcb= NULL;
+	free(vcb2);
+	vcb2= NULL;
 
 	/*for(int i = 0; i < 54; i++){
         free(rd->dirEnts[i]);
 		rd->dirEnts[i] = NULL;
-    }
+    }*/
 
-	free(rd->dirEnts);*/
-	//printf("Mallocing: %d bytes\n", sizeof(dir));
-	//free(d);
-	//d = NULL;
+	//free(rd->dirEnts);
+	printf("Freeing: %d bytes\n", sizeof(dir));
+	free(d2);
+	d2 = NULL;
 	
 	
 	//testing b_open()
