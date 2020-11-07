@@ -99,7 +99,9 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
     // int rootDirLoc = vcb->rdLoc;  //hold root dir index
     // int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
 
-    //Relative Case
+    //=========================================================================
+    //Relative Path Name
+    //=========================================================================
     dir* d = malloc(sizeof(dir)); //allocate memory for dir // 720 is temporary
     printf("Mallocing: %ld Bytes\n", sizeof(dir));
     dirEnt* de = malloc(sizeof(dirEnt));
@@ -125,7 +127,7 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
     //de = NULL;
 
 
-    return deDataIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
+    return deDataIndex;  //returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
                          //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
                          //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)
     //return 0; //so it runs
