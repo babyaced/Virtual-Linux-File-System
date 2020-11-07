@@ -28,6 +28,7 @@ typedef struct FD {
 
     // need to implement still
     int blockInd; // the index of last block in the file
+    int fileLength; // how many consecutive blocks for a file, starting from lbaPosition
 }FD;
 
 FD openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
