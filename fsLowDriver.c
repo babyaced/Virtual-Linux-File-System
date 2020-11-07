@@ -122,9 +122,14 @@ int main (int argc, char *argv[])
 
 	retVal = closePartitionSystem();
 
+	printf("Freeing: %ld bytes\n", vcb->sizeOfBlocks);
+	printf("Freeing: %ld bytes\n", vcb->fslBytes);
 	free(vcb);
+	
 	vcb=NULL;
+	
 	free(freeSpaceBitmap);
+	freeSpaceBitmap = NULL;
 	
 	return 0;	
 	}

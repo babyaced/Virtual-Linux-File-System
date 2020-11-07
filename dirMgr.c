@@ -19,7 +19,7 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
     int dirStartBlock = findFreeBlocks(blocksNeeded); //find next available blocks
     
-    printf("Mallocing: %d bytes\n", bytesNeeded);
+    printf("Mallocing: %ld bytes\n", sizeof(dir));
     dir* d = malloc(bytesNeeded);
     d->sizeInBlocks = blocksNeeded;
     d->sizeInBytes = bytesNeeded;
@@ -34,6 +34,7 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         currentBlock = dirStartBlock;
         currentBlockSize = blocksNeeded;
         setFreeBlocks(dirStartBlock,blocksNeeded);
+
     }
     else{
         d->parentLoc = parentBlock; // parent is at block index passed in
@@ -45,17 +46,18 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     //initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
     printf("Current free block: %d\n", d->sizeInBlocks + dirStartBlock);
+    
+
+
+    // uninitDirEntries(d);
     printf("Freeing: %d bytes\n", bytesNeeded);
-
-
-    uninitDirEntries(d);
     free(d);
     d = NULL;
 
     return dirStartBlock;
 }
 
-void initDirEntries(dir* d){ 
+/*void initDirEntries(dir* d){ 
     int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
     printf("Length: %d\n",length);
     printf("Mallocing: %ld Bytes\n", sizeof(d->dirEnts));
@@ -74,7 +76,7 @@ void uninitDirEntries(dir* d){
         d->dirEnts[i] = NULL;
     }
     printf("Size of dirEnt[length-1]: %ld\n",sizeof(d->dirEnts[length-1]));
-}
+}*/
 
 
 int findFreeDirEnt(dir* d){
@@ -98,15 +100,10 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
     // int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
 
     //Relative Case
-    int sizeOfDir = sizeof(dir);
-    int sizeOfDirEnts = 54*sizeof(dirEnt*);
-    printf("Size of Dir: %d\n", sizeOfDir);
-    printf("Size of Dir Ents: %d\n", sizeOfDirEnts);
-    dir* d = malloc(sizeOfDir); //allocate memory for dir // 720 is temporary
-    //initDirEntries(d);
-    printf("Mallocing: %d Bytes\n", sizeOfDir);
-    dirEnt* de = malloc(sizeof(dirEnt*));
-    printf("Mallocing: %ld Bytes\n", sizeof(dirEnt*));
+    dir* d = malloc(sizeof(dir)); //allocate memory for dir // 720 is temporary
+    printf("Mallocing: %ld Bytes\n", sizeof(dir));
+    dirEnt* de = malloc(sizeof(dirEnt));
+    printf("Mallocing: %ld Bytes\n", sizeof(dirEnt));
     retVal = LBAread(d,currentBlockSize,currentBlock); // read into our dir function
     //hash_table_lookup
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
@@ -116,18 +113,19 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
             return -1;  //return errorCode
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(de->type == 1) //if directory entry is a directory
-            retVal = LBAread(d, de->fileBlkCnt,de->loc);//read new starting directory into d //if 
+            retVal = LBAread(d, de->dataBlkCnt,de->dataIndex);//read new starting directory into d //if 
     }
-    printf("Freeing: %d Bytes\n", sizeOfDir);
-    uninitDirEntries(d);
+    printf("Freeing: %d Bytes\n", sizeof(dir));
+    // uninitDirEntries(d);
     free(d);
     d = NULL;
-    printf("Freeing: %ld Bytes\n", sizeof(dirEnt*));
+    printf("Freeing: %ld Bytes\n", sizeof(dirEnt));
+    int deDataIndex = de->dataIndex;
     //free(de);
     //de = NULL;
 
 
-    return de->fileIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
+    return deDataIndex;//returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
                          //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
                          //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)
     //return 0; //so it runs

@@ -17,8 +17,8 @@ struct dirEnt{
     short int type;  //0 for file, 1 for directory
 
     //data
-    int fileIndex; //can be file or directory
-    int fileBlkCnt; //can be file or directory //contiguous
+    int dataIndex; //can be file or directory
+    int dataBlkCnt; //can be file or directory //contiguous
     //dirEnt* next; //in case of collisions //IGNORE FOR NOW
 };
 
