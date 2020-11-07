@@ -16,6 +16,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     //relative case
     int dirIndex = initDir(currentBlock,pathname);  //parent block is wherever this function is called from //just use pathname for testing
     dir* parentDir = malloc(sizeof(dir));
+    printf("Mallocing: %ld bytes\n", sizeof(dir));
     retVal = LBAread(parentDir,currentBlockSize,currentBlock);
 
     //int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
@@ -26,21 +27,24 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
     //initialize directory entry
     de->parentLoc = currentBlock;
-    de->loc = dirIndex;  //store pointer to data
-    de->fileIndex = dirIndex;
-    de->fileBlkCnt = vcb->rdBlkCnt;
+    
+    de->dataIndex = dirIndex; //store pointer to data
+    de->dataBlkCnt = vcb->rdBlkCnt;
     de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size 
     de->type = 1; //type is directory
     strcpy(de->name,pathname);
 
     //write directory entry to disk
     int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+    de->loc = deIndex;  //store location of directory entry
     retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
     setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
     addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
     free(parentDir);
+    printf("Freeing: %ld bytes\n", sizeof(dir));
     parentDir = NULL;
-    free(de); 
+    free(de);
+    printf("Freeing: %ld bytes\n", sizeof(dirEnt));
     de = NULL;
     return 0; //not sure what return value is supposed to represent yet
 }
