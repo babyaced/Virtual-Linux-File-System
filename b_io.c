@@ -13,13 +13,13 @@
 #include <libgen.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dirMgr.h>
 #include "b_io.h"
 #include "dirMgr.h"
 
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20
 
+//FCB?
 typedef struct FD {
     int lbaPosition;
     char* buffer;
@@ -51,14 +51,17 @@ int b_open (char* filename, int flags){  //cannot open directory
 	// store the lbaPosition in the fd struct  
     char dirName[255];
 	char baseName[255];  
-    strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive!
+    strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive! 
     strcpy(baseName,filename); //makes copy of filename to find baseName //basename() is destructive!
 
-    printf("Dir Name: %s\n",dirname(dirName));  //will return whole path minus file name
-    printf("Base Name: %s\n",basename(baseName)); // will return file name
+    strcpy(dirName,basename(dirName));
+    strcpy(baseName, basename(baseName));    
+
+    printf("Dir Name: %s\n", dirName);  //will return whole path minus file name
+    printf("Base Name: %s\n", baseName); // will return file name
 
     //pass dirname into findDir(function)
-    int dirIndex = findDirEnt(dirName);
+    int dirIndex = findDirEnt(dirName,baseName);
 
     //read 
     //return lba index as "fd"

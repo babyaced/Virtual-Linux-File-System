@@ -23,7 +23,7 @@
 unsigned int hash(char* dirEntName);
 
 //find word in table
-dirEnt* hash_table_lookup(char* dirEntName, dir* d);
+int hash_table_lookup(char* dirEntName, dir* d);
 
 bool hash_table_insert(dirEnt* dE, dir* d);
 
