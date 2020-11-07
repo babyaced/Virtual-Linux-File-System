@@ -14,22 +14,35 @@
 
 fSL* fsl;  //global for whole damn program
 vCB* vcb;  //global for whole damn program
+int currentBlock;  //holds current LBA block for use with relative pathnames //initialized to root directory in this file
+int currentBlockSize;
 
 
-void formatVolume(char* volumeName){
-	int volumeSize;
-	int blockSize;
+void formatVolume(char* volumeName, uint64_t volumeSize, uint64_t blockSize){
     int retVal;
 
     retVal = startPartitionSystem(volumeName,&volumeSize, &blockSize);
 
-    initFSL(volumeSize, blockSize);
-    retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
-    initVCB(volumeSize, blockSize);
-    setFreeBlocks(0,1);
-    setFreeBlocks(1,fsl->fslBlocksUsed);
-    initDir(0,"root");
-    retVal = LBAwrite(vcb,1,0);
+    // if(retVal == 2){ //if volume doesn't exist //we need to format our volume
+        initFSL(volumeSize, blockSize);
+        retVal = LBAwrite(fsl,fsl->fslBlocksUsed,1);
+        initVCB(volumeSize, blockSize);
+        setFreeBlocks(0,1);
+        setFreeBlocks(1,fsl->fslBlocksUsed);
+        initDir(0,"root");
+        retVal = LBAwrite(vcb,1,0);
+    // }
+    /*else if(retVal == 0){ // else read vcb and fsl into our globals, and set currentBlock + currentBlockSize
+        vcb = malloc(blockSize);
+        retVal = LBAread(vcb,1,0);
+        fsl = malloc(sizeof(fSL));
+        fsl->freeSpaceBitmap = malloc(vcb->fslBytes);
+        retVal = LBAread(fsl,vcb->fslBlkCnt,1);
+        currentBlock = vcb->rdLoc;
+        currentBlockSize = vcb->rdBlkCnt;
+    }*/
+
+
 }
 
 void initVCB(int volSize, int blockSize){
@@ -62,6 +75,7 @@ void initFSL(int volSize, int blockSize){
     fsl->freeSpaceBytes = bmSize;
     fsl->freeSpaceBits = blockCount;
     fsl->fslBlocksUsed = (fsl->freeSpaceBytes/blockSize) + 1;
+    fsl->location = 1;
     //initBM(fsl->freeSpaceBitmap, blockCount);  //Need to correctly indicate blocks taken by VCB and freespaceList
     //printf("Size of FSL: %ld\n",sizeof(fsl));
 }

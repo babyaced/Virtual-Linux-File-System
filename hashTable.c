@@ -40,12 +40,13 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
     else{  // add new entry to hashtable
         int index = hash(dE->name);
 	    dE->next = d->dirEnts[index]; 
-	    d->dirEnts[index] = &dE;  //add pointer to directory entry to directory's directory entries
+	    d->dirEnts[index] = dE;  //add pointer to directory entry to directory's directory entries
 	    return true;
     }
 }
 
 int hash_table_find_free(dir* d){
+	return 0;
 }
 
 /*int dir_ent_lookup(char* token, dir* d){
