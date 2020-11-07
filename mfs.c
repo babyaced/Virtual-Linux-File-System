@@ -6,14 +6,36 @@ extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
 extern int currentBlock;
 extern int currentBlockSize;
+extern currentBlockName[255]; //size of 255 for now
 
 int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     int retVal;
-    printf("Path Name: %s\n", pathname);
-    // printf("Base Name: %d\n", basename(pathname));
+    char* pathnameCpy = strdup(pathname);
+
+    //=====================================================================================
+    //ABSOLUTE PATH //we need to go down through directory tree until we can make directory
+    //=====================================================================================
+    if(pathname[0] == '/') //if pathname is absolute
+    {
+        
+        char* lastDir = strrchr(pathnameCpy, '/');
+        printf("StrrChr: %s\n", lastDir);
+        pathnameCpy[strlen(pathnameCpy)-strlen(lastDir)] = '\0';
+        printf("Truncated Path: %s\n", pathnameCpy);
 
 
-    //relative case
+
+        int parentDirIndex = findDirEnt(pathnameCpy);  //returns root of the directory  
+                                                    //need to modify logic so it doesn't return absolute last directory(which would be the one we want to create)
+                                                    //we can cut off the pathname, before the last directory name is reached (EASIER)
+                                                    //and initDir() here
+                                                    //OR have findDirEnt() use initDir() 
+    }
+
+    //=====================================================================================================================================
+    //RELATIVE PATH //just directly use current block data to make directory
+    //=====================================================================================================================================
+    else{
     int dirIndex = initDir(currentBlock,pathname);  //parent block is wherever this function is called from //just use pathname for testing
     dir* parentDir = malloc(sizeof(dir));
     printf("Mallocing: %ld bytes\n", sizeof(dir));
@@ -47,6 +69,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     printf("Freeing: %ld bytes\n", sizeof(dirEnt));
     de = NULL;
     return 0; //not sure what return value is supposed to represent yet
+    }
 }
 
 int fs_rmdir(const char *pathname){
@@ -85,7 +108,7 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
     dirEnt* de = malloc(sizeof(dirEnt));
-    int index = findDirEnt(path,"");
+    int index = findDirEnt(path);
     int retVal = LBAread(de, index,sizeof(dirEnt)/512);
 
     if(de->type == 1)
@@ -95,7 +118,7 @@ int fs_isFile(char * path){ //return 1 if file, 0 otherwise
 
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
     dirEnt* de = malloc(sizeof(dirEnt));
-    int index = findDirEnt(path,"");
+    int index = findDirEnt(path);
     int retVal = LBAread(de, index,sizeof(dirEnt)/512);
 
     if(de->type == 0)

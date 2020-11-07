@@ -12,7 +12,7 @@ extern vCB* vcb;  //global for whole damn program
 extern int currentBlock; //holds current LBA block for use with relative pathnames
 extern int currentBlockSize;
 
-int initDir(int parentBlock, char* name){  //pass in block of whatever directory entry this is called from //this is mostly likely called from user accessible "mkdir" function)
+int initDir(int parentBlock, char* name){  //pass in block of whatever directory this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
 
     int bytesNeeded = sizeof(dir);
@@ -88,19 +88,15 @@ int findFreeDirEnt(dir* d){
 }
 
 
-int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to take in LBA from caller that is starting directory
+int findDirEnt(char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
     //split directory name into parts
     char* token;
-    char* remainder = dirName;
-
-    //get root directory(temporary for testing) //real version will just read directory passed in to this function
+    char* remainder = pathname;
     int retVal;
-    // int rootDirLoc = vcb->rdLoc;  //hold root dir index
-    // int rootDirBlks = vcb->rdBlkCnt; //# of blocks allocated to root
 
     //=========================================================================
-    //Relative Path Name
+    //Relative Path Name  //use currentBlock data to get parent directory
     //=========================================================================
     dir* d = malloc(sizeof(dir)); //allocate memory for dir // 720 is temporary
     printf("Mallocing: %ld Bytes\n", sizeof(dir));
@@ -114,7 +110,7 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
         if(de == NULL)
         {
             //create file by default for now
-            
+
             return -1;  //return errorCode
         }
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt

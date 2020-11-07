@@ -39,7 +39,7 @@ void initDirEntries(dir* d);
 void uninitDirEntries(dir* d);
 
 int findFreeDirEnt(dir* d);
-int findDirEnt(char* dirName, char* baseName);
+int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
 
 #endif

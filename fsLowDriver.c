@@ -114,7 +114,7 @@ int main (int argc, char *argv[])
 
 
 	mode_t mode = NULL;
-	retVal = fs_mkdir("test", mode);
+	retVal = fs_mkdir("/test/test2", mode);
 	
 	//testing b_open()
 	retVal = b_open("test",0);
