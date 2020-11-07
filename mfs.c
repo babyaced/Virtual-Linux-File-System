@@ -2,7 +2,7 @@
 #include "fsInit.h"
 #include "dirMgr.h"
 
-extern fSL* fsl;  //global for whole damn program
+extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
 extern int currentBlock;
 extern int currentBlockSize;
@@ -20,17 +20,24 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
     //int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
     
+    //Malloc Directory entry
     dirEnt* de = malloc(sizeof(dirEnt));
-    printf("Mallocing: %ld bytes", sizeof(dirEnt));
+    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
 
     //initialize directory entry
     de->parentLoc = currentBlock;
-    de->loc = dirIndex;
-    de->sizeInBlocks = vcb->rdBlkCnt;//need way to get sizeInBlocks //for now just assume same size as rd
+    de->loc = dirIndex;  //store pointer to data
+    de->fileIndex = dirIndex;
+    de->fileBlkCnt = vcb->rdBlkCnt;
+    de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size 
     de->type = 1; //type is directory
     strcpy(de->name,pathname);
 
-    addDirEnt(parentDir,de);//write this directory to parent dir's dirEnts
+    //write directory entry to disk
+    int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+    retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
+    setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+    addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
     free(parentDir);
     parentDir = NULL;
     free(de); 

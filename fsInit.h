@@ -21,13 +21,8 @@ typedef struct{
     int fslBytes;
 }vCB;
 
-typedef struct{
-    unsigned int* freeSpaceBitmap;
-    int freeSpaceBytes;
-    int freeSpaceBits;
-    int location;
-    int fslBlocksUsed;
-}fSL;
+
+
 
 void formatVolume(char* volumeName,uint64_t volSize, uint64_t blockSize);
 void initVCB(int volSize, int blockSize);

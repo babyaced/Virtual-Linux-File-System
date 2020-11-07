@@ -19,7 +19,7 @@ struct dirEnt{
     //data
     int fileIndex; //can be file or directory
     int fileBlkCnt; //can be file or directory //contiguous
-    dirEnt* next; //in case of collisions //IGNORE FOR NOW
+    //dirEnt* next; //in case of collisions //IGNORE FOR NOW
 };
 
 
@@ -29,7 +29,7 @@ typedef struct{
     int loc;
     int sizeInBytes;
     int sizeInBlocks;
-    dirEnt* dirEnts[TABLE_SIZE];
+    unsigned int dirEnts[TABLE_SIZE];
 }dir;
 
 
