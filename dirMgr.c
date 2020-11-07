@@ -112,7 +112,11 @@ int findDirEnt(char* dirName, char* baseName){  // will eventually be edited to 
         printf("Token: %s\n", token);  //prints next directory
         int deIndex = hash_table_lookup(token,d);  //look up the name in directory entries of d
         if(de == NULL)
+        {
+            //create file by default for now
+            
             return -1;  //return errorCode
+        }
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(de->type == 1) //if directory entry is a directory
             retVal = LBAread(d, de->dataBlkCnt,de->dataIndex);//read new starting directory into d //if 
