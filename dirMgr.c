@@ -29,6 +29,7 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         d->parentLoc = dirStartBlock;  //parent is itself
         d->loc = dirStartBlock;
         //initialize root directory variables of vcb
+
         vcb->rdLoc = d->parentLoc; 
         vcb->rdBlkCnt = d->sizeInBlocks;
         vcb->rdLoc = d->loc;
@@ -44,7 +45,7 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
     }
 
-    //initDirEntries(d);
+    initDirEntries(d);
     retVal = LBAwrite(d,d->sizeInBlocks, dirStartBlock);
     printf("Current free block: %d\n", d->sizeInBlocks + dirStartBlock);
     
@@ -58,17 +59,16 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     return dirStartBlock;
 }
 
-/*void initDirEntries(dir* d){ 
-    int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
+void initDirEntries(dir* d){ 
+    int length = sizeof(d->dirEnts)/sizeof(d->dirEnts[0]);
     printf("Length: %d\n",length);
-    printf("Mallocing: %ld Bytes\n", sizeof(d->dirEnts));
     for(int i = 0; i < length; i++){
-        d->dirEnts[i] = malloc(sizeof(dirEnt*));
+        d->dirEnts[i] = -1;
     }
     printf("Size of dirEnt[length-1]: %ld\n",sizeof(d->dirEnts[length-1]));
 }
 
-void uninitDirEntries(dir* d){ 
+/*void uninitDirEntries(dir* d){ 
     int length = sizeof(d->dirEnts) / sizeof(dirEnt*);
     printf("Length: %d\n",length);
     printf("Freeing: %ld Bytes\n", sizeof(d->dirEnts));

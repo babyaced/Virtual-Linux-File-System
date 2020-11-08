@@ -11,7 +11,7 @@
 #define TABLE_SIZE 54 //maximum size to keep dirEnt under 512 bytes
 
 unsigned int hash(char* dirEntName) {   
-	unsigned int hash_value = 0;
+	unsigned int hash_value = -1;
 	for (int i = 0; i < strlen(dirEntName); i++) { //Hash Function
 		hash_value += dirEntName[i];
 		hash_value = (hash_value * dirEntName[i]) % TABLE_SIZE;
@@ -34,7 +34,7 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
 	if (dE == NULL) return false;
     int value;
     value = hash_table_lookup(dE->name, d);
-    if( value != 0){  //If entry exists at that pointer 
+    if( value != -1){  //If entry exists at that pointer 
 		//add to linked chain at that pointer
         return false;
     }

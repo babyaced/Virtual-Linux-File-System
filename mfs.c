@@ -99,11 +99,25 @@ int fs_closedir(fdDir *dirp){
 }
 
 char * fs_getcwd(char *buf, size_t size){
+    int retVal;
+    char pathName[size];
+    char* pathAccumulator;
+    //get and append all directory names
+    dirEnt* de = malloc(sizeof(dirEnt));
+    while(de->parentLoc != de->loc){
+        retVal = LBAread(de,currentBlockSize, 8);
+        printf("Current dir: %s\n", de->name);
+        printf("State of concatenated path: %s\n", buf);
+    }
+    //get currentBlock and access parent
+    //continue until parentblock is 0
     return 0;
 }
 
 int fs_setcwd(char *buf){ //linux chdir  //cd
-    return 0;
+    //set and append all directory names
+    //change currentBlock and currentName
+    return 0;  //returns 0 with success
 }
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
