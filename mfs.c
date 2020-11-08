@@ -84,7 +84,6 @@ int fs_rmdir(const char *pathname){
 }
 
 fdDir * fs_opendir(const char *name){
-    //call b_open(name,flags?)? // NO b_open only for opening files
      //findDirEnt()  //find location of directory at pathname
     //need to iterate through dirEnts[] of dir and return name for each
     return 0;
@@ -100,18 +99,33 @@ int fs_closedir(fdDir *dirp){
 
 char * fs_getcwd(char *buf, size_t size){
     int retVal;
-    char pathName[size];
-    char* pathAccumulator;
+    // char* ptr;
     //get and append all directory names
     dirEnt* de = malloc(sizeof(dirEnt));
+    retVal = LBAread(de,1,8);
     while(de->parentLoc != de->loc){
-        retVal = LBAread(de,currentBlockSize, 8);
-        printf("Current dir: %s\n", de->name);
-        printf("State of concatenated path: %s\n", buf);
+        strcatF(buf, de->name);
+        strcatF(buf,"/");
+        printf("Path accumulator: %s\n", buf);
+        retVal = LBAread(de,1,de->parentLoc);
     }
+    strcatF(buf,de->name);
+    strcatF(buf,"/");
+    // ptr = strchr(buf,'\377');  // remove octal escape sequence
+    // buf[strlen(buf)-strlen(ptr)] = '\0';
+    printf("Path accumulator: %s\n", buf);
+    
     //get currentBlock and access parent
     //continue until parentblock is 0
-    return 0;
+    free(de);
+    return buf;
+}
+
+//helper for getcwd
+void strcatF(char* dest, char* src){  //concatenates src to front of dest
+    size_t dest_len = strlen(dest) + 1, src_len = strlen(src);
+    memmove(dest + src_len, dest, dest_len);
+    memcpy(dest, src, src_len);
 }
 
 int fs_setcwd(char *buf){ //linux chdir  //cd
