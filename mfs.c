@@ -107,23 +107,34 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
 }
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
+    int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
     dirEnt* de = malloc(sizeof(dirEnt));
-    int index = findDirEnt(path);
-    int retVal = LBAread(de, index,sizeof(dirEnt)/512);
+    int retVal = LBAread(de, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into de
 
-    if(de->type == 1)
-        return 0;
-    return 1;
+    if(de->type == 0)
+    {
+        free(de);
+        de=NULL;
+        return 1;
+    }
+    free(de);
+    de=NULL;
+        
+    return 0;
 }
 
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
+    int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
     dirEnt* de = malloc(sizeof(dirEnt));
-    int index = findDirEnt(path);
-    int retVal = LBAread(de, index,sizeof(dirEnt)/512);
+    int retVal = LBAread(de,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into de
 
-    if(de->type == 0)
-        return 0;
-    return 1;
+    if(de->type == 1)
+    {
+        free(de);
+        de=NULL;
+        return 1;
+    }
+    return 0;
 }		
 
 int fs_stat(const char *path, struct fs_stat *buf){

@@ -14,6 +14,7 @@ extern int currentBlockSize;  //holds # of blocks taken by current directory
 
 int initDir(int parentBlock, char* name){  //pass in block of whatever directory this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
+    printf("Initializing directory named %s\n", name);
 
     int bytesNeeded = sizeof(dir);
     int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
@@ -27,18 +28,20 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     if(parentBlock == 0){
         d->parentLoc = dirStartBlock;  //parent is itself
         d->loc = dirStartBlock;
-        vcb->rdLoc = d->parentLoc;
+        //initialize root directory variables of vcb
+        vcb->rdLoc = d->parentLoc; 
         vcb->rdBlkCnt = d->sizeInBlocks;
         vcb->rdLoc = d->loc;
         strcpy(d->name,name);
-        setFreeBlocks(dirStartBlock,blocksNeeded);
-
+        setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
+        currentBlock = dirStartBlock;  //when root directory is initialized, set currentBlock to it, so future child directories can easily use it
+        currentBlockSize = d->sizeInBlocks;
     }
     else{
         d->parentLoc = parentBlock; // parent is at block index passed in
         d->loc = dirStartBlock;
         strcpy(d->name, name);
-        setFreeBlocks(dirStartBlock,blocksNeeded);
+        setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
     }
 
     //initDirEntries(d);
@@ -92,6 +95,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
     char* token;
     char* remainder = pathname;
     int retVal;
+    int deIndex;
 
     bool abortFlag;
 
@@ -121,7 +125,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
             return -1;  //return error
         }
         printf("Token: %s\n", token);  //prints next directory
-        int deIndex = hash_table_lookup(token,d);  //look up the name in directory entries of d
+        deIndex = hash_table_lookup(token,d);  //look up the name in directory entries of d
         if(de == NULL)
         {
             //create file by default for now
@@ -141,14 +145,13 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
     free(d);
     d = NULL;
     printf("Freeing: %ld Bytes\n", sizeof(dirEnt));
-    int deDataIndex = de->dataIndex;
     free(de);
     de = NULL;
 
 
-    return deDataIndex;  //returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
-                         //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
-                         //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)
+    return deIndex; //returns logical block index of directory entry pointed to by path  //if we keep it like this, we could reuse this code for cd and b_open potentially
+                    //Explanation: if loop reaches end and directory is valid and occupies basename, then just return directory entry associated with directory, (CD)
+                    //OR if file is present at that directory entry then it will have returned a directory entry associated with a file (b_open and potentially other functions)
 }
 
 void addDirEnt(dir* parentDir, dirEnt* dE){
