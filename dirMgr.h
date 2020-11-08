@@ -29,7 +29,7 @@ typedef struct{
     int loc;
     int sizeInBytes;
     int sizeInBlocks;
-    unsigned int dirEnts[TABLE_SIZE];
+    int dirEnts[TABLE_SIZE];
 }dir;
 
 
