@@ -9,8 +9,8 @@
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
-extern int currentBlock; //holds current LBA block for use with relative pathnames
-extern int currentBlockSize;
+extern int currentBlock; //holds LBA block of current directory for use with relative pathnames
+extern int currentBlockSize;  //holds # of blocks taken by current directory
 
 int initDir(int parentBlock, char* name){  //pass in block of whatever directory this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
@@ -31,8 +31,6 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         vcb->rdBlkCnt = d->sizeInBlocks;
         vcb->rdLoc = d->loc;
         strcpy(d->name,name);
-        currentBlock = dirStartBlock;
-        currentBlockSize = blocksNeeded;
         setFreeBlocks(dirStartBlock,blocksNeeded);
 
     }
@@ -95,27 +93,48 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
     char* remainder = pathname;
     int retVal;
 
+    bool abortFlag;
+
+    printf("Mallocing: %ld Bytes\n", sizeof(dir));
+    dir* d = malloc(sizeof(dir)); //allocate memory for dir // 720 is temporary
+    printf("Mallocing: %ld Bytes\n", sizeof(dirEnt));
+    dirEnt* de = malloc(sizeof(dirEnt));
+   
+
+    //=========================================================================================
+    //ABSOLUTE PATH //we need to start from root
+    //=========================================================================================
+    if(pathname[0] == '/') {//if pathname is absolute
+        retVal = LBAread(d,vcb->rdBlkCnt,vcb->rdLoc);  //read root directory into our directory
+    }
     //=========================================================================
     //Relative Path Name  //use currentBlock data to get parent directory
     //=========================================================================
-    dir* d = malloc(sizeof(dir)); //allocate memory for dir // 720 is temporary
-    printf("Mallocing: %ld Bytes\n", sizeof(dir));
-    dirEnt* de = malloc(sizeof(dirEnt));
-    printf("Mallocing: %ld Bytes\n", sizeof(dirEnt));
-    retVal = LBAread(d,currentBlockSize,currentBlock); // read into our dir function
-    //hash_table_lookup
+    else{
+        retVal = LBAread(d,currentBlockSize,currentBlock); // read into our dir function
+    }
+    
+
+    
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
+        if(abortFlag == true){ //we are trying to iterate into a file, not a directory
+            return -1;  //return error
+        }
         printf("Token: %s\n", token);  //prints next directory
         int deIndex = hash_table_lookup(token,d);  //look up the name in directory entries of d
         if(de == NULL)
         {
             //create file by default for now
 
-            return -1;  //return errorCode
+            // return -1;  //return errorCode
         }
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(de->type == 1) //if directory entry is a directory
-            retVal = LBAread(d, de->dataBlkCnt,de->dataIndex);//read new starting directory into d //if 
+            retVal = LBAread(d, de->dataBlkCnt,de->dataIndex);//read new starting directory into d
+        else if(de->type ==0){  //we are at a file
+            abortFlag = true;  //if the loop continues after this, then loop will abort with error
+                               //else, it will just continue after loop and return dataIndex
+        }
     }
     printf("Freeing: %d Bytes\n", sizeof(dir));
     // uninitDirEntries(d);
@@ -123,14 +142,13 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
     d = NULL;
     printf("Freeing: %ld Bytes\n", sizeof(dirEnt));
     int deDataIndex = de->dataIndex;
-    //free(de);
-    //de = NULL;
+    free(de);
+    de = NULL;
 
 
     return deDataIndex;  //returns logical block index of file pointed to by directory entry  //if we keep it like this, we could reuse this code for cd and b_open potentially
                          //Explanation: if loop reaches end and directory is valid and occupies basename, then just return fileIndex of directory, (CD)
                          //             OR if file is present at that fileIndex then it will have returned a file (b_open and potentially other functions)
-    //return 0; //so it runs
 }
 
 void addDirEnt(dir* parentDir, dirEnt* dE){

@@ -35,7 +35,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     //=====================================================================================================================================
     //RELATIVE PATH //just directly use current block data to make directory
     //=====================================================================================================================================
-    else{
+    else{ //if pathname is not absolute
     int dirIndex = initDir(currentBlock,pathname);  //parent block is wherever this function is called from //just use pathname for testing
     dir* parentDir = malloc(sizeof(dir));
     printf("Mallocing: %ld bytes\n", sizeof(dir));

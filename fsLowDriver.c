@@ -76,7 +76,9 @@ int main (int argc, char *argv[])
 	free (buf);
 	free(buf2);
 	*/
+	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
 	formatVolume(filename, volumeSize, blockSize);
+	// initGlobals(volumeSize,blockSize);
 	int retval = 0;
 
 	// retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
@@ -114,7 +116,7 @@ int main (int argc, char *argv[])
 
 
 	mode_t mode = NULL;
-	retVal = fs_mkdir("/test/test2", mode);
+	retVal = fs_mkdir("test", mode);
 	
 	//testing b_open()
 	retVal = b_open("test",0);

@@ -1,18 +1,3 @@
-/**************************************************************
-* Class:  CSC-415-03 Fall 2020
-* Name: Daniel Simpson
-* Student ID: 920576134
-* GitHub ID: babyaced
-* Project: Assignment 4 – Word Blast
-*
-* File: Simpson_Daniel_HW4_LinkedList.h
-*
-* Description: This file contains an implementation of a hash
-*              table used to store unique words longer than 6
-*              characters and their counts. It also contains
-*              the implementation of a function that finds 
-*			   the 10 most frequent of those words.
-**************************************************************/
 #include <stdbool.h>
 
 #ifndef HASHTABLE_H
