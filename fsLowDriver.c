@@ -76,7 +76,9 @@ int main (int argc, char *argv[])
 	free (buf);
 	free(buf2);
 	*/
+	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
 	formatVolume(filename, volumeSize, blockSize);
+	// initGlobals(volumeSize,blockSize);
 	int retval = 0;
 
 	// retVal = startPartitionSystem(filename,&volumeSize, &blockSize);

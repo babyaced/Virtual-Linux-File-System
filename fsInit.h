@@ -29,4 +29,6 @@ void initVCB(int volSize, int blockSize);
 void initFSL(int volSize, int blockSize);
 void initRD();
 
+void initGlobals(uint64_t volSize, uint64_t blockSize); //initializes global variables when volume is already formatted
+
 #endif
