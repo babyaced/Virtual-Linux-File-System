@@ -250,10 +250,3 @@ void addDirEnt(dir* parentDir, dirEnt* dE){
         success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
     }   
 }
-
-int toBlockSize(size_t size) { // round up to full block sizes for lbaRead()
-    int nBlocks = size / vcb->sizeOfBlocks;
-    if (size % vcb->sizeOfBlocks > 0) ++nBlocks;
-
-    return nBlocks * vcb->sizeOfBlocks;
-}
