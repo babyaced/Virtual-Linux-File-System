@@ -12,6 +12,14 @@ extern vCB* vcb;  //global for whole damn program
 extern int currentBlock; //holds LBA block of current directory for use with relative pathnames
 extern int currentBlockSize;  //holds # of blocks taken by current directory
 
+int toBlockSize(int size) { // round up to full block sizes for lbaRead()
+    int nBlocks = size / vcb->sizeOfBlocks;
+    if (size % vcb->sizeOfBlocks > 0) ++nBlocks;
+    printf ("%d blocks\nReturning: %d\n\n",nBlocks, nBlocks * vcb->sizeOfBlocks);
+
+    return nBlocks * vcb->sizeOfBlocks;
+}
+
 int initDir(int parentBlock, char* name){  //pass in block of whatever directory this is called from //this is mostly likely called from user accessible "mkdir" function)
     int retVal;
     printf("Initializing directory named %s\n", name);
@@ -88,6 +96,65 @@ int findFreeDirEnt(dir* d){
     return 0;
 }
 
+int mkFile(char *pathname){ // makes an empty directory entry, maybe add "mode_t mode"
+    // type = 0 for a file
+    int retVal;
+    char* pathnameCpy = strdup(pathname);
+
+    // getting fileName
+    char *fileName = pathnameCpy;
+    if (strstr(pathname, "/") != NULL) fileName = strrchr(pathnameCpy, '/')+1; // if dir is included in path, separate for fileName
+    printf("\n%s\n\n", fileName);
+
+    if(pathname[0] == '/') {//if pathname is absolute
+        printf("\n***absolute directory in mkFile: Need to implement***\n");
+    }
+    else{
+//        dir* parentDir = malloc(sizeof(dir));
+//        printf("Mallocing: %ld bytes\n", sizeof(dir));
+//        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
+//
+//        //Malloc Directory entry
+//        dirEnt* de = malloc(sizeof(dirEnt));
+//        printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+//
+//        //initialize directory entry
+//        de->parentLoc = currentBlock;
+//
+//        //// Need to do: dataIndex
+//
+//        //de->dataIndex = dirIndex; //store pointer to data
+//        de->dataBlkCnt = vcb->rdBlkCnt;
+//        de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size
+//        de->type = 0; //type is file
+//        strcpy(de->name,fileName); // maybe Pathname?
+//
+//        //write directory entry to disk
+//        int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+//        de->loc = deIndex;  //store location of directory entry
+//        retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
+//        setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+//        addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
+//        free(parentDir);
+//        printf("Freeing: %ld bytes\n", sizeof(dir));
+//        parentDir = NULL;
+//        free(de);
+//        printf("Freeing: %ld bytes\n", sizeof(dirEnt));
+//        de = NULL;
+    }
+
+
+
+//    }
+//
+//
+//    //int freeLoc = findFreeDirEnt();
+//
+//    printf("freeLoc: %d ", freeLoc);
+//
+//    printf("heyyo\n");
+    return 1;
+}
 
 int findDirEnt(char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
@@ -132,6 +199,11 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
 
             // return -1;  //return errorCode
         }
+
+        if (deIndex == -1){
+            mkFile(pathname);
+        }
+
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(de->type == 1) //if directory entry is a directory
             retVal = LBAread(d, de->dataBlkCnt,de->dataIndex);//read new starting directory into d

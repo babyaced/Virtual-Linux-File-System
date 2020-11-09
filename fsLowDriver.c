@@ -143,6 +143,11 @@ int main (int argc, char *argv[])
 	// retVal = b_write(0, buff, 2048);
 
 
+    // testing round
+    printf("\n");
+    toBlockSize(123456789);
+    toBlockSize(511);
+
 	retVal = closePartitionSystem();
 
 	printf("Freeing: %ld bytes\n", vcb->sizeOfBlocks);
