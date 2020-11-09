@@ -51,22 +51,11 @@ void b_init()
 
 
 int b_open (char* filename, int flags){  //cannot open directory
-    //startPartitionSystem?
-
-    // store the lbaPosition in the fd struct
-    char dirName[255];
-    char baseName[255];
-    strcpy(dirName,filename); //makes copy of filename to find dirName //dirname() is destructive!
-    strcpy(baseName,filename); //makes copy of filename to find baseName //basename() is destructive!
-
-    strcpy(dirName,basename(dirName));
-    strcpy(baseName, basename(baseName));    
-
-    printf("Dir Name: %s\n", dirName);  //will return whole path minus file name
-    printf("Base Name: %s\n", baseName); // will return file name
 
     //pass dirname into findDir(function)
-    int dirIndex = findDirEnt(filename);
+    int dirEntIndex = findDirEnt(filename);
+
+    printf("DirEntIndex: %d\n",dirEntIndex);
 
     //read 
     //return lba index as "fd"

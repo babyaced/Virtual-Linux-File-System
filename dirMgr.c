@@ -118,8 +118,6 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         retVal = LBAread(d,currentBlockSize,currentBlock); // read into our dir function
     }
     
-
-    
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         if(abortFlag == true){ //we are trying to iterate into a file, not a directory
             return -1;  //return error

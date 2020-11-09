@@ -25,11 +25,11 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
 
 
-        int parentDirIndex = findDirEnt(pathnameCpy);  //returns root of the directory  
-                                                    //need to modify logic so it doesn't return absolute last directory(which would be the one we want to create)
-                                                    //we can cut off the pathname, before the last directory name is reached (EASIER)
-                                                    //and initDir() here
-                                                    //OR have findDirEnt() use initDir() 
+        int parentDirIndex = findDirEnt(pathnameCpy);   //returns root of the directory  
+                                                        //need to modify logic so it doesn't return absolute last directory(which would be the one we want to create)
+                                                        //we can cut off the pathname, before the last directory name is reached (EASIER)
+                                                        //and initDir() here
+                                                        //OR have findDirEnt() use initDir() 
     }
 
     //=====================================================================================================================================
@@ -102,12 +102,12 @@ char * fs_getcwd(char *buf, size_t size){
     // char* ptr;
     //get and append all directory names
     dirEnt* de = malloc(sizeof(dirEnt));
-    retVal = LBAread(de,1,8);
+    retVal = LBAread(de,currentBlockSize,currentBlock);
     while(de->parentLoc != de->loc){
         strcatF(buf, de->name);
         strcatF(buf,"/");
         printf("Path accumulator: %s\n", buf);
-        retVal = LBAread(de,1,de->parentLoc);
+        retVal = LBAread(de,currentBlockSize,de->parentLoc);
     }
     strcatF(buf,de->name);
     strcatF(buf,"/");
@@ -129,9 +129,28 @@ void strcatF(char* dest, char* src){  //concatenates src to front of dest
 }
 
 int fs_setcwd(char *buf){ //linux chdir  //cd
-    //set and append all directory names
-    //change currentBlock and currentName
-    return 0;  //returns 0 with success
+    int retVal;
+    //buf is path the user wants to change to
+    //=====================================================================================
+    //ABSOLUTE PATH //we need to go down through directory tree until we can find directory
+    //=====================================================================================
+    if(buf[0]=='/'){
+        int dirEntIndex = findDirEnt(buf);
+        printf("DirEntIndex: %s\n",dirEntIndex);
+
+    }
+    //=====================================================================================================================================
+    //RELATIVE PATH //just directly use current block data to find directory
+    //=====================================================================================================================================
+    else{
+        int dirEntIndex = findDirEnt(buf);
+        dirEnt* de = malloc(sizeof(dirEnt));
+        retVal = LBAread(de, currentBlockSize, dirEntIndex);
+        currentBlock = de->dataIndex;//set currentBlock to desired directory
+        free(de);
+        return 0; //returns 0 with success
+    }
+    return 0;  
 }
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
