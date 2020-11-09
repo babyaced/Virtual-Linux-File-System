@@ -45,5 +45,5 @@ int toBlockSize (int size);
 
 
 //helper Functions
-int toBlockSize(size_t size);
+int toBlockSize(int size);
 #endif
