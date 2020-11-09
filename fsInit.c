@@ -15,7 +15,7 @@ int currentBlockSize;
 void initGlobals(uint64_t volumeSize, uint64_t blockSize){
     int retVal;
     printf("Mallocing: %d bytes\n", blockSize);
-    vcb = malloc(blockSize);
+    vcb = malloc(toBlockSize(sizeof(vCB)));
     retVal = LBAread(vcb,1,0); //read already existing vcb from disk
     int blockCount = volumeSize/ blockSize;
     int bmSize = blockCount/8 +1;
@@ -57,8 +57,8 @@ void initVCB(int volSize, int blockSize){
 void initFSL(int volSize, int blockSize){
     
     int blockCount = volSize/ blockSize;
-    int bmSize = blockCount/8 +1;
-    int bmElements = (blockCount/32) +1;  //number of blocks divided by bits in int
+    int bmSize = toBlockSize(blockCount/8); //divide number of blocks by 
+    int bmElements = (bmSize/4);  //number of blocks divided by bits in int
     printf("Callocing: %d bytes\n", bmElements*sizeof(freeSpaceBitmap[0]));
     freeSpaceBitmap = calloc(bmElements,sizeof(freeSpaceBitmap[0]));
     printf("Size of Free Space Bitmap: %d\n", sizeof(freeSpaceBitmap));

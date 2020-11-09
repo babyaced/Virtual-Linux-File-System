@@ -64,6 +64,9 @@ int fs_isFile(char * path);	//return 1 if file, 0 otherwise
 int fs_isDir(char * path);		//return 1 if directory, 0 otherwise
 int fs_delete(char* filename);	//removes a file
 
+//helper functions
+void strcatF(char* dest, char* src);
+
 
 
 struct fs_stat  //file stats//metadata

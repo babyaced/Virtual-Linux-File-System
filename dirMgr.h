@@ -43,4 +43,7 @@ int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
 int toBlockSize (int size);
 
+
+//helper Functions
+int toBlockSize(size_t size);
 #endif
