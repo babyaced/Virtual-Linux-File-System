@@ -42,4 +42,7 @@ int findFreeDirEnt(dir* d);
 int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
 
+
+//helper Functions
+int toBlockSize(size_t size);
 #endif

@@ -25,11 +25,10 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
 
 
-        int parentDirIndex = findDirEnt(pathnameCpy);   //returns root of the directory  
-                                                        //need to modify logic so it doesn't return absolute last directory(which would be the one we want to create)
-                                                        //we can cut off the pathname, before the last directory name is reached (EASIER)
-                                                        //and initDir() here
-                                                        //OR have findDirEnt() use initDir() 
+        int parentDirIndex = findDirEnt(pathnameCpy);   //returns root of the directory
+        printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
+        dir* parentDir = malloc(toBlockSize(sizeof(dir)));
+        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
     }
 
     //=====================================================================================================================================
@@ -37,15 +36,15 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     //=====================================================================================================================================
     else{ //if pathname is not absolute
     int dirIndex = initDir(currentBlock,pathname);  //parent block is wherever this function is called from //just use pathname for testing
-    dir* parentDir = malloc(sizeof(dir));
-    printf("Mallocing: %ld bytes\n", sizeof(dir));
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
+    dir* parentDir = malloc(toBlockSize(sizeof(dir)));
     retVal = LBAread(parentDir,currentBlockSize,currentBlock);
 
     //int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
     
     //Malloc Directory entry
-    dirEnt* de = malloc(sizeof(dirEnt));
-    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
 
     //initialize directory entry
     de->parentLoc = currentBlock;
@@ -63,10 +62,10 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
     addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
     free(parentDir);
-    printf("Freeing: %ld bytes\n", sizeof(dir));
+    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
     parentDir = NULL;
     free(de);
-    printf("Freeing: %ld bytes\n", sizeof(dirEnt));
+    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     de = NULL;
     return 0; //not sure what return value is supposed to represent yet
     }
@@ -100,8 +99,9 @@ int fs_closedir(fdDir *dirp){
 char * fs_getcwd(char *buf, size_t size){
     int retVal;
     // char* ptr;
-    //get and append all directory names
-    dirEnt* de = malloc(sizeof(dirEnt));
+    //get and append all directory names to buf
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     retVal = LBAread(de,currentBlockSize,currentBlock);
     while(de->parentLoc != de->loc){
         strcatF(buf, de->name);
@@ -114,9 +114,7 @@ char * fs_getcwd(char *buf, size_t size){
     // ptr = strchr(buf,'\377');  // remove octal escape sequence
     // buf[strlen(buf)-strlen(ptr)] = '\0';
     printf("Path accumulator: %s\n", buf);
-    
-    //get currentBlock and access parent
-    //continue until parentblock is 0
+    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     free(de);
     return buf;
 }
@@ -144,9 +142,11 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
     //=====================================================================================================================================
     else{
         int dirEntIndex = findDirEnt(buf);
+        printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         dirEnt* de = malloc(sizeof(dirEnt));
         retVal = LBAread(de, currentBlockSize, dirEntIndex);
         currentBlock = de->dataIndex;//set currentBlock to desired directory
+        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(de);
         return 0; //returns 0 with success
     }
@@ -155,15 +155,18 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* de = malloc(sizeof(dirEnt));
     int retVal = LBAread(de, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into de
 
     if(de->type == 0)
     {
+        printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(de);
         de=NULL;
         return 1;
     }
+    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     free(de);
     de=NULL;
         
@@ -172,15 +175,20 @@ int fs_isFile(char * path){ //return 1 if file, 0 otherwise
 
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* de = malloc(sizeof(dirEnt));
     int retVal = LBAread(de,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into de
 
     if(de->type == 1)
     {
+
         free(de);
         de=NULL;
         return 1;
     }
+    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    free(de);
+    de=NULL;
     return 0;
 }		
 
