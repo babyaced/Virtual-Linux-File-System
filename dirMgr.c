@@ -15,7 +15,6 @@ extern int currentBlockSize;  //holds # of blocks taken by current directory
 int toBlockSize(int size) { // round up to full block sizes for lbaRead()
     int nBlocks = size / vcb->sizeOfBlocks;
     if (size % vcb->sizeOfBlocks > 0) ++nBlocks;
-    printf ("%d blocks\nReturning: %d\n\n",nBlocks, nBlocks * vcb->sizeOfBlocks);
 
     return nBlocks * vcb->sizeOfBlocks;
 }

@@ -144,9 +144,10 @@ int main (int argc, char *argv[])
 
 
     // testing round
-    printf("\n");
-    toBlockSize(123456789);
-    toBlockSize(511);
+    printf("\n");//    printf ("%d blocks\nReturning: %d\n\n",nBlocks, nBlocks * vcb->sizeOfBlocks);
+    printf("%d\n",toBlockSize(123456789));
+    printf("%d\n",toBlockSize(511));
+    printf("%d\n",toBlockSize(512));
 
 	retVal = closePartitionSystem();
 
