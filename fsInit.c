@@ -38,7 +38,7 @@ void formatVolume(char* volumeName, uint64_t volumeSize, uint64_t blockSize){
     setFreeBlocks(0,1);
     setFreeBlocks(1,vcb->fslBlkCnt);
     retVal = LBAwrite(freeSpaceBitmap,vcb->fslBlkCnt,1);
-    initDir(0,"root");
+    retVal = initDir(0,"root");
     retVal = LBAwrite(vcb,1,0);
 }
 
