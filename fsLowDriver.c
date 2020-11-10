@@ -131,13 +131,13 @@ int main (int argc, char *argv[])
 	// retVal = b_write(0, buff, 2048);
 
 
-    // testing round
+    // testing rounding
     printf("\n");//    printf ("%d blocks\nReturning: %d\n\n",nBlocks, nBlocks * vcb->sizeOfBlocks);
     printf("%d\n",toBlockSize(123456789));
     printf("%d\n",toBlockSize(511));
     printf("%d\n",toBlockSize(512));
 
-    findDirEnt("fdvf/ff");
+    findDirEnt("/test/directory/that/doesnt/exist");
 
 	retVal = closePartitionSystem();
 

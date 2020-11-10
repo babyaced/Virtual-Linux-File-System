@@ -111,6 +111,10 @@ int findFreeDirEnt(dir* d){
 
 int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add "mode_t mode"
     // type = 0 for a file
+
+    printf("dirName = %s\n", d->name);
+    return 0;
+
     int retVal;
     char* pathnameCpy = strdup(pathname);
 
@@ -149,7 +153,7 @@ int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add
         setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
         addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
 
-        printf("\naddDirEnt completed\nhash_table_lookup(fileName): %d\n\n", hash_table_lookup(fileName, d));
+        printf("\naddDirEnt completed\nhash_table_lookup(fileName): %d\n\n", hash_table_lookup("fileName", d)); // checking if dirEnt was added
 
         free(parentDir);
         printf("Freeing parentDir: %ld bytes\n", toBlockSize(sizeof(dir)));
@@ -208,15 +212,26 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         }
         printf("Token: %s\n", token);  //prints next directory
         deIndex = hash_table_lookup(token,d);  //look up the name in directory entries of d
-        if(deIndex == -1)
-        {
-            //create file by default for now
 
-            // return -1;  // or return errorCode
-        }
+        /// Should we update dir d in the case that we just looked up a new directory in the line above?
 
-        if (deIndex == -1){
-            mkFile(pathname, d);
+//        if(deIndex == -1)
+//        {
+//            //create file by default for now
+//
+//            // return -1;  // or return errorCode
+//        }
+
+        if (deIndex == -1) { // if a file or directory is not found
+            if (strlen(remainder)==0) { // if last token of pathname, then we create new file
+                printf("FileName: %s\n", token);
+                mkFile(pathname, d); // maybe pass fileName-token instead of pathname
+            }
+            else { // if not last token, error its a directory that does not exist
+                //// Can also create directory here
+                printf("\nError: Directory \"%s\" does not exist.\n\n", token);
+                return -1;
+            }
         }
 
         retVal = LBAread(de, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
