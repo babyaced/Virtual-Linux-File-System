@@ -39,6 +39,7 @@ void initDirEntries(dir* d);
 void uninitDirEntries(dir* d);
 
 int findFreeDirEnt(dir* d);
+int mkFile(char *pathname, dir* d);
 int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
 int toBlockSize (int size);

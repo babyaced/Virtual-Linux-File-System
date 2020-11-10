@@ -137,6 +137,8 @@ int main (int argc, char *argv[])
     printf("%d\n",toBlockSize(511));
     printf("%d\n",toBlockSize(512));
 
+    findDirEnt("fdvf/ff");
+
 	retVal = closePartitionSystem();
 
 	printf("Freeing: %ld bytes\n", vcb->sizeOfBlocks);
