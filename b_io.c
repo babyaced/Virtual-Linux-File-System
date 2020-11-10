@@ -22,7 +22,8 @@
 //FCB?
 typedef struct FD {
     int lbaPosition;
-    char* buffer[B_CHUNK_SIZE+2];
+    char* rBuffer[B_CHUNK_SIZE+2]; // read buffer
+    char* wBuffer[B_CHUNK_SIZE+2]; // write buffer
     int ourBufferOffset;
     int bytesInBuffer;
 
@@ -97,7 +98,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 
     if (part1 > 0)	// memcpy part 1
     {
-        memcpy (buffer, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part1);
+        memcpy (buffer, openFileTables[fd].rBuffer + openFileTables[fd].ourBufferOffset, part1);
         openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part1;
     }
 
@@ -113,7 +114,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
         }
 
         //try to read B_CHUNK_SIZE bytes into our buffer
-        bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].lbaPosition);  //keep as 1 block for now
+        bytesRead = LBAread (openFileTables[fd].rBuffer,1, openFileTables[fd].lbaPosition);  //keep as 1 block for now
 
         // error handling here...  if read fails
 
@@ -124,7 +125,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 
         if (part2 > 0)	// memcpy bytesRead
         {
-            memcpy (buffer+part1+part3, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part2);
+            memcpy (buffer+part1+part3, openFileTables[fd].rBuffer + openFileTables[fd].ourBufferOffset, part2);
             openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part2;
         }
 
@@ -147,7 +148,7 @@ int b_write (int fd, char * buffer, int count){
         //return -1;
     }
 
-    int lbaPosition = 7;
+    int lbaPosition = 1000;
     int lbaIndex = 0; // should store this in fd struct
     openFileTables[fd].blockInd;
 
@@ -159,8 +160,8 @@ int b_write (int fd, char * buffer, int count){
     }
 
     if (count<=bufferSpace){
-        memcpy(openFileTables[fd].buffer, buffer, count);
-        printf("\n%s\n", openFileTables[fd].buffer);
+        memcpy(openFileTables[fd].wBuffer, buffer, count);
+        printf("\n%s\n", openFileTables[fd].wBuffer);
 
         openFileTables[fd].bytesInBuffer += count;
         bytesWritten =+ count;
@@ -168,18 +169,18 @@ int b_write (int fd, char * buffer, int count){
 
     else if (bufferSpace>0){
         // memcpy until end of buffer
-        memcpy(openFileTables[fd].buffer, buffer, bufferSpace);
-//        printf("%s", openFileTables[fd].buffer);
+        memcpy(openFileTables[fd].wBuffer, buffer, bufferSpace);
+//        printf("%s", openFileTables[fd].wBuffer);
         openFileTables[fd].bytesInBuffer += bufferSpace;
         bytesWritten =+ bufferSpace;
 
-        int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
+        int retVal = LBAwrite(openFileTables[fd].wBuffer, 1, lbaPosition + lbaIndex);
         ++ lbaIndex;
         openFileTables[fd].bytesInBuffer = 0;
 
         while (count - bytesWritten >= B_CHUNK_SIZE) {
-//            memcpy(openFileTables[fd].buffer, buffer+bytesWritten, bufferSpace);
-//            printf("%s", openFileTables[fd].buffer);
+//            memcpy(openFileTables[fd].wBuffer, buffer+bytesWritten, bufferSpace);
+//            printf("%s", openFileTables[fd].wBuffer);
 //
             int retVal = LBAwrite(buffer+bytesWritten, 1, lbaPosition + lbaIndex);
             bytesWritten += B_CHUNK_SIZE;
@@ -191,7 +192,7 @@ int b_write (int fd, char * buffer, int count){
     }
 
     if (openFileTables[fd].bytesInBuffer == B_CHUNK_SIZE) {
-        int retVal = LBAwrite(openFileTables[fd].buffer, 1, lbaPosition + lbaIndex);
+        int retVal = LBAwrite(openFileTables[fd].wBuffer, 1, lbaPosition + lbaIndex);
         openFileTables[fd].bytesInBuffer = 0;
         ++ lbaIndex;
     }
@@ -232,6 +233,8 @@ void b_close (int fd){
     int lbaCount;
     int linuxFD;
 
+    /// Free rBuffer and wBuffer
+
     //writing the left over bytes
     /*if(oft->ourBufferOffset > 0 && oft->bytesInBuffer > 0){
         printf("The file was in write mode.\n");
@@ -246,10 +249,12 @@ void b_close (int fd){
         }
     }
 
+
+
     //idk if we are allowed to use clse() and not sure if we have a linuxFD or similar variable
     close(openFileTables[fd].linuxFD); //not sure what our linux file handler variable is
-    free(openFileTables[fd].buffer); //or if we are supposed to have one
-    openFileTables[fd].buffer = NULL;
+    free(openFileTables[fd].buffer); //or if we are supposed to have one ***rBuffer and wBuffer
+    openFileTables[fd].buffer = NULL; // ***rBuffer and wBuffer
     openFileTables[fd].linuxFd = -1;*/
 
 
