@@ -59,12 +59,11 @@ void initFSL(int volSize, int blockSize){
     int blockCount = volSize/ blockSize;
     int bmSize = toBlockSize(blockCount/8); //divide number of blocks by 
     int bmElements = (bmSize/4);  //number of blocks divided by bits in int
-    printf("Callocing: %d bytes\n", bmElements*sizeof(freeSpaceBitmap[0]));
-    freeSpaceBitmap = calloc(bmElements,sizeof(freeSpaceBitmap[0]));
-    printf("Size of Free Space Bitmap: %d\n", sizeof(freeSpaceBitmap));
+    printf("Callocing: %d bytes\n", bmElements*sizeof(int));
+    freeSpaceBitmap = calloc(bmElements,sizeof(int));
     
     vcb->fslBytes = bmSize;
-    vcb->fslBlkCnt= (bmSize/blockSize) + 1;
+    vcb->fslBlkCnt= (bmSize/blockSize);
 }
 
 

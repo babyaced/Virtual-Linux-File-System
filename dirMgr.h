@@ -12,13 +12,14 @@ struct dirEnt{
     char name[255];
     int parentLoc;
     int loc;
-    int sizeInBytes;
-    int sizeInBlocks;
+    //int sizeInBytes;
+    //int sizeInBlocks;
     short int type;  //0 for file, 1 for directory
 
     //data
     int dataIndex; //can be file or directory
     int dataBlkCnt; //can be file or directory //contiguous
+    //int dataSize; //holds size of data in bytes
     //dirEnt* next; //in case of collisions //IGNORE FOR NOW
 };
 
@@ -27,8 +28,8 @@ typedef struct{
     char name[255];
     int parentLoc;
     int loc;
-    int sizeInBytes;
-    int sizeInBlocks;
+    //int sizeInBytes;
+    //int sizeInBlocks;
     int dirEnts[TABLE_SIZE];
 }dir;
 

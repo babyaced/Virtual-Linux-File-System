@@ -11,64 +11,64 @@ extern currentBlockName[255]; //size of 255 for now
 int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     int retVal;
     char* pathnameCpy = strdup(pathname);
+    int dirIndex;
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
+    // dir* parentDir = malloc(toBlockSize(sizeof(dir)));
+    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+    int parentDirEntIndex;
+
+    char* lastDir = strrchr(pathnameCpy, '/'); 
+    char* dirToCreate = strdup(lastDir)+1;  //need to save the last directory name and remove leading '/'
+    // printf("StrrChr: %s\n", dirToCreate);
 
     //=====================================================================================
     //ABSOLUTE PATH //we need to go down through directory tree until we can make directory
     //=====================================================================================
     if(pathname[0] == '/') //if pathname is absolute
     {
+        pathnameCpy[strlen(pathnameCpy)-strlen(dirToCreate)] = '\0'; //this will modify lastDir
+        // printf("Truncated Path: %s\n", pathnameCpy);
+
+        parentDirEntIndex = findDirEnt(pathnameCpy);   //returns directory entry index of direct parent of the directory we want to create;
+        retVal = LBAread(de, currentBlockSize, parentDirEntIndex);
+
         
-        char* lastDir = strrchr(pathnameCpy, '/');
-        printf("StrrChr: %s\n", lastDir);
-        pathnameCpy[strlen(pathnameCpy)-strlen(lastDir)] = '\0';
-        printf("Truncated Path: %s\n", pathnameCpy);
-
-
-
-        int parentDirIndex = findDirEnt(pathnameCpy);   //returns root of the directory
-        printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
-        dir* parentDir = malloc(toBlockSize(sizeof(dir)));
-        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
+        // retVal = LBAread(parentDir,de->dataBlkCnt,de->dataIndex);
+       
+        // printf("Parent Dir name: %s\n",parentDir->name);
+        dirIndex = initDir(de->dataIndex, dirToCreate);
+        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        free(de);
+        de = NULL;
+        //printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
+        // free(parentDir);
+        // parentDir = NULL;
+        // free(dirToCreate);
+        // free(pathnameCpy);
+        return 0;
     }
 
     //=====================================================================================================================================
     //RELATIVE PATH //just directly use current block data to make directory
     //=====================================================================================================================================
     else{ //if pathname is not absolute
-    int dirIndex = initDir(currentBlock,pathname);  //parent block is wherever this function is called from //just use pathname for testing
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
-    dir* parentDir = malloc(toBlockSize(sizeof(dir)));
-    retVal = LBAread(parentDir,currentBlockSize,currentBlock);
+        //need to use 
+        pathnameCpy[strlen(pathnameCpy)-strlen(dirToCreate)] = '\0';
+        parentDirEntIndex = findDirEnt(pathnameCpy);
+        retVal = LBAread(de, currentBlockSize, parentDirEntIndex);
+        // retVal = LBAread(parentDir,de->dataBlkCnt,de->dataIndex);
+        dirIndex = initDir(de->dataIndex,dirToCreate);  //parent block is wherever this function is called from //just use pathname for testing
 
-    //int parentIndex = findDirEnt(dirname(pathname));//use parent in pathname to find parent block
-    
-    //Malloc Directory entry
-    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        free(de);
+        de = NULL;
 
-    //initialize directory entry
-    de->parentLoc = currentBlock;
-    
-    de->dataIndex = dirIndex; //store pointer to data
-    de->dataBlkCnt = vcb->rdBlkCnt;
-    de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size 
-    de->type = 1; //type is directory
-    strcpy(de->name,pathname);
-
-    //write directory entry to disk
-    int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-    de->loc = deIndex;  //store location of directory entry
-    retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
-    setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-    addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
-    free(parentDir);
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
-    parentDir = NULL;
-    free(de);
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
-    de = NULL;
-    return 0; //not sure what return value is supposed to represent yet
+        // printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
+        // free(parentDir);
+        // parentDir = NULL;
     }
+    
 }
 
 int fs_rmdir(const char *pathname){
@@ -181,7 +181,7 @@ int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
 
     if(de->type == 1)
     {
-
+        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(de);
         de=NULL;
         return 1;

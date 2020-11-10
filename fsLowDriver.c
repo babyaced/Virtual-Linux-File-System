@@ -58,46 +58,15 @@ int main (int argc, char *argv[])
 	// initGlobals(volumeSize,blockSize);
 	int retval = 0;
 
-	// retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
-	//Testing LBARead
-	/*vcb = malloc(512);
-	printf("Mallocing: %d bytes\n", 512);
-	
-	retVal = LBAread(vcb,1,0);
-
-	printf("VCB Block Count: %d\n", vcb->blockCount);
-	printf("VCB Free Block Count:  %d\n", vcb->freeBlockCount);
-	printf("VCB Block Count: %d\n", vcb->sizeOfBlocks);
-	printf("VCB fslBlkCnt: %d\n", vcb->fslBlkCnt);
-	printf("VCB fslBytes: %d\n", vcb->fslBytes);
-	printf("VCB Root Directory Block Count: %d\n", vcb->rdBlkCnt);
-	printf("VCB Root Directory Location: %d\n", vcb->rdLoc);
-
-	printf("Mallocing: %d bytes\n", vcb->fslBytes);
-	freeSpaceBitmap = malloc(vcb->fslBytes);
-
-	retVal = LBAread(freeSpaceBitmap,vcb->fslBlkCnt,1);
-
-	/*dir* d2 = malloc(sizeof(dir));
-	printf("Mallocing: %d bytes\n", sizeof(dir));
-
-	retVal = LBAread(d2,vcb->rdBlkCnt,vcb->rdLoc);
-	printf("Rd loc: %d\n", d2->loc);
-	printf("Rd parent loc: %d\n", d2->parentLoc);
-	printf("Rd  size in blocks: %d\n", d2->sizeInBlocks);
-	printf("Rd  size in bytes: %d\n", d2->sizeInBytes);
-
-	printf("Freeing: %d bytes\n", sizeof(dir));
-	free(d2);
-	d2 = NULL;*/
-
 	//testing fs_mkdir()
 	mode_t mode = NULL;  //ignore for now
-	retVal = fs_mkdir("/root/test", mode);
+	retVal = fs_mkdir("/root/test", mode);  //WORKING
+
+	retVal = fs_mkdir("test/test2", mode);  //WORKING
 	
 	//testing b_open()
 	retVal = b_open("/root/test",0);
-	retVal = b_open("test2",0);
+	retVal = b_open("test/test2",0);
 
 	//testing fs_isDir()
 	retVal = fs_isDir("test");
@@ -105,7 +74,7 @@ int main (int argc, char *argv[])
 	if(retVal == 1)
 		printf("'test' was a directory\n");
 	
-	//testing fs_isDir()
+	//testing fs_isFile()
 	retVal = fs_isFile("test");
 
 	if(retVal == 0)

@@ -3,13 +3,11 @@
 #include "mfs.h"
 
 typedef struct{
-    //volume name
-    //magic number
     int blockCount; //number of blocks in volume
     int sizeOfBlocks;//size of blocks
     int freeBlockCount;//free block count
     //free block pointers
-    int freeFCBCount;//free FCB count
+    //int freeFCBCount;//free FCB count
     //FCB pointers
     //free space list pointer
 
@@ -17,8 +15,8 @@ typedef struct{
     int rdBlkCnt;        //blocks taken up by root directory
 
     //uint64_t fslLoc;  //free space list pointer/index
-    int fslBlkCnt;    //blocks taken up by free space list
-    int fslBytes;
+    int fslBlkCnt;    //blocks taken up by free space bitmap
+    int fslBytes;     //bytes taken up by free space bitmap
 }vCB;
 
 

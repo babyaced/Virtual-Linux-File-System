@@ -55,7 +55,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     //pass dirname into findDir(function)
     int dirEntIndex = findDirEnt(filename);
 
-    printf("DirEntIndex: %d\n",dirEntIndex);
+    // printf("DirEntIndex: %d\n",dirEntIndex);
 
     //read 
     //return lba index as "fd"
