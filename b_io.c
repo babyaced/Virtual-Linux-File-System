@@ -19,10 +19,13 @@
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20
 
+extern vCB* vcb;
+extern unsigned int* freeSpaceBitmap; 
+
 //FCB?
 typedef struct FD {
     int lbaPosition;
-    char* buffer[B_CHUNK_SIZE+2];
+    char* buffer;
     int ourBufferOffset;
     int bytesInBuffer;
 
@@ -38,7 +41,7 @@ int areWeInitialized = 0;	//Indicates that this has not been initialized
 void b_init()
 {
 
-    areWeInitialized = 1;
+   
     for(int i = 0; i < MAX_OPEN_FILES; i++)
     {
         //do something with oftables
@@ -47,18 +50,59 @@ void b_init()
         openFileTables[i].ourBufferOffset = 0;
         openFileTables[i].blockInd = 0; // how many blocks we wrote into a file
     }
+    areWeInitialized = 1;
+}
+
+int b_getFCB ()
+{
+	for (int i = 0; i < MAX_OPEN_FILES; i++)
+		{
+		if (openFileTables[i].lbaPosition == -1)
+			{
+			openFileTables[i].lbaPosition = -2; // used but not assigned
+			return i;		//Not thread safe
+			}
+		}
+	return (-1);  //all in use
 }
 
 
 int b_open (char* filename, int flags){  //cannot open directory
 
+
+
+
+
+
+    if(areWeInitialized == 0) b_init(); //initialize our system
+
     //pass dirname into findDir(function)
-    int dirEntIndex = findDirEnt(filename);
+    int dirEntIndex = findDirEnt(filename);  //get directory entry of that file //create it if it doesn't exist
 
-    // printf("DirEntIndex: %d\n",dirEntIndex);
+    if(dirEntIndex == -1)  //error opening filename //file doesn't exist
+        return (-1);
+    
+    int fcbFD = b_getFCB();
 
-    //read 
-    //return lba index as "fd"
+    dirEnt* b_openDE = malloc(toBlockSize(sizeof(dirEnt)));
+
+    int retVal = LBAread(b_openDE,vcb->rdBlkCnt, dirEntIndex);
+
+    openFileTables[fcbFD].lbaPosition = b_openDE->dataIndex;  //save the LBA position
+    //int fileDataBlocks = b_openDE->dataBlkCnt;
+
+    //allocate our buffer
+    openFileTables[fcbFD].buffer = malloc(B_CHUNK_SIZE);
+    if(openFileTables[fcbFD].buffer = NULL)
+    {
+        b_close(openFileTables[fcbFD].lbaPosition);  //close the file
+        openFileTables[fcbFD].lbaPosition = -1; //free FCB
+        return -1;  //return error code
+    }
+
+    openFileTables[fcbFD].bytesInBuffer = 0;  //have not read anything yet
+    openFileTables[fcbFD].ourBufferOffset = 0; //have not read anything yet
+    return (fcbFD);  //return our file descriptor
 }
 
 int b_read (int fd, char * buffer, int count)  //this is copy of bierman's version 
