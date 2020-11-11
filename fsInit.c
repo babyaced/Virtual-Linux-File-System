@@ -38,7 +38,7 @@ void formatVolume(char* volumeName, uint64_t volumeSize, uint64_t blockSize){
     setFreeBlocks(0,1);
     setFreeBlocks(1,vcb->fslBlkCnt);
     retVal = LBAwrite(freeSpaceBitmap,vcb->fslBlkCnt,1);
-    initDir(0,"root");
+    retVal = initDir(0,"root");
     retVal = LBAwrite(vcb,1,0);
 }
 
@@ -59,12 +59,11 @@ void initFSL(int volSize, int blockSize){
     int blockCount = volSize/ blockSize;
     int bmSize = toBlockSize(blockCount/8); //divide number of blocks by 
     int bmElements = (bmSize/4);  //number of blocks divided by bits in int
-    printf("Callocing: %d bytes\n", bmElements*sizeof(freeSpaceBitmap[0]));
-    freeSpaceBitmap = calloc(bmElements,sizeof(freeSpaceBitmap[0]));
-    printf("Size of Free Space Bitmap: %d\n", sizeof(freeSpaceBitmap));
+    printf("Callocing: %d bytes\n", bmElements*sizeof(int));
+    freeSpaceBitmap = calloc(bmElements,sizeof(int));
     
     vcb->fslBytes = bmSize;
-    vcb->fslBlkCnt= (bmSize/blockSize) + 1;
+    vcb->fslBlkCnt= (bmSize/blockSize);
 }
 
 
