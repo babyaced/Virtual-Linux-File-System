@@ -124,10 +124,12 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     return initFileDE->loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
-
-
-int mkFile(char *pathname){ // makes an empty directory entry, maybe add "mode_t mode"
+int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add "mode_t mode"
     // type = 0 for a file
+
+    printf("dirName = %s\n", d->name);
+    return 0;
+
     int retVal;
     char* pathnameCpy = strndup(pathname, strlen(pathname));
 
@@ -140,40 +142,45 @@ int mkFile(char *pathname){ // makes an empty directory entry, maybe add "mode_t
         printf("\n***absolute directory in mkFile: Need to implement***\n");
     }
     else{
-//        dir* parentDir = malloc(sizeof(dir));
-//        printf("Mallocing: %ld bytes\n", sizeof(dir));
-//        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
+        dir* parentDir = malloc(toBlockSize(sizeof(dir)));
+        printf("Mallocing parentDir: %ld bytes\n", toBlockSize(sizeof(dir)));
+        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
 //
 //        //Malloc Directory entry
-//        dirEnt* de = malloc(sizeof(dirEnt));
-//        printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
-//
-//        //initialize directory entry
-//        de->parentLoc = currentBlock;
-//
-//        //// Need to do: dataIndex
-//
-//        //de->dataIndex = dirIndex; //store pointer to data
-//        de->dataBlkCnt = vcb->rdBlkCnt;
-//        de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size
-//        de->type = 0; //type is file
-//        strncpy(d->name,fileName,strlen(name));
-//
-//        //write directory entry to disk
-//        int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-//        de->loc = deIndex;  //store location of directory entry
-//        retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
-//        setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-//        addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
-//        free(parentDir);
-//        printf("Freeing: %ld bytes\n", sizeof(dir));
-//        parentDir = NULL;
-//        free(de);
-//        printf("Freeing: %ld bytes\n", sizeof(dirEnt));
-//        de = NULL;
+
+        dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+        printf("Mallocing de: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+
+    //initialize directory entry
+        de->parentLoc = currentBlock;
+
+        //// Need to do: dataIndex
+
+        //de->dataIndex = dirIndex; //store pointer to data
+        de->dataBlkCnt = vcb->rdBlkCnt;
+        de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size
+        de->type = 0; //type is file
+        strcpy(de->name,fileName); // maybe Pathname?
+
+        //write directory entry to disk
+        int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+        de->loc = deIndex;  //store location of directory entry
+        retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
+        setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
+        addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
+
+        printf("\naddDirEnt completed\nhash_table_lookup(fileName): %d\n\n", hash_table_lookup("fileName", d)); // checking if dirEnt was added
+
+        free(parentDir);
+        printf("Freeing parentDir: %ld bytes\n", toBlockSize(sizeof(dir)));
+        parentDir = NULL;
+        free(de);
+        printf("Freeing de: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        de = NULL;
     }
 
 
+    printf("mkFile() Done\n\n");
 
 //    }
 //
@@ -257,6 +264,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         {
             counter++;
             retVal = LBAread(findDirEntD, findDirEntDE->dataBlkCnt,findDirEntDE->dataIndex);//read new starting directory into d
+
         }
         else if(findDirEntDE->type ==0){  //we are at a file
             abortFlag = true;  //if the loop continues after this, then loop will abort with error
