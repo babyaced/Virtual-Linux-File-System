@@ -38,13 +38,12 @@ typedef struct{
 
 int initDir(int block, char* name);
 
-void initDirEntries(dir* d);
-void uninitDirEntries(dir* d);
+int initFile(int block, char* name);
 
-int findFreeDirEnt(dir* d);
+void initDirEntries(dir* d);
+
 int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
-int toBlockSize (int size);
 
 
 //helper Functions

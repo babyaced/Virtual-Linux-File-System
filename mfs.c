@@ -28,12 +28,9 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     if(pathname[0] == '/') //if pathname is absolute
     {
         pathnameCpy[strlen(pathnameCpy)-strlen(dirToCreate)] = '\0'; //this will modify lastDir
-        // printf("Truncated Path: %s\n", pathnameCpy);
-
         parentDirEntIndex = findDirEnt(pathnameCpy);   //returns directory entry index of direct parent of the directory we want to create;
         free(pathnameCpy);
         retVal = LBAread(fs_mkdirDE, currentBlockSize, parentDirEntIndex);
-
         dirIndex = initDir(fs_mkdirDE->dataIndex, dirToCreate);
         free(dirToCreate);
         printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
@@ -55,7 +52,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
         printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(fs_mkdirDE);
         fs_mkdirDE = NULL;
-
+        return 0;
     }
     
 }
@@ -116,14 +113,15 @@ void strcatF(char* dest, char* src){  //concatenates src to front of dest
 }
 
 int fs_setcwd(char *buf){ //linux chdir  //cd
+    //=====================================================================================
+    //ABSOLUTE PATH and RELATIVE PATH cases
+    //=====================================================================================
     int retVal;
-    dirEnt* fs_setcwdDE = malloc(sizeof(dirEnt));
-    //buf is path the user wants to change to
-    //=====================================================================================
-    //ABSOLUTE PATH and RELATIVE PATH
-    //=====================================================================================
     int dirEntIndex = findDirEnt(buf);
     printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    dirEnt* fs_setcwdDE = malloc(toBlockSize(sizeof(dirEnt)));
+    //buf is path the user wants to change to
+
     retVal = LBAread(fs_setcwdDE, currentBlockSize, dirEntIndex);
     currentBlock = fs_setcwdDE->dataIndex;                          //set currentBlock to desired directory(NOT DIRECTORY ENTRY)
     printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
@@ -135,12 +133,12 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
     printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
-    dirEnt* fs_isFileDE = malloc(sizeof(dirEnt));
+    dirEnt* fs_isFileDE = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(fs_isFileDE, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isFileDE
 
     if(fs_isFileDE->type == 0)
     {
-        printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(fs_isFileDE);
         fs_isFileDE=NULL;
         return 1;
@@ -155,7 +153,7 @@ int fs_isFile(char * path){ //return 1 if file, 0 otherwise
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
     printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
-    dirEnt* fs_isDirDE = malloc(sizeof(dirEnt));
+    dirEnt* fs_isDirDE = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(fs_isDirDE,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isDirDE
 
     if(fs_isDirDE->type == 1)
