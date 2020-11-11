@@ -30,9 +30,11 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
         pathnameCpy[strlen(pathnameCpy)-strlen(dirToCreate)] = '\0'; //this will modify lastDir
         parentDirEntIndex = findDirEnt(pathnameCpy);   //returns directory entry index of direct parent of the directory we want to create;
         free(pathnameCpy);
+        pathnameCpy = NULL;
         retVal = LBAread(fs_mkdirDE, currentBlockSize, parentDirEntIndex);
         dirIndex = initDir(fs_mkdirDE->dataIndex, dirToCreate);
         free(dirToCreate);
+        dirToCreate = NULL;
         printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(fs_mkdirDE);
         fs_mkdirDE = NULL;
@@ -46,9 +48,11 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
         pathnameCpy[strlen(pathnameCpy)-strlen(dirToCreate)] = '\0';
         parentDirEntIndex = findDirEnt(pathnameCpy);
         free(pathnameCpy);
+        pathnameCpy = NULL;
         retVal = LBAread(fs_mkdirDE, currentBlockSize, parentDirEntIndex);
         dirIndex = initDir(fs_mkdirDE->dataIndex,dirToCreate);  //parent block is wherever this function is called from //just use pathname for testing
         free(dirToCreate);
+        dirToCreate = NULL;
         printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
         free(fs_mkdirDE);
         fs_mkdirDE = NULL;
@@ -102,6 +106,7 @@ char * fs_getcwd(char *buf, size_t size){
     printf("Path accumulator: %s\n", buf);
     printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_getcwdDE);
+    fs_getcwdDE = NULL;
     return buf;
 }
 

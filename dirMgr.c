@@ -117,11 +117,14 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
     retVal = LBAwrite(initFileD,currentBlockSize, parentBlock);
 
+    int loc = initFileDE->loc;
     printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     free(initFileDE);
+    initFileDE = NULL;
     printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
     free(initFileD);
-    return initFileDE->loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
+    initFileD = NULL;
+    return loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
 
@@ -233,6 +236,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
                 else
                     retVal = initFile(findDirEntDE->dataIndex,token);
                 free(original);
+                original = NULL;
                 printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
                 free(findDirEntDE);
                 findDirEntDE = NULL;
@@ -243,6 +247,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
             }
             else{  //we are trying to iterate into directory that does not exist
                 free(original);
+                original = NULL;
                 printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
                 free(findDirEntDE);
                 findDirEntDE = NULL;
@@ -264,6 +269,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         }
     }
     free(original);
+    original = NULL;
     printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
     free(findDirEntDE);
     findDirEntDE = NULL;
