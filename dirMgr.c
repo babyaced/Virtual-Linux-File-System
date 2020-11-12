@@ -130,7 +130,7 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     return loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
-int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add "mode_t mode"
+/*int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add "mode_t mode"
     // type = 0 for a file
 
     printf("dirName = %s\n", d->name);
@@ -197,7 +197,7 @@ int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add
 //
 //    printf("heyyo\n");
     return 1;
-}
+}*/
 
 int findDirEnt(char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
