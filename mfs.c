@@ -103,7 +103,9 @@ char * fs_getcwd(char *buf, size_t size){
     strcatF(buf,"/");
     // ptr = strchr(buf,'\377');  // remove octal escape sequence
     // buf[strlen(buf)-strlen(ptr)] = '\0';
+    buf[strlen(buf)] = '\0';
     printf("Path accumulator: %s\n", buf);
+    
     printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_getcwdDE);
     fs_getcwdDE = NULL;

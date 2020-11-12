@@ -49,11 +49,13 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         initDirDE->parentLoc = parentBlock;
     }
     strncpy(initDirD->name,name,strlen(name));
+    initDirD->name[strlen(name)] = '\0';
     initDirEntries(initDirD);  //initialize dirEnts
     setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
     
     //initialize directory entry
     strncpy(initDirDE->name,name,strlen(name));
+    initDirDE->name[strlen(name)] = '\0';
     initDirDE->type = 1;
     int deStartBlock = findFreeBlocks(blocksNeeded);
     initDirDE->loc = deStartBlock;

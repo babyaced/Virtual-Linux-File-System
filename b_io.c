@@ -119,6 +119,7 @@ int b_open (char* filename, int flags){  //cannot open directory
 
 int b_read (int fd, char * buffer, int count)  //this is copy of bierman's version 
 {
+    int blocksRead;             //how many blocks were read
     int bytesRead;				// for our reads
     int bytesReturned;			// what we will return
     int part1, part2, part3;	// holds the three potential copy lengths
@@ -163,13 +164,15 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
         if (part2 > B_CHUNK_SIZE)
         {
             int blocks = part2 / B_CHUNK_SIZE; // calculate number of blocks they want
-            bytesRead = LBAread (buffer+part1,blocks,openFileTables[fd].lbaLoc);
+            LBAread(buffer+part1,blocks,openFileTables[fd].lbaLoc);
+            bytesRead = blocks* vcb->sizeOfBlocks;
             part3 = bytesRead;
             part2 = part2 - part3;  //part 2 is now < B_CHUNK_SIZE, or file is exusted
         }
 
         //try to read B_CHUNK_SIZE bytes into our buffer
-        bytesRead = LBAread (openFileTables[fd].buffer,1, openFileTables[fd].lbaLoc);  //keep as 1 block for now
+        LBAread(openFileTables[fd].buffer,1, openFileTables[fd].lbaLoc);  //keep as 1 block for now
+        bytesRead = vcb->sizeOfBlocks;
 
         // error handling here...  if read fails
 
