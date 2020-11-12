@@ -153,7 +153,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 
     if (part1 > 0)	// memcpy part 1
     {
-        memcpy (buffer, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part1);
+        memcpy (buffer, openFileTables[fd].rBuffer + openFileTables[fd].ourBufferOffset, part1);
         openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part1;
     }
 
@@ -180,7 +180,7 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 
         if (part2 > 0)	// memcpy bytesRead
         {
-            memcpy (buffer+part1+part3, openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, part2);
+            memcpy (buffer+part1+part3, openFileTables[fd].rBuffer + openFileTables[fd].ourBufferOffset, part2);
             openFileTables[fd].ourBufferOffset = openFileTables[fd].ourBufferOffset + part2;
         }
 
@@ -190,11 +190,8 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 }
 
 
-
 int b_write (int fd, char * buffer, int count)
 {
-
-
 	if (areWeInitialized == 0) b_init();  //Initialize our system
 
 	// check that fd is between 0 and (MAX_OPEN_FILES-1)

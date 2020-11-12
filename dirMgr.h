@@ -42,6 +42,8 @@ int initFile(int block, char* name);
 
 void initDirEntries(dir* d);
 
+
+int mkFile(char *pathname, dir* d);
 int findDirEnt(char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
 

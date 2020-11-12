@@ -127,8 +127,6 @@ int main (int argc, char *argv[])
 	free(buf);
 	buf = NULL;
 
-
-
 	retVal = closePartitionSystem();
 
 	printf("Freeing: %ld bytes\n", vcb->sizeOfBlocks);
