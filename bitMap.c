@@ -11,12 +11,9 @@ void setBit(unsigned int* array, int bitToSet){
 }
 
 void clearBit(unsigned int* array, int bitToClear){
-    int index = bitToClear/32;
-    int bitPos = bitToClear%32;
-    
-    unsigned int inUse = 0;
-    inUse = inUse << bitPos;
-    array[index] = array[index] | inUse;
+    int index = bitToClear/31;
+    int bitPos = bitToClear%31;
+    array[index] &= ~(1 << bitPos);
     //printf("Index %d\n", index);
 }
 
