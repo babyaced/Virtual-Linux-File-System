@@ -137,8 +137,7 @@ int main (int argc, char *argv[])
 
 	b_close(FD);
 
-
-
+ 	fs_delete("/root/file");
 
 	retVal = closePartitionSystem();
 

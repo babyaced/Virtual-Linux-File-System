@@ -182,5 +182,33 @@ int fs_stat(const char *path, struct fs_stat *buf){
 
 int fs_delete(char* filename){ //removes a file
     //findDirEnt()  //find location of file at pathname
+
+    int deStartBlock = findFreeBlocks(currentBlockSize);
+
+    int deIndex = findDirEnt(filename);
+    if (deIndex >= deStartBlock) { // if file was just created from findDirEnt
+        /// first delete that dirEnt
+        printf("\nError: File \"%s\" does not exist.\n\n", filename);
+        return (-1);
+    }
+
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+    int retVal = LBAread(de, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isFileDE
+
+    int lbaLoc = de->loc;
+    int blockLength = de->dataBlkCnt;
+    printf("\nfs_delete()\nFile Loc = %d\n", de->loc);
+    printf("Length = %d\n", de->dataBlkCnt);
+
+    clearFreeBlocks(lbaLoc, blockLength); // freeing file's blocks in the freespace bitmap
+
+    /// Need to remove the dirEnt
+
+    printf("findFreeBlocks(were file was) = %d\n\n", findFreeBlocks(de->dataBlkCnt)); // prints blocks that were just freed (de->loc)
+    //deIndex = findDirEnt(filename);
+
+    //printf("\nINDEX = %d\n", deIndex);
+    //printf("deStartBlock = %d\n\n", deStartBlock);
+
     return 0;
 }
