@@ -108,6 +108,9 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     initFileDE->dataIndex = -1;      //right now its just an empty file with no data
     initFileDE->dataBlkCnt = -1;     //right now its just an empty file with no data
 
+    retVal = LBAwrite(initFileDE,toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks,deStartBlock);
+    setFreeBlocks(deStartBlock,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1);
+
     //add this directory entry to directory at parent block
     dir* initFileD = malloc(toBlockSize(sizeof(dir)));          // malloc memory for parent directory
     retVal = LBAread(initFileD,currentBlockSize,parentBlock);   // read the parent directory into variable
