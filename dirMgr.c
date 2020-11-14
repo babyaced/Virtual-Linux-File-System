@@ -240,7 +240,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         // printf("Token: %s\n", token);  //prints next directory
         deIndex = hash_table_lookup(token,findDirEntD);  //look up the name in directory entries of findDirEntD
         if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist
-        { 
+        {
             if(pathname =""){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file 
                 //create file by default for now
                 if(counter == 0)
@@ -308,3 +308,17 @@ void addDirEnt(dir* parentDir, dirEnt* dE){
         success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
     }   
 }
+
+//void removeDirEnt(dir* parentDir, dirEnt* dE){
+//    bool success;
+//    int retVal;
+//    if(dE->type ==1)  // if type of directory entry is directory
+//    {
+//        success = hash_table_insert(dE,parentDir);  //need to edit hash_table_insert to take other info (ie. location)
+//        retVal = LBAwrite(parentDir,toBlockSize(sizeof(dir))/vcb->sizeOfBlocks,parentDir->loc);
+//    }
+//    else if(dE->type == 0)//else if type is file
+//    {
+//        success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
+//    }
+//}

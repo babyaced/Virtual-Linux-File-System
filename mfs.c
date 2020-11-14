@@ -185,7 +185,7 @@ int fs_delete(char* filename){ //removes a file
 
     int deStartBlock = findFreeBlocks(currentBlockSize);
 
-    int deIndex = findDirEnt(filename);
+    int deIndex = findDirEnt(filename); // maybe use Hashtable_lookup
     if (deIndex >= deStartBlock) { // if file was just created from findDirEnt
         /// first delete that dirEnt
         printf("\nError: File \"%s\" does not exist.\n\n", filename);
@@ -195,19 +195,33 @@ int fs_delete(char* filename){ //removes a file
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(de, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isFileDE
 
+    printf("\n\nfs_delete()\ndeIndex: %d\nparent location: %d\n",deIndex, de->parentLoc);
+
+    dir* d = malloc(toBlockSize(sizeof(dir))); //allocate memory for dir
+    retVal = LBAread(d,vcb->rdBlkCnt,de->parentLoc);
+    //printf("\ndir Name = %s\n\n", d->name);
+
+    hash_table_remove(filename, d);
+    printf("Hashtable lookup after remove: %d\n", hash_table_lookup(filename, d));
+
+
     int lbaLoc = de->loc;
     int blockLength = de->dataBlkCnt;
-    printf("\nfs_delete()\nFile Loc = %d\n", de->loc);
+    printf("File Loc = %d\n", de->loc);
     printf("Length = %d\n", de->dataBlkCnt);
 
     clearFreeBlocks(lbaLoc, blockLength); // freeing file's blocks in the freespace bitmap
 
     /// Need to remove the dirEnt
 
-    printf("findFreeBlocks(were file was) = %d\n\n", findFreeBlocks(de->dataBlkCnt)); // prints blocks that were just freed (de->loc)
-    //deIndex = findDirEnt(filename);
+    printf("findFreeBlocks(were file was) = %d\n", findFreeBlocks(de->dataBlkCnt)); // prints blocks that were just freed (de->loc)
+    int deIndex2 = findDirEnt(filename);
 
-    //printf("\nINDEX = %d\n", deIndex);
+    printf("INDEX = %d\n\n", deIndex2);
+
+    free (de);
+    free (d);
+
     //printf("deStartBlock = %d\n\n", deStartBlock);
 
     return 0;

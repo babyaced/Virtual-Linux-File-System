@@ -27,7 +27,7 @@ void setFreeBlocks(int startingIndex,int count){
 void clearFreeBlocks(int startingIndex,int count){
     int retVal;
     for(int i = startingIndex; i < count + startingIndex; i++){  //for blocks written to LBA
-        clearBit(freeSpaceBitmap,i);                          //set freeSpaceBitmap bits to occupied(1)
+        clearBit(freeSpaceBitmap,i);                          //set freeSpaceBitmap bits to free(0)
     }
     retVal = LBAwrite(freeSpaceBitmap,vcb->fslBlkCnt,1);                     //write new free space list to LBA
 }

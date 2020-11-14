@@ -46,6 +46,12 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
     }
 }
 
+bool hash_table_remove(char* dirEntName, dir* d) { //pass by value or pass by reference?
+    int index = hash(dirEntName);
+    d->dirEnts[index] = -1;
+    return true;
+}
+
 int hash_table_find_free(dir* d){
 	return 0;
 }

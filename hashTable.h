@@ -12,6 +12,8 @@ int hash_table_lookup(char* dirEntName, dir* d);
 
 bool hash_table_insert(dirEnt* dE, dir* d);
 
+bool hash_table_remove(char* dirEntName, dir* d);
+
 int hash_table_find_free(dir* d);
 
 /*int dir_ent_lookup(char* token, dir* d);*/
