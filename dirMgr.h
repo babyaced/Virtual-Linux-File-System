@@ -44,8 +44,11 @@ void initDirEntries(dir* d);
 
 
 int mkFile(char *pathname, dir* d);
-int findDirEnt(char* pathName);
+int findDirEnt(const char* pathName);
 void addDirEnt(dir* parentDir, dirEnt* de);
+
+
+int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex);
 
 
 //helper Functions

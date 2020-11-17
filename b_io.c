@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include "b_io.h"
 #include "dirMgr.h"
+#include "fsLow.h"
+#include "freeMgr.h"
 
 #define B_CHUNK_SIZE 512
 #define MAX_OPEN_FILES 20

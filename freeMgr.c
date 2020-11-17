@@ -1,5 +1,7 @@
 #include "freeMgr.h"
 #include "fsInit.h"
+#include "bitMap.h"
+#include "fsLow.h"
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
