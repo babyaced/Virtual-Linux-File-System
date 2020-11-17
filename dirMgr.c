@@ -132,75 +132,6 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     return loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
-/*int mkFile(char *pathname, dir* d){ // makes an empty directory entry, maybe add "mode_t mode"
-    // type = 0 for a file
-
-    printf("dirName = %s\n", d->name);
-    return 0;
-
-    int retVal;
-    char* pathnameCpy = strndup(pathname, strlen(pathname));
-
-    // getting fileName
-    char *fileName = pathnameCpy;
-    if (strstr(pathname, "/") != NULL) fileName = strrchr(pathnameCpy, '/')+1; // if dir is included in path, separate for fileName
-    printf("\n%s\n\n", fileName);
-
-    if(pathname[0] == '/') {//if pathname is absolute
-        printf("\n***absolute directory in mkFile: Need to implement***\n");
-    }
-    else{
-        dir* parentDir = malloc(toBlockSize(sizeof(dir)));
-        printf("Mallocing parentDir: %ld bytes\n", toBlockSize(sizeof(dir)));
-        retVal = LBAread(parentDir,currentBlockSize,currentBlock);
-//
-//        //Malloc Directory entry
-
-        dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
-        printf("Mallocing de: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
-
-    //initialize directory entry
-        de->parentLoc = currentBlock;
-
-        //// Need to do: dataIndex
-
-        //de->dataIndex = dirIndex; //store pointer to data
-        de->dataBlkCnt = vcb->rdBlkCnt;
-        de->sizeInBlocks = vcb->rdBlkCnt;//all directories should be same size
-        de->type = 0; //type is file
-        strcpy(de->name,fileName); // maybe Pathname?
-
-        //write directory entry to disk
-        int deIndex  = findFreeBlocks((sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-        de->loc = deIndex;  //store location of directory entry
-        retVal = LBAwrite(de,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1,deIndex); //Is there any point to this?
-        setFreeBlocks(deIndex,(sizeof(dirEnt)/vcb->sizeOfBlocks) +1);
-        addDirEnt(parentDir,de);//write this  directory(only index to metadata) to parent dir's dirEnts
-
-        printf("\naddDirEnt completed\nhash_table_lookup(fileName): %d\n\n", hash_table_lookup("fileName", d)); // checking if dirEnt was added
-
-        free(parentDir);
-        printf("Freeing parentDir: %ld bytes\n", toBlockSize(sizeof(dir)));
-        parentDir = NULL;
-        free(de);
-        printf("Freeing de: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
-        de = NULL;
-    }
-
-
-    printf("mkFile() Done\n\n");
-
-//    }
-//
-//
-//    //int freeLoc = findFreeDirEnt();
-//
-//    printf("freeLoc: %d ", freeLoc);
-//
-//    printf("heyyo\n");
-    return 1;
-}*/
-
 int findDirEnt(char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
     //split directory name into parts
@@ -241,7 +172,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
         deIndex = hash_table_lookup(token,findDirEntD);  //look up the name in directory entries of findDirEntD
         if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist
         { 
-            if(pathname =""){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file 
+            if(strcmp(pathname,"") != 0){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file 
                 //create file by default for now
                 if(counter == 0)
                     retVal = initFile(currentBlock,token);
@@ -250,7 +181,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
                 free(original);
                 original = NULL;
                 printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
-                free(findDirEntDE);
+                free(findDirEntDE);if(pathname ="") //if pathname is e
                 findDirEntDE = NULL;
                 printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
                 free(findDirEntD);
@@ -307,4 +238,23 @@ void addDirEnt(dir* parentDir, dirEnt* dE){
     {
         success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
     }   
+}
+
+int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex){
+    int retVal;
+    dir* findNextDirEntD = malloc(toBlockSize(sizeof(dir)));
+    retVal = LBAread(findNextDirEntD, vcb->rdBlkCnt, directoryIndex);
+    // dirEnt* findNextDirEntDE = malloc(toBlockSize(sizeof(dirEnt)));
+
+    for(int i = startingDirectoryEntryIndex; i< (sizeof(findNextDirEntD->dirEnts)/(sizeof(dirEnt))); i++)
+    {
+        
+        if(findNextDirEntD->dirEnts[i] != -1)
+        {
+            //retVal = LBAread(findNextDirEntDE, vcb->rdBlkCnt,findNextDirEntD->dirEnts[i]); //read into our dummy dir ent
+            //return findNextDirEntD->dirEnts[i];
+            return i;
+        }
+    }
+    return -1;
 }

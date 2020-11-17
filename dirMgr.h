@@ -19,7 +19,7 @@ struct dirEnt{
     //data
     int dataIndex; //can be file or directory
     int dataBlkCnt; //can be file or directory //contiguous
-    //int dataSize; //holds size of data in bytes
+    int dataSize; //holds size of data in bytes
     //dirEnt* next; //in case of collisions //IGNORE FOR NOW
     
 };
