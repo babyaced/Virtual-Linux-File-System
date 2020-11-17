@@ -5,5 +5,6 @@
 
 int findFreeBlocks(int blocksNeeded);
 void setFreeBlocks(int startingIndex,int count);
+void clearFreeBlocks(int startingIndex,int count);
 
 #endif 

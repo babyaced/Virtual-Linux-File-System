@@ -34,12 +34,12 @@
 #
 
 
-ROOTNAME=fsLowDriver
+ROOTNAME= fsLowDriver
 HW=
 FOPTION= 
 RUNOPTIONS=SampleVolume 10000000 512 
 CC=gcc
-CFLAGS= -Wall  -g -I.
+CFLAGS= -g -I.
 LIBS =pthread
 DEPS = 
 ADDOBJ= fsLow.o mfs.o fsInit.o bitMap.o freeMgr.o dirMgr.o b_io.o hashTable.o

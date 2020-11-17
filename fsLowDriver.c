@@ -24,7 +24,7 @@
 #include <math.h>
 #include <time.h>
 #include "b_io.h"
-//#include "fsLow.h"
+#include "fsLow.h"
 //#include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
 	//===============================================
 	//Testing fs_mkdir()
 	//===============================================
-	mode_t mode = NULL;  //ignore for now
+	mode_t mode = 0;  //ignore for now
 	retVal = fs_mkdir("/root/test", mode);  //WORKING
 
 	retVal = fs_mkdir("test/test2", mode);  //WORKING
@@ -141,15 +141,8 @@ int main (int argc, char *argv[])
 
 	retVal = closePartitionSystem();
 
-	printf("Freeing: %ld bytes\n", vcb->sizeOfBlocks);
-	printf("Freeing: %ld bytes\n", vcb->fslBytes);
-	free(vcb);
-	
-	vcb=NULL;
-	
-	free(freeSpaceBitmap);
-	freeSpaceBitmap = NULL;
-	
+	freeGlobals();
+		
 	return 0;	
 	}
 	

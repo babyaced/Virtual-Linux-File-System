@@ -4,6 +4,7 @@
 #include "freeMgr.h"
 #include "fsInit.h"
 #include "hashTable.h"
+#include "fsLow.h"
 
 #define TABLE_SIZE 54
 
@@ -27,9 +28,9 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
     int dirStartBlock = findFreeBlocks(blocksNeeded); //find next available blocks
     
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dir)));
     dir* initDirD = malloc(toBlockSize(sizeof(dir)));
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* initDirDE = malloc(toBlockSize(sizeof(dirEnt)));
     //initDirD->sizeInBlocks = blocksNeeded;
     //initDirD->sizeInBytes = bytesNeeded;
@@ -77,7 +78,7 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
         retVal = LBAwrite(initDirD,currentBlockSize, dirStartBlock);
     }
     
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(initDirDE);
     initDirDE = NULL;
     printf("Freeing: %d bytes\n", toBlockSize(sizeof(dir)));
@@ -101,7 +102,7 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     //this just creates directory entry in directory at parentBlock
     int deStartBlock = findFreeBlocks(currentBlockSize); //find next available blocks for our new directory entry
 
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* initFileDE = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
     strncpy(initFileDE->name,name, strlen(name));
     initFileDE->parentLoc = parentBlock;
@@ -119,20 +120,20 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
 
     addDirEnt(initFileD,initFileDE);   //add the new file's directory entry to directory passed in
 
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dir)));
     retVal = LBAwrite(initFileD,currentBlockSize, parentBlock);
 
     int loc = initFileDE->loc;
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(initFileDE);
     initFileDE = NULL;
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dir)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dir)));
     free(initFileD);
     initFileD = NULL;
     return loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
-int findDirEnt(char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
+int findDirEnt(const char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
     //split directory name into parts
     char* original;
@@ -146,9 +147,9 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
 
     bool abortFlag = false;
 
-    printf("Mallocing: %ld Bytes\n", toBlockSize(sizeof(dir)));
+    printf("Mallocing: %d Bytes\n", toBlockSize(sizeof(dir)));
     dir* findDirEntD = malloc(toBlockSize(sizeof(dir))); //allocate memory for dir // 720 is temporary
-    printf("Mallocing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* findDirEntDE = malloc(toBlockSize(sizeof(dirEnt)));
    
 
@@ -180,7 +181,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
                     retVal = initFile(findDirEntDE->dataIndex,token);
                 free(original);
                 original = NULL;
-                printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
+                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
                 free(findDirEntDE);if(pathname ="") //if pathname is e
                 findDirEntDE = NULL;
                 printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
@@ -191,7 +192,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
             else{  //we are trying to iterate into directory that does not exist
                 free(original);
                 original = NULL;
-                printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
+                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
                 free(findDirEntDE);
                 findDirEntDE = NULL;
                 printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
@@ -214,7 +215,7 @@ int findDirEnt(char* pathname){  // will eventually be edited to take in LBA fro
     }
     free(original);
     original = NULL;
-    printf("Freeing: %ld Bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
     free(findDirEntDE);
     findDirEntDE = NULL;
     printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));

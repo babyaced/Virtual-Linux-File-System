@@ -24,6 +24,8 @@
 #include <string.h>
 
 #include "mfs.h"
+#include "fsLow.h"
+#include "fsInit.h"
 
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
 #define TEMP_LINUX 0  //MUST be ZERO for working with your file system
@@ -109,7 +111,7 @@
 #define CMDLS_ON	0
 #define CMDCP_ON	0
 #define CMDMV_ON	0
-#define CMDMD_ON	0
+#define CMDMD_ON	1
 #define CMDRM_ON	0
 #define CMDCP2L_ON	0
 #define CMDCP2FS_ON	0
@@ -686,6 +688,25 @@ void processcommand (char * cmd)
 
 int main (int argc, char * argv[])
 	{
+    int retVal;
+	char * filename;
+	uint64_t volumeSize;
+	uint64_t blockSize;
+    
+	if (argc > 3)
+		{
+		filename = argv[1];
+		volumeSize = atoll (argv[2]);
+		blockSize = atoll (argv[3]);
+		}
+	else
+		{
+		printf ("Usage: fsLowDriver volumeFileName volumeSize blockSize\n");
+		return -1;
+		}
+		
+	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
+	formatVolume(filename, volumeSize, blockSize);
 	char * cmdin;
 	char * cmd;
 	HIST_ENTRY *he;
@@ -726,4 +747,6 @@ int main (int argc, char * argv[])
 		free (cmd);
 		cmd = NULL;		
 		} // end while
+	    retVal = closePartitionSystem();
+		freeGlobals();
 	}

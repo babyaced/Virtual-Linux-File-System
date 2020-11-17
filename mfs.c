@@ -1,12 +1,17 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
+#include "fsLow.h"
+#include "freeMgr.h"
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
 extern int currentBlock;
 extern int currentBlockSize;
-extern currentBlockName[255]; //size of 255 for now
+extern char currentBlockName[255]; //size of 255 for now
 
 struct fs_diriteminfo* dirpItemInfo;
 
@@ -14,8 +19,8 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     int retVal;
     char* pathnameCpy = strndup(pathname, strlen(pathname));
     int dirIndex;
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dir)));
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dir)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_mkdirDE = malloc(toBlockSize(sizeof(dirEnt)));
     int parentDirEntIndex;
 
@@ -33,7 +38,7 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     dirIndex = initDir(fs_mkdirDE->dataIndex,dirToCreate);//parent block is wherever this function is called from //just use pathname for testing
     free(dirToCreate);
     dirToCreate = NULL;
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_mkdirDE);
     fs_mkdirDE = NULL;
     return 0;
@@ -55,14 +60,14 @@ fdDir * fs_opendir(const char *name){
     int dirEntIndex = findDirEnt(name);  //find location of directory at pathname
 
     dirEnt* fs_opendirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     retVal = LBAread(fs_opendirDE, vcb->rdBlkCnt, dirEntIndex);
 
     fdDir* fs_open_fddir = malloc(toBlockSize(sizeof(fdDir)));
     if(fs_open_fddir->isInitialized != 1)
     {
-        printf("Malloced: %ld bytes\n", toBlockSize(sizeof(fdDir)));
+        printf("Malloced: %d bytes\n", toBlockSize(sizeof(fdDir)));
         if(fs_opendirDE->type == 1)
         {
             fs_open_fddir->dirEntryPosition = 0;
@@ -73,7 +78,7 @@ fdDir * fs_opendir(const char *name){
     }
 
     free(fs_opendirDE);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     return fs_open_fddir;
 }
@@ -85,17 +90,17 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     dirp->dirEntryPosition = findNextDirEnt(dirp->directoryStartLocation,dirp->dirEntryPosition);
 
     dirEnt* fs_readdirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dir* fs_readdirD = malloc(toBlockSize(sizeof(dir)));
-    printf("Malloced: %ld bytes\n", toBlockSize(sizeof(dir)));
+    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dir)));
 
     retVal = LBAread(fs_readdirD, vcb->rdBlkCnt, dirp->directoryStartLocation);
     retVal = LBAread(fs_readdirDE, vcb->rdBlkCnt, fs_readdirD->dirEnts[dirp->dirEntryPosition]);
 
     free(fs_readdirDE);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_readdirD);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dir)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
     
     dirpItemInfo->d_reclen = sizeof(fdDir);
     dirpItemInfo->fileType = fs_readdirDE->type;
@@ -116,7 +121,7 @@ char * fs_getcwd(char *buf, size_t size){
     int retVal;
     // char* ptr;
     //get and append all directory names to buf
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_getcwdDE = malloc(toBlockSize(sizeof(dirEnt)));
     retVal = LBAread(fs_getcwdDE,currentBlockSize,currentBlock);
     while(fs_getcwdDE->parentLoc != fs_getcwdDE->loc){
@@ -127,12 +132,10 @@ char * fs_getcwd(char *buf, size_t size){
     }
     strcatF(buf,fs_getcwdDE->name);
     strcatF(buf,"/");
-    // ptr = strchr(buf,'\377');  // remove octal escape sequence
-    // buf[strlen(buf)-strlen(ptr)] = '\0';
     buf[strlen(buf)] = '\0';
     printf("Path accumulator: %s\n", buf);
     
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_getcwdDE);
     fs_getcwdDE = NULL;
     return buf;
@@ -151,13 +154,13 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
     //=====================================================================================
     int retVal;
     int dirEntIndex = findDirEnt(buf);
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_setcwdDE = malloc(toBlockSize(sizeof(dirEnt)));
     //buf is path the user wants to change to
 
     retVal = LBAread(fs_setcwdDE, currentBlockSize, dirEntIndex);
     currentBlock = fs_setcwdDE->dataIndex;                          //set currentBlock to desired directory(NOT DIRECTORY ENTRY)
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_setcwdDE);
     fs_setcwdDE = NULL;
     return 0; //returns 0 with success
@@ -165,18 +168,18 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
 
 int fs_isFile(char * path){ //return 1 if file, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
-    printf("Mallocing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_isFileDE = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(fs_isFileDE, (sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isFileDE
 
     if(fs_isFileDE->type == 0)
     {
-        printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
         free(fs_isFileDE);
         fs_isFileDE=NULL;
         return 1;
     }
-    printf("Freeing: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_isFileDE);
     fs_isFileDE=NULL;
         
@@ -186,18 +189,18 @@ int fs_isFile(char * path){ //return 1 if file, 0 otherwise
 int fs_isDir(char * path){ //return 1 if directory, 0 otherwise
     int deIndex = findDirEnt(path); //get index of directory entry pointed to by path
     dirEnt* fs_isDirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(fs_isDirDE,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1, deIndex); //read directory entry into fs_isDirDE
 
     if(fs_isDirDE->type == 1)
     {
         free(fs_isDirDE);
-        printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+        printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
         fs_isDirDE=NULL;
         return 1;
     }
     free(fs_isDirDE);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     fs_isDirDE=NULL;
     return 0;
 }		
@@ -206,7 +209,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
     int dirEntIndex = findDirEnt(path);
 
     dirEnt* fs_statDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     int retVal = LBAread(fs_statDE,vcb->sizeOfBlocks, dirEntIndex);
     buf->st_blksize = vcb->sizeOfBlocks;
@@ -214,7 +217,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
     buf->st_blocks = fs_statDE->dataBlkCnt;
 
     free(fs_statDE);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     return 0;
 }
 
@@ -245,7 +248,7 @@ int fs_delete(char* filename){ //removes a file
     printf("findFreeBlocks(were file was) = %d\n\n", findFreeBlocks(de->dataBlkCnt)); // prints blocks that were just freed (de->loc)
 
     free(de);
-    printf("Freed: %ld bytes\n", toBlockSize(sizeof(dirEnt)));
+    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     //deIndex = findDirEnt(filename);
 
     //printf("\nINDEX = %d\n", deIndex);
