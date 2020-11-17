@@ -18,12 +18,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 
 #include "b_io.h"
 
-#define FT_REGFILE	DT_REG
-#define FT_DIRECTORY DT_DIR
+#define FT_REGFILE	DT_REG //type for fs_diriteminfo
+#define FT_DIRECTORY DT_DIR //type for fs_dirIteminfo
 #define FT_LINK	DT_LNK
 
 #ifndef uint64_t
@@ -36,7 +37,7 @@ typedef u_int32_t uint32_t;
 
 struct fs_diriteminfo  //get names of diritems //for ls
 	{
-    unsigned short d_reclen;    /* length of this record */
+    unsigned short d_reclen;    /* length of this record */  //size of structures
     unsigned char fileType;    
     char d_name[256]; 			/* filename max filename is 255 characters */
 	};
@@ -45,6 +46,7 @@ struct fs_diriteminfo  //get names of diritems //for ls
 typedef struct  //keeps track of File control block iterations through directory //iterator function //for ls
 	{
 	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
+	bool isInitialized;
 	
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
@@ -74,9 +76,11 @@ struct fs_stat  //file stats//metadata
 	off_t     st_size;    		/* total size, in bytes */
 	blksize_t st_blksize; 		/* blocksize for file system I/O */
 	blkcnt_t  st_blocks;  		/* number of 512B blocks allocated */
-	time_t    st_accesstime;   	/* time of last access */
-	time_t    st_modtime;   	/* time of last modification */
-	time_t    st_createtime;   	/* time of last status change */
+
+	//ignore these for now
+	// time_t    st_accesstime;   	/* time of last access */           
+	// time_t    st_modtime;   	/* time of last modification */
+	// time_t    st_createtime;   	/* time of last status change */
 	
 	/* add additional attributes here for your file system */
 	};

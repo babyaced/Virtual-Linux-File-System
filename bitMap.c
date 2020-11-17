@@ -7,14 +7,12 @@ void setBit(unsigned int* array, int bitToSet){
     unsigned int inUse = 1;
     inUse = inUse << bitPos;
     array[index] = array[index] | inUse;
-    //printf("Index %d\n", index);
 }
 
 void clearBit(unsigned int* array, int bitToClear){
     int index = bitToClear/31;
     int bitPos = bitToClear%31;
     array[index] &= ~(1 << bitPos);
-    //printf("Index %d\n", index);
 }
 
 int checkBit(unsigned int* array, int bitToCheck){
