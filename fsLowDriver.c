@@ -141,12 +141,11 @@ int main (int argc, char *argv[])
  	fs_delete("/root/file");
 
  	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));
- 	testDe->ext1.lba = -1;
- 	testDe->ext2.lba = -1;
- 	testDe->ext3.lba = -1;
- 	testDe->ext4.lba = -1;
 
  	getNextExt(testDe);
+ 	getNextExt(testDe);
+
+ 	deleteExts(testDe);
 
 
 	retVal = closePartitionSystem();

@@ -14,17 +14,20 @@ ext getNextExt (dirEnt* file){
     nextExt.lba = lbaPos;
     nextExt.count = count;
 
-    if (file->ext1.lba == -1){
+    if (file->ext1.count == 0){
         // add ext to ext1
-        printf("ADD the EXT\n");
+        printf("ADD EXT1\n");
+        file->ext1.count = count;
     }
-    if (file->ext2.lba == -1){
+    else if (file->ext2.count == 0){
         // add ext to ext2
+        printf("ADD EXT2\n");
+        file->ext2.count = count;
     }
-    if (file->ext3.lba == -1){
+    else if (file->ext3.count == 0){
         // add ext to ext3
     }
-    if (file->ext4.lba == -1){
+    else if (file->ext4.count == 0){
         // add ext to ext4
     }
 
@@ -32,16 +35,18 @@ ext getNextExt (dirEnt* file){
 }
 
 void deleteExts (dirEnt* file){ // call when a file is deleted to set the extents lba blocks to be free
-    if (file->ext1.lba > -1){
+    if (file->ext1.count > 0){
         clearFreeBlocks(file->ext1.lba, file->ext1.count);
+        printf("deleted ext1\n");
     }
-    if (file->ext2.lba > -1){
+    if (file->ext2.count > 0){
         clearFreeBlocks(file->ext2.lba, file->ext2.count);
+        printf("deleted ext2\n");
     }
-    if (file->ext3.lba > -1){
+    if (file->ext3.count > 0){
         clearFreeBlocks(file->ext3.lba, file->ext3.count);
     }
-    if (file->ext4.lba > -1){
+    if (file->ext4.count > 0){
         clearFreeBlocks(file->ext4.lba, file->ext4.count);
     }
 }
