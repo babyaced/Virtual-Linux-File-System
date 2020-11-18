@@ -10,7 +10,7 @@ int findFreeBlocks(int blocksNeeded){
     int retVal;
 
     int freeBlockCounter = 0;
-    for(int i = 0; i < vcb->fslBytes;i++){ 
+    for(int i = 0; i < vcb->blockCount;i++){ 
         if(freeBlockCounter == blocksNeeded)
             return i - blocksNeeded;
         if(!checkBit(freeSpaceBitmap,i))  //if bit is free(0)

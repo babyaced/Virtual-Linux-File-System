@@ -2,7 +2,7 @@
 #define _DIR_MGR_H
 #include "fsInit.h"
 
-#define TABLE_SIZE 54  //maximum size to keep dir Size under 512 bytes
+#define TABLE_SIZE 61  //maximum size to keep dir Size under 512 bytes
 
 typedef struct dirEnt dirEnt;
 
@@ -44,7 +44,7 @@ void initDirEntries(dir* d);
 
 
 int mkFile(char *pathname, dir* d);
-int findDirEnt(const char* pathName);
+int findDirEnt(const char* pathName, u_int8_t options);
 void addDirEnt(dir* parentDir, dirEnt* de);
 
 
