@@ -1,6 +1,7 @@
 #ifndef _DIR_MGR_H
 #define _DIR_MGR_H
 #include "fsInit.h"
+#include "extMgr.h"
 
 #define TABLE_SIZE 61  //maximum size to keep dir Size under 512 bytes
 
@@ -21,7 +22,18 @@ struct dirEnt{
     int dataBlkCnt; //can be file or directory //contiguous
     int dataSize; //holds size of data in bytes
     //dirEnt* next; //in case of collisions //IGNORE FOR NOW
-    
+
+    // primary extent;
+    ext ext1;
+    ext ext2;
+    ext ext3;
+    ext ext4;
+
+    // secondary extents
+    ext dExt[64]; // one block of ext entries (8 bytes each, since unsigned ints)
+
+    // tertiary extents
+    // ext tExt[64][64]; // unsure about this
 };
 
 
