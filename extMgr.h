@@ -10,5 +10,5 @@ typedef struct ext {
 }ext;
 
 ext getNextExt (dirEnt* file);
-
+void deleteExts (dirEnt* file);
 #endif
