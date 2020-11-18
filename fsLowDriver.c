@@ -59,12 +59,32 @@ int main (int argc, char *argv[])
 	int retval = 0;
 
 	//===============================================
+	//Testing collisions and overflow
+	//===============================================
+	/*for(int i = 0; i < 40; i++){
+		printf("%d : %d\n", i, freeSpaceBitmap[i]);
+	}
+	//char* dirName = malloc(3);
+	for(int i = 0; i < 62;i++){
+		if(i%32 == 0){
+			printf("switching int in bitmap\n");
+		}
+		sprintf(dirName, "%d", i);
+		retVal = fs_mkdir(dirName, 2);  //WORKING
+	}
+
+	free(dirName);
+
+	for(int i = 0; i < 40; i++){
+		printf("%d : %ud\n", i, freeSpaceBitmap[i]);
+	}*/
+
+	//===============================================
 	//Testing fs_mkdir()
 	//===============================================
-	mode_t mode = 0;  //ignore for now
-	retVal = fs_mkdir("/root/test", mode);  //WORKING
+	retVal = fs_mkdir("/root/test", 0);  //WORKING
 
-	retVal = fs_mkdir("test/test2", mode);  //WORKING
+	retVal = fs_mkdir("test/test2", 0);  //WORKING
 
 	//===============================================
 	//Testing b_open and initFile
@@ -138,7 +158,6 @@ int main (int argc, char *argv[])
 	b_close(FD);
 
  	fs_delete("/root/file");
-
 	retVal = closePartitionSystem();
 
 	freeGlobals();

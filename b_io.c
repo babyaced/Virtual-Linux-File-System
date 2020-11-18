@@ -80,7 +80,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     if(areWeInitialized == 0) b_init(); //initialize our system
 
     //pass dirname into findDir(function)
-    int dirEntIndex = findDirEnt(filename);  //get directory entry of that file //create it if it doesn't exist
+    int dirEntIndex = findDirEnt(filename,1);  //get directory entry of that file //create it if it doesn't exist
 
     if(dirEntIndex == -1)  //error opening filename //file doesn't exist
         return (-1);

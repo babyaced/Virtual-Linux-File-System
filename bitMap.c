@@ -1,8 +1,8 @@
 #include<stdio.h>
 
 void setBit(unsigned int* array, int bitToSet){
-    int index = bitToSet/31;
-    int bitPos = bitToSet%31;
+    int index = bitToSet/32;
+    int bitPos = bitToSet%32;
     
     unsigned int inUse = 1;
     inUse = inUse << bitPos;
@@ -10,8 +10,8 @@ void setBit(unsigned int* array, int bitToSet){
 }
 
 void clearBit(unsigned int* array, int bitToClear){
-    int index = bitToClear/31;
-    int bitPos = bitToClear%31;
+    int index = bitToClear/32;
+    int bitPos = bitToClear%32;
     array[index] &= ~(1 << bitPos);
 }
 
