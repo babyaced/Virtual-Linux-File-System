@@ -4,6 +4,8 @@
 
 #define TABLE_SIZE 54  //maximum size to keep dir Size under 512 bytes
 
+typedef struct dirEnt dirEnt;
+
 typedef struct ext {
     unsigned int lba;
     unsigned int count;

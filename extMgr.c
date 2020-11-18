@@ -16,8 +16,9 @@ ext getNextExt (dirEnt* file){
 
     if (file->ext1.lba == -1){
         // add ext to ext1
+        printf("ADD the EXT\n");
     }
-    if (file->ext2.lba == -){
+    if (file->ext2.lba == -1){
         // add ext to ext2
     }
     if (file->ext3.lba == -1){

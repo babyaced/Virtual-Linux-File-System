@@ -28,6 +28,7 @@
 //#include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
+#include "extMgr.h"
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
@@ -131,13 +132,22 @@ int main (int argc, char *argv[])
 	printf("Buffer: %s\n", buffer);
 	free(buffer);
 
-	
+
 
 
 
 	b_close(FD);
 
  	fs_delete("/root/file");
+
+ 	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));
+ 	testDe->ext1.lba = -1;
+ 	testDe->ext2.lba = -1;
+ 	testDe->ext3.lba = -1;
+ 	testDe->ext4.lba = -1;
+
+ 	getNextExt(testDe);
+
 
 	retVal = closePartitionSystem();
 

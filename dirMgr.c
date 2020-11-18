@@ -111,6 +111,12 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     initFileDE->dataIndex = -1;      //right now its just an empty file with no data
     initFileDE->dataBlkCnt = -1;     //right now its just an empty file with no data
 
+    // extents, init to -1
+    initFileDE->ext1.lba = -1;
+    initFileDE->ext2.lba = -1;
+    initFileDE->ext3.lba = -1;
+    initFileDE->ext4.lba = -1;
+
     retVal = LBAwrite(initFileDE,toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks,deStartBlock);
     setFreeBlocks(deStartBlock,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1);
 
