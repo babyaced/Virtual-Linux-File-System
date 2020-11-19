@@ -32,8 +32,6 @@ struct dirEnt{
     // secondary extents
     ext dExt[64]; // one block of ext entries (8 bytes each, since unsigned ints)
 
-    // tertiary extents
-    // ext tExt[64][64]; // unsure about this
 };
 
 

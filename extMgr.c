@@ -5,6 +5,12 @@
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
 
+void initilizeSecExts (dirEnt* file, int count){
+    int i;
+    for (i=0; i<count; i++)
+        file->dExt[i].count = 0;
+}
+
 ext getNextExt (dirEnt* file){
     ext nextExt;
 
@@ -51,16 +57,29 @@ ext getNextExt (dirEnt* file){
     }
     else { // if primary extents ar filled
         // iterate through secondary extents
-        int index;
-        for (index = 0; index <= 64; index++){
-            if (file->dExt[index].count == 0) {
-                file->dExt[index].lba = lbaPos;
-                file->dExt[index].count = count;
-                printf("ADD EXT%d\n%d\n", index, lbaPos);
-                if (index==64) printf("no more ext left, add tertiary extents\n");
-            }
+//        int index;
+//        for (index = 0; index <= 64; index++){
+//            if (file->dExt[index].count == 0) {
+//                file->dExt[index].lba = lbaPos;
+//                file->dExt[index].count = count;
+//                printf("ADD EXT%d\n%d\n", index, lbaPos);
+//                if (index==64) printf("no more ext left, add tertiary extents\n");
+//            }
+//        }
+
+        int index = 0;
+        while (index<64){
+            if (file->dExt[index].count == 0) break;
+            index++;
         }
 
+        if (index==64) {
+            printf("no more ext left, add tertiary extents\n");
+        } else { // add the ext
+            file->dExt[index].lba = lbaPos;
+            file->dExt[index].count = count;
+            printf("ADD dEXT%d, actually EXT%d\nlbPos %d\n", index, index+4, lbaPos);
+        }
     }
 
     return nextExt;
@@ -77,8 +96,18 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
     }
     if (file->ext3.count > 0){
         clearFreeBlocks(file->ext3.lba, file->ext3.count);
+        printf("deleted ext2\n");
     }
     if (file->ext4.count > 0){
         clearFreeBlocks(file->ext4.lba, file->ext4.count);
+        printf("deleted ext2\n");
+    }
+
+    int index = 0;
+    while (index<64){
+        if (file->dExt[index].count == 0) break;
+        clearFreeBlocks(file->dExt[index].lba, file->dExt[index].count);
+        printf("deleted dEXT%d, actually EXT%d\n", index, index+4);
+        index++;
     }
 }

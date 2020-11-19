@@ -11,4 +11,5 @@ typedef struct ext {
 
 ext getNextExt (dirEnt* file);
 void deleteExts (dirEnt* file);
+void initilizeSecExts (dirEnt* file, int count);
 #endif

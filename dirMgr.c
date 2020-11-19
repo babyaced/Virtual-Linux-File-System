@@ -75,6 +75,13 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     initDirDE->dataBlkCnt = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
     initDirDE->dataIndex = dirStartBlock;
 
+    // initialize extents
+    initDirDE->ext1.count = 0;
+    initDirDE->ext2.count = 0;
+    initDirDE->ext3.count = 0;
+    initDirDE->ext4.count = 0;
+    initilizeSecExts(initDirDE, 64);
+
     //write directory entry of directory to disk
     retVal = LBAwrite(initDirDE,toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks,deStartBlock);
     setFreeBlocks(deStartBlock,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1);

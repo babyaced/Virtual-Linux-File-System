@@ -161,8 +161,9 @@ int main (int argc, char *argv[])
 
  	// testing extents
 // 	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
+// 	initilizeSecExts(testDe, 64);
 // 	int index;
-// 	for (index = 0; index < 64; index++){
+// 	for (index = 0; index < 10; index++){
 //        getNextExt(testDe);
 // 	}
 //    getNextExt(testDe);
