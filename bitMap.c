@@ -48,7 +48,7 @@ void printBM(unsigned int* array, int bmSize){
     for(int i = 0; i < bmSize; i++)
     {
         if(i%31 == 0 && i != 0)
-            printf("Array Element: %d\n",array[i%31]);
+            printf("Array Element: %d\n",array[i%32]);
     }
 }
 

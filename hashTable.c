@@ -34,9 +34,13 @@ int hash_table_lookup(char* dirEntName, dir* d) { //pass by value or pass by ref
 	for(int i = 0; i < TABLE_SIZE; i++){
 		int try = (index + i) % TABLE_SIZE;
 		if(d->dirEnts[try] != -1){
-			retVal = LBAread(htlDE, vcb->rdBlkCnt, d->dirEnts[try]);
-			if(strncmp(dirEntName,htlDE->name,256) == 0)
+			retVal = LBAread(htlDE, vcb->deBlkCnt, d->dirEnts[try]);
+			if(strncmp(dirEntName,htlDE->name,256) == 0){
+				free(htlDE);
+				htlDE = NULL;
 				return d->dirEnts[try];
+			}
+				
 		}
 	}
 	free(htlDE);
@@ -64,13 +68,18 @@ bool hash_table_delete(dirEnt* dE, dir* d){
 	for(int i = 0; i < TABLE_SIZE; i++){
 		int try = (index + i) % TABLE_SIZE;
 		if(d->dirEnts[try] != -1){
-			retVal = LBAread(htdDE, vcb->rdBlkCnt, d->dirEnts[try]);
+			retVal = LBAread(htdDE, vcb->deBlkCnt, d->dirEnts[try]);
 			if(strncmp(dE->name,htdDE->name,256) == 0){
 				d->dirEnts[try] =  -1;
+				free(htdDE);
+				htdDE = NULL;
 				return true;
 			}
 		}
 	}
+	free(htdDE);
+	htdDE = NULL;
+	
 	return false;
 }
 

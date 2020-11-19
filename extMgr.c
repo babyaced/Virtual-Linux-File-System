@@ -96,11 +96,11 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
     }
     if (file->ext3.count > 0){
         clearFreeBlocks(file->ext3.lba, file->ext3.count);
-        printf("deleted ext2\n");
+        printf("deleted ext3\n");
     }
     if (file->ext4.count > 0){
         clearFreeBlocks(file->ext4.lba, file->ext4.count);
-        printf("deleted ext2\n");
+        printf("deleted ext4\n");
     }
 
     int index = 0;

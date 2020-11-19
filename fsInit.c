@@ -27,7 +27,7 @@ void initGlobals(uint64_t volumeSize, uint64_t blockSize){
     // printf("Mallocing: %d bytes\n", vcb->fslBytes);
     retVal = LBAread(freeSpaceBitmap, vcb->fslBlkCnt,1);  //read already existing freeSpaceBitmap from disk
     currentBlock = vcb->rdLoc;   //initialize current directory to root directory
-    currentBlockSize = vcb->rdBlkCnt; //initialize current directory block size to root directory block size
+    currentBlockSize = vcb->dBlkCnt; //initialize current directory block size to root directory block size
 }
 
 

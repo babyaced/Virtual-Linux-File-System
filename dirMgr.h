@@ -3,7 +3,9 @@
 #include "fsInit.h"
 #include "extMgr.h"
 
-#define TABLE_SIZE 61  //maximum size to keep dir Size under 512 bytes
+#define TABLE_SIZE 62  //maximum size to keep dir Size at 512 bytes
+#define MAX_SEC_EXTENTS 25 //maximum size to keep dirEnt Size at 512 bytes
+
 
 typedef struct dirEnt dirEnt;
 
@@ -30,7 +32,7 @@ struct dirEnt{
     ext ext4;
 
     // secondary extents
-    ext dExt[64]; // one block of ext entries (8 bytes each, since unsigned ints)
+    ext dExt[MAX_SEC_EXTENTS]; // one block of ext entries (8 bytes each, since unsigned ints)
 
 };
 

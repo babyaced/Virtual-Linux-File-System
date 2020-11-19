@@ -91,6 +91,7 @@ int main (int argc, char *argv[])
 	//===============================================
 	int FD = b_open("file",0);
 	
+	
 	//retVal = b_open("/root/test/file",0);
 
 	//===============================================
@@ -151,23 +152,32 @@ int main (int argc, char *argv[])
 	printf("Buffer: %s\n", buffer);
 	free(buffer);
 
+	b_close(FD);
+
+	
+
 	
 
 
 
-	b_close(FD);
+	
 
  	fs_delete("/root/file");
 
  	// testing extents
-// 	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
-// 	initilizeSecExts(testDe, 64);
-// 	int index;
-// 	for (index = 0; index < 10; index++){
-//        getNextExt(testDe);
-// 	}
-//    getNextExt(testDe);
-//    deleteExts(testDe);
+ 	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
+ 	initilizeSecExts(testDe, 64);
+ 	int index;
+ 	for (index = 0; index < 10; index++){
+        getNextExt(testDe);
+ 	}
+    getNextExt(testDe);
+    deleteExts(testDe);
+	
+	free(testDe);
+	testDe = NULL;
+
+	
 
  	retVal = closePartitionSystem();
 
