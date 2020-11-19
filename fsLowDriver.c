@@ -58,6 +58,8 @@ int main (int argc, char *argv[])
 	// initGlobals(volumeSize,blockSize);
 	int retval = 0;
 
+	//fs_setcwd("..");
+
 	//===============================================
 	//Testing collisions and overflow
 	//===============================================
@@ -82,14 +84,14 @@ int main (int argc, char *argv[])
 	//===============================================
 	//Testing fs_mkdir()
 	//===============================================
-	retVal = fs_mkdir("/root/test", 0);  //WORKING
+	retVal = fs_mkdir("./root/test", 0);  //WORKING
 
-	retVal = fs_mkdir("test/test2", 0);  //WORKING
+	//retVal = fs_mkdir("../test/test2", 0);  //WORKING
 
 	//===============================================
 	//Testing b_open and initFile
 	//===============================================
-	int FD = b_open("file",0);
+	//int FD = b_open("file",0);
 	
 	
 	//retVal = b_open("/root/test/file",0);
@@ -101,15 +103,18 @@ int main (int argc, char *argv[])
 	retVal = fs_setcwd(path);
 	printf("Current Block: %d\n", currentBlock);
 
-	path = "test2";
-	retVal = fs_setcwd(path);
+	// path = "test2";
+	// retVal = fs_setcwd(path);
+	// printf("Current Block: %d\n", currentBlock);
+
+	retVal = fs_setcwd("..");
 	printf("Current Block: %d\n", currentBlock);
 
 
 	//===============================================
 	//Testing fs_isDir()
 	//===============================================
-	retVal = fs_isDir("/root/test/test2");
+	/*retVal = fs_isDir("/root/test/test2");
 
 	if(retVal == 1)
 		printf("'test2' was a directory\n");
@@ -175,7 +180,7 @@ int main (int argc, char *argv[])
     deleteExts(testDe);
 	
 	free(testDe);
-	testDe = NULL;
+	testDe = NULL;*/
 
 	
 

@@ -26,7 +26,7 @@ unsigned int hash(char* dirEntName) {
 	return hash_value;
 }
 
-//find word in table
+//find dirEnt in hash_table
 int hash_table_lookup(char* dirEntName, dir* d) { //pass by value or pass by reference?
 	int retVal;
 	dirEnt* htlDE = malloc(toBlockSize(sizeof(dirEnt)));
@@ -35,11 +35,13 @@ int hash_table_lookup(char* dirEntName, dir* d) { //pass by value or pass by ref
 		int try = (index + i) % TABLE_SIZE;
 		if(d->dirEnts[try] != -1){
 			retVal = LBAread(htlDE, vcb->deBlkCnt, d->dirEnts[try]);
-			if(strncmp(dirEntName,htlDE->name,256) == 0){
+			//we can assume . and .. will be at directly hashed index because they were first dirEnts added + "." and ".." return different hashes
+			if(strncmp(dirEntName,htlDE->name,256) == 0 || strncmp(dirEntName,".",2) == 0 || strncmp(dirEntName,"..",3) == 0 )
+			{
 				free(htlDE);
 				htlDE = NULL;
 				return d->dirEnts[try];
-			}
+			}	
 				
 		}
 	}
