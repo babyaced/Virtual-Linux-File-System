@@ -158,7 +158,17 @@ int main (int argc, char *argv[])
 	b_close(FD);
 
  	fs_delete("/root/file");
-	retVal = closePartitionSystem();
+
+ 	// testing extents
+// 	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
+// 	int index;
+// 	for (index = 0; index < 64; index++){
+//        getNextExt(testDe);
+// 	}
+//    getNextExt(testDe);
+//    deleteExts(testDe);
+
+ 	retVal = closePartitionSystem();
 
 	freeGlobals();
 		
