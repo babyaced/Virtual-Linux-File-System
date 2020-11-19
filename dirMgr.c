@@ -74,13 +74,6 @@ int initDir(int parentBlock, char* name){  //pass in block of whatever directory
     initDirDE->dataBlkCnt = vcb->dBlkCnt;
     initDirDE->dataIndex = dirStartBlock;
 
-    // initialize extents
-    initDirDE->ext1.count = 0;
-    initDirDE->ext2.count = 0;
-    initDirDE->ext3.count = 0;
-    initDirDE->ext4.count = 0;
-    initilizeSecExts(initDirDE, 64);
-
     //write directory entry of directory to disk
     retVal = LBAwrite(initDirDE,vcb->deBlkCnt,deStartBlock);
     setFreeBlocks(deStartBlock,vcb->deBlkCnt);
@@ -132,10 +125,7 @@ int initFile(int parentBlock, char* name){ //takes in parent directory data bloc
     initFileDE->dataBlkCnt = -1;     //right now its just an empty file with no data
 
     // extents, init count to 0
-    initFileDE->ext1.count = 0;
-    initFileDE->ext2.count = 0;
-    initFileDE->ext3.count = 0;
-    initFileDE->ext4.count = 0;
+    initExts(initFileDE, MAX_SEC_EXTENTS);
 
     retVal = LBAwrite(initFileDE,vcb->deBlkCnt,deStartBlock);
     setFreeBlocks(deStartBlock,vcb->deBlkCnt);
