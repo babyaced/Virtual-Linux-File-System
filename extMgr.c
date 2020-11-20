@@ -103,13 +103,16 @@ ext getNextExt (dirEnt* file){
             printf("Ran out of extents\n");
             ext nullExt;
             return nullExt;
-        } else if(index > 0 && file->dExt[index-1].lba + count/2 + count > 20000){
+        } else if(index > 0 && file->dExt[index-1].lba + file->dExt[index-1].count >= 20000){
             printf("Ran out of space for file\n");
             ext nullExt;
             return nullExt;
         }
         else { // add the ext
             int lbaPos = findFreeBlocks(count);
+            if (lbaPos+count > 20000) // if extent size is larger than free space, allocate the remaining blocks only
+                count = 20000 - lbaPos;
+            printf ("Last block:%d\n",lbaPos+count);
             setFreeBlocks(lbaPos, count);
             file->dExt[index].lba = lbaPos;
             file->dExt[index].count = count;
