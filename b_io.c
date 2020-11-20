@@ -75,7 +75,7 @@ int b_getFCB()
 }
 
 
-int b_open (char* filename, int flags){  //cannot open directory
+int b_open (const char* filename, int flags){  //cannot open directory
 
     if(areWeInitialized == 0) b_init(); //initialize our system
 
