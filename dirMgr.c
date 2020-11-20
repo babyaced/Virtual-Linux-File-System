@@ -87,12 +87,6 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     initDirDE->dataBlkCnt = vcb->dBlkCnt;
     initDirDE->dataIndex = dirStartBlock;
 
-    // initialize extents
-    initDirDE->ext1.count = 0;
-    initDirDE->ext2.count = 0;
-    initDirDE->ext3.count = 0;
-    initDirDE->ext4.count = 0;
-    initilizeSecExts(initDirDE, MAX_SEC_EXTENTS);
     //initialize "dot" directory entry
     strncpy(dot->name,".",2);
     dot->type = 1;
@@ -171,7 +165,7 @@ int initFile(int parentDEBlock, char* name){ //takes in parent directory data bl
     initFileDE->ext2.count = 0;
     initFileDE->ext3.count = 0;
     initFileDE->ext4.count = 0;
-    initilizeSecExts(initFileDE, MAX_SEC_EXTENTS);
+    initExts(initFileDE, MAX_SEC_EXTENTS);
 
     retVal = LBAwrite(initFileDE,vcb->deBlkCnt,deStartBlock);
     setFreeBlocks(deStartBlock,vcb->deBlkCnt);
