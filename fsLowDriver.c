@@ -203,7 +203,6 @@ int main (int argc, char *argv[])
  	for (index = 0; index < MAX_SEC_EXTENTS; index++){
         getNextExt(testDe);
  	}
-    getNextExt(testDe);
     deleteExts(testDe);
 	
 	free(testDe);
