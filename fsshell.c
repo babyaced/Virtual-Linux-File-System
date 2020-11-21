@@ -288,6 +288,8 @@ int cmd_ls (int argcnt, char *argvec[])
 		char * path = fs_getcwd(cwd, DIRMAX_LEN);	//get current working directory
 		fdDir * dirp;
 		dirp = fs_opendir (path);
+		path =  "";
+		strncpy(cwd,"",2);
 		return (displayFiles (dirp, flall, fllong));
 		}
 	return 0;

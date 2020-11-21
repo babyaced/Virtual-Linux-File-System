@@ -34,6 +34,7 @@
 #
 
 
+#ROOTNAME= fsLowDriver
 ROOTNAME= fsshell
 HW=
 FOPTION= 

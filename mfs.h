@@ -46,6 +46,7 @@ struct fs_diriteminfo  //get names of diritems //for ls
 typedef struct  //keeps track of File control block iterations through directory //iterator function //for ls
 	{
 	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
+	struct fs_diriteminfo* dirpItemInfo;
 	bool isInitialized;
 	
 	unsigned short  d_reclen;		/*length of this record */

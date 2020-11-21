@@ -13,7 +13,7 @@ extern int currentBlock;
 extern int currentBlockSize;
 extern char currentBlockName[255]; //size of 255 for now
 
-struct fs_diriteminfo* dirpItemInfo;
+
 
 int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     int retVal;
@@ -57,6 +57,7 @@ fdDir * fs_opendir(const char *name){
         // printf("Malloced: %d bytes\n", toBlockSize(sizeof(fdDir)));
         if(fs_opendirDE->type == 1)
         {
+            fs_open_fddir->dirpItemInfo = malloc(sizeof(struct fs_diriteminfo));
             fs_open_fddir->dirEntryPosition = 0;
             fs_open_fddir->directoryStartLocation = fs_opendirDE->dataIndex;
             fs_open_fddir->d_reclen = sizeof(fs_open_fddir);                        //what does this mean?
@@ -73,7 +74,6 @@ fdDir * fs_opendir(const char *name){
 struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will return the next diritem info //returns name
     int retVal;
     int dirEntPos;
-    dirpItemInfo = malloc(sizeof(struct fs_diriteminfo));
 
     dirEntPos = findNextDirEnt(dirp->directoryStartLocation,dirp->dirEntryPosition);
 
@@ -90,9 +90,9 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     retVal = LBAread(fs_readdirD, vcb->dBlkCnt, dirp->directoryStartLocation);
     retVal = LBAread(fs_readdirDE, vcb->deBlkCnt, fs_readdirD->dirEnts[dirEntPos]);
     
-    dirpItemInfo->d_reclen = sizeof(fdDir);
-    dirpItemInfo->fileType = fs_readdirDE->type;
-    strcpy(dirpItemInfo->d_name,fs_readdirDE->name);
+    dirp->dirpItemInfo->d_reclen = sizeof(fdDir);
+    dirp->dirpItemInfo->fileType = fs_readdirDE->type;
+    strncpy(dirp->dirpItemInfo->d_name,fs_readdirDE->name, strlen(fs_readdirDE->name));
 
     free(fs_readdirDE);
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
@@ -100,14 +100,14 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
 
     dirp->dirEntryPosition++;
-    return dirpItemInfo;
+    return dirp->dirpItemInfo;
 }
 
 int fs_closedir(fdDir *dirp){
+    free(dirp->dirpItemInfo);
+    dirp->dirpItemInfo = NULL;
     free(dirp);
     dirp = NULL;
-    free(dirpItemInfo);
-    dirpItemInfo = NULL;
     return 0;
 }
 

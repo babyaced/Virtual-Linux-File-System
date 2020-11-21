@@ -90,10 +90,10 @@ int main (int argc, char *argv[])
 	//===============================================
 	//Testing b_open and initFile
 	//===============================================
-	int FD = b_open("file",0);
+	/*int FD = b_open("file",0);
 	
 	
-	//retVal = b_open("../test/file",0);
+	//retVal = b_open("../test/file",0);*/
 
 	//===============================================
 	//Testing fs_setcwd
@@ -116,6 +116,10 @@ int main (int argc, char *argv[])
 
 	retVal = fs_setcwd("..");
 	printf("Current Block: %d\n", currentBlock);
+
+	// retVal = fs_setcwd("..");
+	// printf("Current Block: %d\n", currentBlock);
+
 
 
 	//===============================================
@@ -194,7 +198,7 @@ int main (int argc, char *argv[])
 
  	//fs_delete("/file");
 
-	b_close(FD);
+	/*b_close(FD);
 
  	// testing extents
  	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
@@ -206,7 +210,7 @@ int main (int argc, char *argv[])
     deleteExts(testDe);
 	
 	free(testDe);
-	testDe = NULL;
+	testDe = NULL;*/
 
 	
 
