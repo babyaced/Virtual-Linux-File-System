@@ -205,8 +205,8 @@ int main (int argc, char *argv[])
 // 	}
 
  	//printf("extent of logical block = %d\n", getLba(testDe, 1));
- 	int t = 310;
- 	printf("getLba for %d = %d\n", t, getLba(testDe, t));
+ 	int t = 10000;
+ 	printf("getLba for logical block %d = %d\n", t, getLba(testDe, t));
     deleteExts(testDe);
 	
 	free(testDe);

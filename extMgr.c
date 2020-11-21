@@ -115,7 +115,7 @@ ext getNextExt (dirEnt* file){
                 ext nullExt;
                 return nullExt;
             }
-            printf ("Last block:%d\n",lbaPos+count);
+            //printf ("Last block:%d\n",lbaPos+count);
             setFreeBlocks(lbaPos, count);
             file->dExt[index].lba = lbaPos;
             file->dExt[index].count = count;
