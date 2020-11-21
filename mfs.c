@@ -26,6 +26,8 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
     //=====================================================================================================================================
     
     parentDirEntIndex = findDirEnt(pathnameCpy,2);//returns directory entry index of direct parent of the directory we want to create;
+    if(parentDirEntIndex == -1)
+        return -1;
     free(pathnameCpy);
     pathnameCpy = NULL;
     return 0;
@@ -150,6 +152,9 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
     //=====================================================================================
     int retVal;
     int dirEntIndex = findDirEnt(buf,0);
+    if(dirEntIndex == -1){
+        return -1;
+    }
     // printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_setcwdDE = malloc(toBlockSize(sizeof(dirEnt)));
     //buf is path the user wants to change to

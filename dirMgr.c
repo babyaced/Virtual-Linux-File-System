@@ -284,6 +284,9 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
                 else               //
                     retVal = initDir(findDirEntDE->loc,token);  //need to change to pass in directory entry loc, not data loc
               }
+              else{
+                  retVal = -1;
+              }
                 free(original);
                 original = NULL;
                 free(findDirEntDE); //if pathname is e

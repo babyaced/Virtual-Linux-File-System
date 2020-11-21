@@ -367,7 +367,10 @@ int cmd_md (int argcnt, char *argvec[])
 		}
 	else
 		{
-		return(fs_mkdir(argvec[1], 0777));
+			int retVal= fs_mkdir(argvec[1], 0777);
+			if(retVal != 0)
+			  printf ("Could not make directory\n");
+			return retVal;
 		}
 #endif
 	}
