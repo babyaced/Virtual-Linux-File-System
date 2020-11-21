@@ -203,6 +203,9 @@ int main (int argc, char *argv[])
  	for (index = 0; index < MAX_SEC_EXTENTS; index++){
         getNextExt(testDe);
  	}
+
+ 	printf("extent of logical block = %d\n", getBlock(testDe, 1));
+
     deleteExts(testDe);
 	
 	free(testDe);

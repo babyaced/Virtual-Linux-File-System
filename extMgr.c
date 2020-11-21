@@ -103,15 +103,18 @@ ext getNextExt (dirEnt* file){
             printf("Ran out of extents\n");
             ext nullExt;
             return nullExt;
-        } else if(index > 0 && file->dExt[index-1].lba + file->dExt[index-1].count >= 20000){
+        } else if(index > 0 && file->dExt[index-1].lba + file->dExt[index-1].count >= vcb->blockCount){
             printf("Ran out of space for file\n");
             ext nullExt;
             return nullExt;
         }
         else { // add the ext
             int lbaPos = findFreeBlocks(count);
-            if (lbaPos+count > 20000) // if extent size is larger than free space, allocate the remaining blocks only
-                count = 20000 - lbaPos;
+            if (lbaPos+count > vcb->blockCount) { // if extent size is larger than free space, allocate the remaining blocks only
+                printf("Ran out of space for file\n");
+                ext nullExt;
+                return nullExt;
+            }
             printf ("Last block:%d\n",lbaPos+count);
             setFreeBlocks(lbaPos, count);
             file->dExt[index].lba = lbaPos;
@@ -122,6 +125,24 @@ ext getNextExt (dirEnt* file){
     }
 
     return nextExt;
+}
+
+int getBlock (dirEnt* file, int logicalAddress){ // gets the lba block within a file from its logical address, adds extents if needed
+    int currentAddress = logicalAddress;
+    int extNum = 1;
+    while (currentAddress>0){ // finding which extent contains the logical address
+        // check if ext.count is 0, if so add new extent
+        if (extNum==1) currentAddress -= file->ext1.count;
+        else if (extNum==2) currentAddress -= file->ext2.count;
+        else if (extNum==3) currentAddress -= file->ext3.count;
+        else if (extNum==4) currentAddress -= file->ext4.count;
+        else {
+            int i = extNum - 5; // index in dExt array
+            currentAddress -= file->dExt[i].count;
+        }
+        if (currentAddress>0) extNum++;
+    }
+    return extNum;
 }
 
 void deleteExts (dirEnt* file){ // call when a file is deleted to set the extents lba blocks to be free
