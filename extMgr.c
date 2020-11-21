@@ -128,33 +128,39 @@ ext getNextExt (dirEnt* file){
 }
 
 int getLba (dirEnt* file, int logicalAddress){ // gets the lba block within a file from its logical address, adds extents if needed
-    int currentAddress = logicalAddress;
-    int extNum = 1;
+    int currentAddress = logicalAddress; // currentAddress is the blocks left based on current extent
+    int lba = -1; // the return value, desired lba
+    int extNum = 1; // the extent we are currently traversing
     while (currentAddress>=0){ // finding which extent contains the logical address
-        // check if ext.count is 0, if so add new extent
         if (extNum==1) {
             if (file->ext1.count==0) getNextExt(file); // get a new extent if not allocated
-            currentAddress -= file->ext1.count-1;
+            if (currentAddress < file->ext1.count) lba = file->ext1.lba + currentAddress; // if block if in this extent, calculate its lba
+            currentAddress -= file->ext1.count; // decrement the blocks left, since we checked this extent
         }
         else if (extNum==2) {
             if (file->ext2.count==0) getNextExt(file); // get a new extent if not allocated
+            if (currentAddress < file->ext2.count) lba = file->ext2.lba + currentAddress;
             currentAddress -= file->ext2.count;
         }
         else if (extNum==3) {
             if (file->ext3.count==0) getNextExt(file); // get a new extent if not allocated
+            if (currentAddress < file->ext3.count) lba = file->ext3.lba + currentAddress;
             currentAddress -= file->ext3.count;
         }
         else if (extNum==4) {
             if (file->ext4.count==0) getNextExt(file); // get a new extent if not allocated
+            if (currentAddress < file->ext4.count) lba = file->ext4.lba + currentAddress;
             currentAddress -= file->ext4.count;
         }
         else {
             int i = extNum - 5; // index in dExt array
+            if (file->dExt[i].count==0) getNextExt(file); // get a new extent if not allocated
+            if (currentAddress < file->dExt[i].count) lba = file->dExt[i].lba + currentAddress;
             currentAddress -= file->dExt[i].count;
         }
-        if (currentAddress>0) extNum++;
+        if (currentAddress>=0) extNum++; // go on to next extent if blocks are still left
     }
-    return extNum;
+    return lba;
 }
 
 void deleteExts (dirEnt* file){ // call when a file is deleted to set the extents lba blocks to be free
