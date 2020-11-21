@@ -243,6 +243,12 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
     }
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         if(abortFlag == true){ //we are trying to iterate into a file, not a directory
+            free(original);
+            original = NULL;
+            free(findDirEntDE);
+            findDirEntDE = NULL;
+            free(findDirEntD);
+            findDirEntD = NULL;
             return -1;  //return error
         }
         // printf("Token: %s\n", token);  //prints next directory
@@ -282,7 +288,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
                 // printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
                 free(findDirEntD);
                 findDirEntD = NULL;
-                return -1; //return error
+                return -1; //return error because directory doesn't exist
             }
         }
         retVal = LBAread(findDirEntDE, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
@@ -343,18 +349,19 @@ int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex){
     retVal = LBAread(findNextDirEntD, vcb->dBlkCnt, directoryIndex);
     // dirEnt* findNextDirEntDE = malloc(toBlockSize(sizeof(dirEnt)));
 
-    for(int i = startingDirectoryEntryIndex; i< (sizeof(findNextDirEntD->dirEnts)/(sizeof(dirEnt))); i++)
+    for(int i = startingDirectoryEntryIndex; i< (sizeof(findNextDirEntD->dirEnts)/(sizeof(findNextDirEntD->dirEnts[0]))); i++)
     {
         
         if(findNextDirEntD->dirEnts[i] != -1)
         {
             //retVal = LBAread(findNextDirEntDE, vcb->dSize,findNextDirEntD->dirEnts[i]); //read into our dummy dir ent
             //return findNextDirEntD->dirEnts[i];
+            free(findNextDirEntD);
+            findNextDirEntD = NULL;
             return i;
         }
     }
-    return -1;
-}
-
-void initDotDot(){
+    free(findNextDirEntD);
+    findNextDirEntD = NULL;
+    return 0;  //no more dirEnts
 }

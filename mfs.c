@@ -47,14 +47,14 @@ fdDir * fs_opendir(const char *name){
     int dirEntIndex = findDirEnt(name,0);  //find location of directory at pathname
 
     dirEnt* fs_opendirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
+    // printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     retVal = LBAread(fs_opendirDE, vcb->deBlkCnt, dirEntIndex);
 
     fdDir* fs_open_fddir = malloc(toBlockSize(sizeof(fdDir)));
     if(fs_open_fddir->isInitialized != 1)
     {
-        printf("Malloced: %d bytes\n", toBlockSize(sizeof(fdDir)));
+        // printf("Malloced: %d bytes\n", toBlockSize(sizeof(fdDir)));
         if(fs_opendirDE->type == 1)
         {
             fs_open_fddir->dirEntryPosition = 0;
@@ -65,34 +65,41 @@ fdDir * fs_opendir(const char *name){
     }
 
     free(fs_opendirDE);
-    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
+    // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     return fs_open_fddir;
 }
  
 struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will return the next diritem info //returns name
     int retVal;
+    int dirEntPos;
     dirpItemInfo = malloc(sizeof(struct fs_diriteminfo));
 
-    dirp->dirEntryPosition = findNextDirEnt(dirp->directoryStartLocation,dirp->dirEntryPosition);
+    dirEntPos = findNextDirEnt(dirp->directoryStartLocation,dirp->dirEntryPosition);
+
+    if(dirEntPos < dirp->dirEntryPosition){
+        return NULL;
+    }
+    dirp->dirEntryPosition = dirEntPos;
 
     dirEnt* fs_readdirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
+    // printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dir* fs_readdirD = malloc(toBlockSize(sizeof(dir)));
-    printf("Malloced: %d bytes\n", toBlockSize(sizeof(dir)));
+    // printf("Malloced: %d bytes\n", toBlockSize(sizeof(dir)));
 
     retVal = LBAread(fs_readdirD, vcb->dBlkCnt, dirp->directoryStartLocation);
-    retVal = LBAread(fs_readdirDE, vcb->deBlkCnt, fs_readdirD->dirEnts[dirp->dirEntryPosition]);
-
-    free(fs_readdirDE);
-    printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
-    free(fs_readdirD);
-    printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
+    retVal = LBAread(fs_readdirDE, vcb->deBlkCnt, fs_readdirD->dirEnts[dirEntPos]);
     
     dirpItemInfo->d_reclen = sizeof(fdDir);
     dirpItemInfo->fileType = fs_readdirDE->type;
     strcpy(dirpItemInfo->d_name,fs_readdirDE->name);
 
+    free(fs_readdirDE);
+    // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
+    free(fs_readdirD);
+    // printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
+
+    dirp->dirEntryPosition++;
     return dirpItemInfo;
 }
 
