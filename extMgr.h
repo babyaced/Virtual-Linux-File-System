@@ -12,5 +12,5 @@ typedef struct ext {
 ext getNextExt (dirEnt* file);
 void deleteExts (dirEnt* file);
 void initExts (dirEnt* file, int count);
-int getBlock (dirEnt* file, int logicalAddress);
+int getLba (dirEnt* file, int logicalAddress);
 #endif

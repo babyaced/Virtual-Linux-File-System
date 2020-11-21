@@ -120,22 +120,34 @@ ext getNextExt (dirEnt* file){
             file->dExt[index].lba = lbaPos;
             file->dExt[index].count = count;
             printf("ADD dEXT%d, actually EXT%d\n", index, index+5);
-            printf("lba = %d\n", lbaPos);
+//            printf("lba = %d\n", lbaPos);
         }
     }
 
     return nextExt;
 }
 
-int getBlock (dirEnt* file, int logicalAddress){ // gets the lba block within a file from its logical address, adds extents if needed
+int getLba (dirEnt* file, int logicalAddress){ // gets the lba block within a file from its logical address, adds extents if needed
     int currentAddress = logicalAddress;
     int extNum = 1;
-    while (currentAddress>0){ // finding which extent contains the logical address
+    while (currentAddress>=0){ // finding which extent contains the logical address
         // check if ext.count is 0, if so add new extent
-        if (extNum==1) currentAddress -= file->ext1.count;
-        else if (extNum==2) currentAddress -= file->ext2.count;
-        else if (extNum==3) currentAddress -= file->ext3.count;
-        else if (extNum==4) currentAddress -= file->ext4.count;
+        if (extNum==1) {
+            if (file->ext1.count==0) getNextExt(file); // get a new extent if not allocated
+            currentAddress -= file->ext1.count-1;
+        }
+        else if (extNum==2) {
+            if (file->ext2.count==0) getNextExt(file); // get a new extent if not allocated
+            currentAddress -= file->ext2.count;
+        }
+        else if (extNum==3) {
+            if (file->ext3.count==0) getNextExt(file); // get a new extent if not allocated
+            currentAddress -= file->ext3.count;
+        }
+        else if (extNum==4) {
+            if (file->ext4.count==0) getNextExt(file); // get a new extent if not allocated
+            currentAddress -= file->ext4.count;
+        }
         else {
             int i = extNum - 5; // index in dExt array
             currentAddress -= file->dExt[i].count;

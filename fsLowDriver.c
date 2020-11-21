@@ -199,13 +199,13 @@ int main (int argc, char *argv[])
  	// testing extents
  	dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
  	initExts(testDe, MAX_SEC_EXTENTS);
- 	int index;
- 	for (index = 0; index < MAX_SEC_EXTENTS; index++){
-        getNextExt(testDe);
- 	}
+// 	int index;
+// 	for (index = 0; index < MAX_SEC_EXTENTS; index++){
+//        getNextExt(testDe);
+// 	}
 
- 	printf("extent of logical block = %d\n", getBlock(testDe, 1));
-
+ 	//printf("extent of logical block = %d\n", getLba(testDe, 1));
+ 	printf("getLba0 = %d\n", getLba(testDe, 0));
     deleteExts(testDe);
 	
 	free(testDe);
