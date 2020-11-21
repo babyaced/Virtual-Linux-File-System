@@ -136,7 +136,7 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
         dotDot->dataIndex  = dot->dataIndex;
         vcb->rdLoc = initDirDE->loc;
 
-        addDirEnt(initDirD,initDirDE);                                //add root directory entry to root directory's directory entries
+        //addDirEnt(initDirD,initDirDE);                                //add root directory entry to root directory's directory entries
         addDirEnt(initDirD,dot);                                      //add dot directory entry to root directory's directory entries
         addDirEnt(initDirD,dotDot);                                   //add dot dot directory entry to root directory's directory entries
     } 
