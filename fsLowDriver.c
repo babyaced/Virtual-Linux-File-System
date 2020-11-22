@@ -119,6 +119,8 @@ int main (int argc, char *argv[])
 
 	// retVal = fs_setcwd("..");
 	// printf("Current Block: %d\n", currentBlock);
+	retVal = fs_rmdir("/test");
+	printf("fs_rmdir Current Block: %d\n", currentBlock);
 
 
 

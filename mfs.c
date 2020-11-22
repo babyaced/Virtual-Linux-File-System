@@ -36,12 +36,44 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 int fs_rmdir(const char *pathname){
     int retVal;
     printf("Path Name: %s\n", pathname);
-
+    printf("fs_rmdir\n");
+    char* pathnameCpy = strndup(pathname, strlen(pathname));
     //findDirEnt()  //find location of directory at pathname
+    int dirIndex = findDirEnt(pathname, 0);
+    int parentDirEntIndex = findDirEnt(pathnameCpy, 0);
+    
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+    dir* parentDir = malloc(toBlockSize(sizeof(dir)));
+    printf("Mallocing: %ld bytes\n", sizeof(dir));
+
+    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);
+    
+    int blockLength = de->dataBlkCnt;
+    int index = de->dataIndex;
+    
+    //de->dataIndex = dirIndex;
+    if(!pathname) {
+        printf("%s does not exist.\n", pathname);
+        return -1; //return -1 if error
+    }
+
+    if (parentDirEntIndex == -1) {
+        printf("%s does not exist.\n", pathnameCpy);
+        return -1;
+    }
     //need to iterate through dirEnts[] of dir and setFreeBlocks for each
-    //clear directory entry //reset to zero values
-    //setFreeBlocks(vcb,fsl, dir->loc, dir->sizeInBlocks)
+    if(de->dataBlkCnt > 0) {
+        //clear directory entry //reset to zero values
+        //parentDir->sizeOfBlocks
+        clearFreeBlocks(index, blockLength);
+    }
+    free(parentDir);
+    free(de);
+    parentDir = NULL;
+    de = NULL;
     return 0; //not sure what return value is supposed to represent yet
+              //retVal
 }
 
 fdDir * fs_opendir(const char *name){
