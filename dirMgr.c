@@ -1,17 +1,23 @@
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include "dirMgr.h"
 #include "freeMgr.h"
 #include "fsInit.h"
 #include "hashTable.h"
 #include "fsLow.h"
 
-#define TABLE_SIZE 54
+
+#define F_CREATE 0x01 //0b00000001
+#define D_CREATE 0x02 //0b00000010
+
+// #define TABLE_SIZE 54
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
 extern int currentBlock; //holds LBA block of current directory for use with relative pathnames
 extern int currentBlockSize;  //holds # of blocks taken by current directory
+extern char currentBlockName[255]; //size of 255 for now
 
 int toBlockSize(int size) { // round up to full block sizes for lbaRead()
     int nBlocks = size / vcb->sizeOfBlocks;
@@ -20,73 +26,140 @@ int toBlockSize(int size) { // round up to full block sizes for lbaRead()
     return nBlocks * vcb->sizeOfBlocks;
 }
 
-int initDir(int parentBlock, char* name){  //pass in block of whatever directory this is called from //OR in case of root directory init, pass in sentinel value of 0
+int initDir(int parentDEBlock, char* name){  //pass in block of whatever directory this is called from //OR in case of root directory init, pass in sentinel value of 0
     int retVal;
-    // printf("Initializing directory named %s\n", name);
+
+    dirEnt* dot = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* dotDot = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));
 
     int bytesNeeded = sizeof(dir);
-    int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks) + 1;
+    int blocksNeeded = (bytesNeeded/vcb->sizeOfBlocks);
     int dirStartBlock = findFreeBlocks(blocksNeeded); //find next available blocks
+    setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
     
-    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dir)));
     dir* initDirD = malloc(toBlockSize(sizeof(dir)));
-    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* initDirDE = malloc(toBlockSize(sizeof(dirEnt)));
     //initDirD->sizeInBlocks = blocksNeeded;
     //initDirD->sizeInBytes = bytesNeeded;
     initDirD->loc = dirStartBlock;
-    if(parentBlock == 0){  //initialize root directory
+    if(parentDEBlock == 0){  //initialize root directory
         initDirD->parentLoc = dirStartBlock;  //parent is itself
         //initialize root directory variables of vcb
-        vcb->rdLoc = initDirD->parentLoc; 
-        vcb->rdBlkCnt = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
-        vcb->rdLoc = initDirD->loc;
-        currentBlock = dirStartBlock;  //when root directory is initialized, set currentBlock to it, so future child directories can easily use it
+         
+        vcb->dBlkCnt = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
+        vcb->deBlkCnt = toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks;
         currentBlockSize = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
-        initDirDE->parentLoc = dirStartBlock;
+        strncpy(currentBlockName,name, strlen(name));
+        
     }
-    else{  //use parent block passed in
-        initDirD->parentLoc = parentBlock; // parent is at block index passed in
-        initDirDE->parentLoc = parentBlock;
+    else{  //use parent block passed in to initialize dotDot and our parent locs
+        retVal = LBAread(parentDE,vcb->deBlkCnt, parentDEBlock);
+        strncpy(dotDot->name,"..", 3);
+        dotDot->type = 1;
+        dotDot->dataBlkCnt = vcb->dBlkCnt;
+        dotDot->dataIndex = parentDE->loc;
+
+        int dotDotStartBlock = findFreeBlocks(vcb->deBlkCnt);
+        setFreeBlocks(dotDotStartBlock,vcb->deBlkCnt);
+        dotDot->loc = dotDotStartBlock;
+
+        //write dot directory entry of directory to disk
+        retVal = LBAwrite(dotDot,vcb->deBlkCnt, dotDotStartBlock);
+        
+        initDirD->parentLoc = parentDE->loc; // parent is at block index passed in
+        initDirDE->parentLoc = parentDE->loc;
     }
+    
+
     strncpy(initDirD->name,name,strlen(name));
     initDirD->name[strlen(name)] = '\0';
+
     initDirEntries(initDirD);  //initialize dirEnts
-    setFreeBlocks(dirStartBlock,blocksNeeded); //modify free space bitmap to indicate blocks taken up by this directory
     
-    //initialize directory entry
+    
+    
+    //=========================================
+    //Initialize directory entry
+    //=========================================
     strncpy(initDirDE->name,name,strlen(name));
     initDirDE->name[strlen(name)] = '\0';
+    
     initDirDE->type = 1;
-    int deStartBlock = findFreeBlocks(blocksNeeded);
-    initDirDE->loc = deStartBlock;
-    initDirDE->dataBlkCnt = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
+    initDirDE->dataBlkCnt = vcb->dBlkCnt;
     initDirDE->dataIndex = dirStartBlock;
+    // initialize extents of directory entry
+    initDirDE->ext1.count = 0;
+    initDirDE->ext2.count = 0;
+    initDirDE->ext3.count = 0;
+    initDirDE->ext4.count = 0;
+    initExts(initDirDE, MAX_SEC_EXTENTS);
+    int deStartBlock = findFreeBlocks(blocksNeeded);
+    setFreeBlocks(deStartBlock,vcb->deBlkCnt);
+    initDirDE->loc = deStartBlock;
+
+    if(parentDEBlock == 0){
+        currentBlock = deStartBlock;  //when root directory is initialized, set currentBlock to it, so future child directories can easily use it
+        initDirDE->parentLoc = deStartBlock;
+    }
 
     //write directory entry of directory to disk
-    retVal = LBAwrite(initDirDE,toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks,deStartBlock);
-    setFreeBlocks(deStartBlock,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1);
-
-    if(parentBlock != 0){  //if directory is not root
-        retVal = LBAwrite(initDirD,currentBlockSize, dirStartBlock);  //write directory we are initializing now to disk
-        retVal = LBAread(initDirD,currentBlockSize,parentBlock);      //read directory of parent 
-        addDirEnt(initDirD,initDirDE);                                //add directory entry of directory initialized in this function to parent directory
-        retVal = LBAwrite(initDirD,toBlockSize(sizeof(dir))/vcb->sizeOfBlocks, parentBlock);  //save directory of parent to disk
-    } 
-    else{  //else root directory entry will be written to root directory
-        addDirEnt(initDirD,initDirDE);  //add root directory entry to root directory's directory entries 
-        retVal = LBAwrite(initDirD,currentBlockSize, dirStartBlock);
-    }
+    retVal = LBAwrite(initDirDE,vcb->deBlkCnt,deStartBlock);
     
-    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
+
+    //=======================================
+    //initialize "dot" directory entry
+    //=======================================
+    strncpy(dot->name,".",2);
+    dot->type = initDirDE->type;
+    dot->dataBlkCnt = initDirDE->dataBlkCnt;
+    dot->dataIndex  = initDirDE->loc;
+    /*dot->ext1.count = initDirDE->ext1.count;  //don't think these are needed 
+    dot->ext2.count = initDirDE->ext2.count;
+    dot->ext3.count = initDirDE->ext3.count;
+    dot->ext4.count = initDirDE->ext4.count;
+    initExts(dot, MAX_SEC_EXTENTS);*/
+
+    int dotStartBlock = findFreeBlocks(vcb->deBlkCnt);
+    setFreeBlocks(dotStartBlock,vcb->deBlkCnt);
+    dot->loc = dotStartBlock;
+
+    //write dot directory entry of directory to disk
+    retVal = LBAwrite(dot,vcb->deBlkCnt, dotStartBlock);
+    
+
+    if(parentDEBlock == 0){  //if directory is root
+        strncpy(dotDot->name,"..", 3);
+        dotDot->type = dot->type;
+        dotDot->loc = dot->loc;
+        dotDot->dataBlkCnt = dot->dataBlkCnt;
+        dotDot->dataIndex  = dot->dataIndex;
+        vcb->rdLoc = initDirDE->loc;
+
+        //addDirEnt(initDirD,initDirDE);                                //add root directory entry to root directory's directory entries
+        addDirEnt(initDirD,dot);                                      //add dot directory entry to root directory's directory entries
+        addDirEnt(initDirD,dotDot);                                   //add dot dot directory entry to root directory's directory entries
+    } 
+    else{
+        addDirEnt(initDirD,dot);                                      //add dot directory entry
+        addDirEnt(initDirD,dotDot);
+        //read directory of parent
+        retVal = LBAread(initDirD,vcb->dBlkCnt,parentDE->dataIndex);      
+        addDirEnt(initDirD,initDirDE);                                //add directory entry of directory initialized in this function to parent directory
+    }
+
+    free(dot);
+    dot = NULL;
+    free(dotDot);
+    dotDot = NULL;
     free(initDirDE);
     initDirDE = NULL;
-    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dir)));
-    // initDirEntries(initDirD);
     free(initDirD);
     initDirD = NULL;
+    free(parentDE);
+    parentDE = NULL;
 
-    return dirStartBlock;  //returns block of data of directory, not directory entry of directory
+    return dirStartBlock;  //returns block of data of directory, not directory entry of directory 
 }
 
 void initDirEntries(dir* initDED){ 
@@ -97,49 +170,50 @@ void initDirEntries(dir* initDED){
     }
 }
 
-int initFile(int parentBlock, char* name){ //takes in parent directory data block and name of new file
+int initFile(int parentDEBlock, char* name){ //takes in parent directory data block and name of new file
     int retVal;
     //this just creates directory entry in directory at parentBlock
-    int deStartBlock = findFreeBlocks(currentBlockSize); //find next available blocks for our new directory entry
+    int deStartBlock = findFreeBlocks(vcb->deBlkCnt); //find next available blocks for our new directory entry
+    setFreeBlocks(deStartBlock,vcb->deBlkCnt);
 
-    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* initFileDE = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
     strncpy(initFileDE->name,name, strlen(name));
-    initFileDE->parentLoc = parentBlock;
+    initFileDE->name[strlen(name)] ='\0';
+    initFileDE->parentLoc = parentDEBlock;
     initFileDE->type = 0;
     initFileDE->loc = deStartBlock;
-    initFileDE->dataIndex = -1;      //right now its just an empty file with no data
-    initFileDE->dataBlkCnt = -1;     //right now its just an empty file with no data
+    initFileDE->dataIndex = 0;      //right now its just an empty file with no data
+    initFileDE->dataBlkCnt = 0;     //right now its just an empty file with no data
 
     // extents, init count to 0
     initFileDE->ext1.count = 0;
     initFileDE->ext2.count = 0;
     initFileDE->ext3.count = 0;
     initFileDE->ext4.count = 0;
+    initExts(initFileDE, MAX_SEC_EXTENTS);
 
-    retVal = LBAwrite(initFileDE,toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks,deStartBlock);
-    setFreeBlocks(deStartBlock,(sizeof(dirEnt)/vcb->sizeOfBlocks)+1);
-
+    retVal = LBAwrite(initFileDE,vcb->deBlkCnt,deStartBlock);
+    
     //add this directory entry to directory at parent block
-    dir* initFileD = malloc(toBlockSize(sizeof(dir)));          // malloc memory for parent directory
-    retVal = LBAread(initFileD,currentBlockSize,parentBlock);   // read the parent directory into variable
+    dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));          // malloc memory for parent directory entry
+    retVal = LBAread(parentDE,vcb->deBlkCnt,parentDEBlock);   // read the parent directory entry into variable
 
-    addDirEnt(initFileD,initFileDE);   //add the new file's directory entry to directory passed in
+    dir* parentD = malloc(toBlockSize(sizeof(dir)));
+    retVal = LBAread(parentD,vcb->dBlkCnt,parentDE->dataIndex);   // read the parent directory entry into variable
 
-    printf("Mallocing: %d bytes\n", toBlockSize(sizeof(dir)));
-    retVal = LBAwrite(initFileD,currentBlockSize, parentBlock);
+    addDirEnt(parentD,initFileDE);   //add the new file's directory entry to directory passed in
 
     int loc = initFileDE->loc;
-    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(initFileDE);
     initFileDE = NULL;
-    printf("Freeing: %d bytes\n", toBlockSize(sizeof(dir)));
-    free(initFileD);
-    initFileD = NULL;
+    free(parentDE);
+    parentDE = NULL;
+    free(parentD);
+    parentD = NULL;
     return loc;  //return directory entry location, b_write will decide dataIndex and dataBlkCnt later
 }
 
-int findDirEnt(const char* pathname){  // will eventually be edited to take in LBA from caller that is starting directory
+int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be edited to take in LBA from caller that is starting directory
     //for now start at root and iterate through directories
     //split directory name into parts
     char* original;
@@ -153,44 +227,70 @@ int findDirEnt(const char* pathname){  // will eventually be edited to take in L
 
     bool abortFlag = false;
 
-    printf("Mallocing: %d Bytes\n", toBlockSize(sizeof(dir)));
     dir* findDirEntD = malloc(toBlockSize(sizeof(dir))); //allocate memory for dir // 720 is temporary
-    printf("Mallocing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
     dirEnt* findDirEntDE = malloc(toBlockSize(sizeof(dirEnt)));
    
-
     //=========================================================================================
     //ABSOLUTE PATH //we need to start from root
     //=========================================================================================
     if(pathname[0] == '/') {//if pathname is absolute
-        retVal = LBAread(findDirEntD,vcb->rdBlkCnt,vcb->rdLoc);  //read root directory into our directory
+        deIndex = vcb->rdLoc; //set deIndex to rd deIndex in case user wants to change directory to root
+        dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
+        retVal = LBAread(currentBlockDE,vcb->deBlkCnt,vcb->rdLoc);
+        retVal = LBAread(findDirEntD,vcb->dBlkCnt,currentBlockDE->dataIndex);  //read root directory into our starting directory
+        free(currentBlockDE);
+        currentBlockDE = NULL;
     }
     //=========================================================================
     //Relative Path Name  //use currentBlock data to get starting directory
     //=========================================================================
     else{
-        retVal = LBAread(findDirEntD,currentBlockSize,currentBlock); // read into our dir function
+        dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
+        retVal = LBAread(currentBlockDE,vcb->deBlkCnt,currentBlock); // read current block into our directory
+        retVal = LBAread(findDirEntD, vcb->dBlkCnt, currentBlockDE->dataIndex);
+        free(currentBlockDE);
+        currentBlockDE = NULL;
     }
     while((token = strtok_r(remainder, "/",&remainder))){ //continues while subdirectory exists
         if(abortFlag == true){ //we are trying to iterate into a file, not a directory
+            free(original);
+            original = NULL;
+            free(findDirEntDE);
+            findDirEntDE = NULL;
+            free(findDirEntD);
+            findDirEntD = NULL;
             return -1;  //return error
         }
         // printf("Token: %s\n", token);  //prints next directory
         deIndex = hash_table_lookup(token,findDirEntD);  //look up the name in directory entries of findDirEntD
-        if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist
+        if(strncmp(token, ".", 2) == 0 || strncmp(token, "..", 3) == 0)  //if the token is dot or dot dot
+        {
+            retVal = LBAread(findDirEntDE,vcb->deBlkCnt, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
+            deIndex = findDirEntDE->dataIndex;  //dataIndex holds the deIndex of the de that dot or dot dot points to
+        }
+        if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist or the caller wants to create a file or directory
         { 
-            if(strcmp(pathname,"") != 0){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file 
+            if(strcmp(remainder,"") == 0){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file or directory
+              if(options & F_CREATE){
                 //create file by default for now
-                if(counter == 0)
-                    retVal = initFile(currentBlock,token);
-                else
-                    retVal = initFile(findDirEntDE->dataIndex,token);
+                if(counter == 0)   //if the pathname is only one directory long
+                    retVal = initFile(currentBlock,token);  
+                else               //
+                    retVal = initFile(findDirEntDE->loc,token);
+              }
+              else if(options & D_CREATE){
+                if(counter == 0)   //if the pathname is only one directory long
+                    retVal = initDir(currentBlock,token);  
+                else               //
+                    retVal = initDir(findDirEntDE->loc,token);  //need to change to pass in directory entry loc, not data loc
+              }
+              else{
+                  retVal = -1;
+              }
                 free(original);
                 original = NULL;
-                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
-                free(findDirEntDE);if(pathname ="") //if pathname is e
+                free(findDirEntDE); //if pathname is e
                 findDirEntDE = NULL;
-                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
                 free(findDirEntD);
                 findDirEntD = NULL;
                 return retVal;
@@ -198,20 +298,18 @@ int findDirEnt(const char* pathname){  // will eventually be edited to take in L
             else{  //we are trying to iterate into directory that does not exist
                 free(original);
                 original = NULL;
-                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
                 free(findDirEntDE);
                 findDirEntDE = NULL;
-                printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
                 free(findDirEntD);
                 findDirEntD = NULL;
-                return -1; //return error
+                return -1; //return error because directory doesn't exist
             }
         }
-        retVal = LBAread(findDirEntDE, 1, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
+        retVal = LBAread(findDirEntDE,vcb->deBlkCnt, deIndex);  //read directory entry (NOT FILE ITSELF) into dirEnt
         if(findDirEntDE->type == 1) //if directory entry is a directory
         {
             counter++;
-            retVal = LBAread(findDirEntD, findDirEntDE->dataBlkCnt,findDirEntDE->dataIndex);//read new starting directory into d
+            retVal = LBAread(findDirEntD, vcb->dBlkCnt,findDirEntDE->dataIndex);//read new starting directory into d
 
         }
         else if(findDirEntDE->type ==0){  //we are at a file
@@ -221,10 +319,8 @@ int findDirEnt(const char* pathname){  // will eventually be edited to take in L
     }
     free(original);
     original = NULL;
-    printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dirEnt)));
     free(findDirEntDE);
     findDirEntDE = NULL;
-    printf("Freeing: %d Bytes\n", toBlockSize(sizeof(dir)));
     free(findDirEntD);
     findDirEntD = NULL;
 
@@ -239,29 +335,42 @@ void addDirEnt(dir* parentDir, dirEnt* dE){
     if(dE->type ==1)  // if type of directory entry is directory
     {
         success = hash_table_insert(dE,parentDir);  //need to edit hash_table_insert to take other info (ie. location)
-        retVal = LBAwrite(parentDir,toBlockSize(sizeof(dir))/vcb->sizeOfBlocks,parentDir->loc);
+        if(success == false){
+            printf("ERROR: Failed to add Directory, parent directory is full!\n");
+        }
+        else{
+            retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
+        }
+        
     }
     else if(dE->type == 0)//else if type is file
     {
         success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
+        if(success == false){
+            printf("ERROR: Failed to add file, parent directory is full!\n");
+        }
+        else{
+            retVal = LBAwrite(parentDir,vcb->deBlkCnt,parentDir->loc);
+        }
     }   
 }
 
 int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex){
     int retVal;
     dir* findNextDirEntD = malloc(toBlockSize(sizeof(dir)));
-    retVal = LBAread(findNextDirEntD, vcb->rdBlkCnt, directoryIndex);
-    // dirEnt* findNextDirEntDE = malloc(toBlockSize(sizeof(dirEnt)));
+    retVal = LBAread(findNextDirEntD, vcb->dBlkCnt, directoryIndex);
 
-    for(int i = startingDirectoryEntryIndex; i< (sizeof(findNextDirEntD->dirEnts)/(sizeof(dirEnt))); i++)
+    for(int i = startingDirectoryEntryIndex; i< (sizeof(findNextDirEntD->dirEnts)/(sizeof(findNextDirEntD->dirEnts[0]))); i++)
     {
         
         if(findNextDirEntD->dirEnts[i] != -1)
         {
-            //retVal = LBAread(findNextDirEntDE, vcb->rdBlkCnt,findNextDirEntD->dirEnts[i]); //read into our dummy dir ent
-            //return findNextDirEntD->dirEnts[i];
+            free(findNextDirEntD);
+            findNextDirEntD = NULL;
             return i;
         }
     }
-    return -1;
+    free(findNextDirEntD);
+    findNextDirEntD = NULL;
+    return 0;  //no more occupied dirEnts
 }

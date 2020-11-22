@@ -12,11 +12,13 @@ typedef struct{
     //free space list pointer
 
     int rdLoc; //root directory pointer/index
-    int rdBlkCnt;        //blocks taken up by root directory
 
     //uint64_t fslLoc;  //free space list pointer/index
     int fslBlkCnt;    //blocks taken up by free space bitmap
     int fslBytes;     //bytes taken up by free space bitmap
+
+    int dBlkCnt;        //size of directories in blocks
+    int deBlkCnt;       //size of directory entries in blocks
 }vCB;
 
 

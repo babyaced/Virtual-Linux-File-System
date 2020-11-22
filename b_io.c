@@ -75,12 +75,12 @@ int b_getFCB()
 }
 
 
-int b_open (char* filename, int flags){  //cannot open directory
+int b_open (const char* filename, int flags){  //cannot open directory
 
     if(areWeInitialized == 0) b_init(); //initialize our system
 
     //pass dirname into findDir(function)
-    int dirEntIndex = findDirEnt(filename);  //get directory entry of that file //create it if it doesn't exist
+    int dirEntIndex = findDirEnt(filename,1);  //get directory entry of that file //create it if it doesn't exist
 
     if(dirEntIndex == -1)  //error opening filename //file doesn't exist
         return (-1);
@@ -90,7 +90,7 @@ int b_open (char* filename, int flags){  //cannot open directory
     dirEnt* b_openDE = malloc(toBlockSize(sizeof(dirEnt)));
     printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
 
-    int retVal = LBAread(b_openDE,vcb->rdBlkCnt, dirEntIndex);
+    int retVal = LBAread(b_openDE,vcb->deBlkCnt, dirEntIndex);
 
     
 
@@ -217,7 +217,7 @@ int b_write (int fd, char * buffer, int count)
     int retVal;
     dirEnt* b_writeDE = malloc(toBlockSize(sizeof(dirEnt)));  //for saving modified data to opened directory entry
     printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
-    retVal = LBAread(b_writeDE, vcb->rdBlkCnt, openFileTables[fd].dirEntIndex);
+    retVal = LBAread(b_writeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
 
 	if(count >= B_CHUNK_SIZE){
@@ -285,7 +285,7 @@ int b_write (int fd, char * buffer, int count)
 			openFileTables[fd].ourBufferOffset += count - callerBufferOffset; //increment our offset
 		}
 	}
-    retVal = LBAwrite(b_writeDE, vcb->rdBlkCnt, openFileTables[fd].dirEntIndex); //save modified directory entry to disk
+    retVal = LBAwrite(b_writeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex); //save modified directory entry to disk
     free(b_writeDE);
     b_writeDE = NULL;
     printf("Freed   %d bytes for b_writeDE and set b_writeDE to NULL\n",toBlockSize(sizeof(dirEnt)));
@@ -315,7 +315,7 @@ void b_close (int fd){
     dirEnt* b_closeDE = malloc(toBlockSize(sizeof(dirEnt)));  //for saving modified data to opened directory entry
     printf("Malloced %d bytes for b_closeDE\n",toBlockSize(sizeof(dirEnt)));
 
-    int retVal = LBAread(b_closeDE, vcb->rdBlkCnt, openFileTables[fd].dirEntIndex);
+    int retVal = LBAread(b_closeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
     if(openFileTables[fd].bytesInBuffer > 0){ // if there are bytes remaining in the buffer
         if(openFileTables[fd].lbaLoc == 0){
@@ -323,7 +323,7 @@ void b_close (int fd){
             b_closeDE->dataIndex = openFileTables[fd].lbaLoc;  //save data index just found to our directory entry
             b_closeDE->dataBlkCnt = B_CHUNK_SIZE/vcb->sizeOfBlocks;
             retVal = LBAwrite(openFileTables[fd].buffer, B_CHUNK_SIZE/vcb->sizeOfBlocks, openFileTables[fd].lbaLoc);  //write rest of buffer to disk
-            retVal = LBAwrite(b_closeDE, vcb->rdBlkCnt, b_closeDE->loc);  //save modified directory entry to disk
+            retVal = LBAwrite(b_closeDE, vcb->deBlkCnt, b_closeDE->loc);  //save modified directory entry to disk
         }
     }
 
