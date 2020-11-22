@@ -21,10 +21,6 @@
 #define B_CHUNK_SIZE vcb->sizeOfBlocks
 #define MAX_OPEN_FILES 20
 
-//Flags for B_OPEN
-#define WR_ONLY 0x01 //0b00000001
-#define RD_ONLY 0x02 //0b00000010
-
 extern vCB* vcb;
 extern unsigned int* freeSpaceBitmap; 
 
@@ -36,8 +32,9 @@ typedef struct FD {
     int bytesInBuffer;      //how many bytes are in the buffer assigned to the file at the moment
     int ourBufferOffset;    //how many bytes are written into the file's buffer at the moment
     int dirEntIndex;        //open directory entry's location in lba
-    int pOffset;            //offset of blocks for a file of block length greater than 1
-    int blocksAlloced;      //how many blocks were initially allocated to the file
+    // int pOffset;            //offset of blocks for a file of block length greater than 1
+    // int blocksAlloced;      //how many blocks were initially allocated to the file
+    int flags;
 
 }FD;
 
@@ -57,8 +54,8 @@ void b_init()
         openFileTables[i].bytesInBuffer = 0;      //how many bytes are in the buffer assigned to the file at the moment
         openFileTables[i].ourBufferOffset = 0;    //how many bytes are written into the file's buffer at the moment
         openFileTables[i].dirEntIndex = 0;        //open directory entry's location in lba
-        openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
-        openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
+        //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
+        // openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
     }
     areWeInitialized = 1;
 }
@@ -80,9 +77,12 @@ int b_getFCB()
 int b_open (const char* filename, int flags){  //cannot open directory
 
     if(areWeInitialized == 0) b_init(); //initialize our system
+    int dirEntIndex;
 
-    //pass dirname into findDir(function)
-    int dirEntIndex = findDirEnt(filename,1);  //get directory entry of that file //create it if it doesn't exist
+    if(flags & O_CREAT)  //if O_CREAT flag is passed in
+      dirEntIndex = findDirEnt(filename,1);  //get directory entry of that file //create it if it doesn't exist
+    else
+      dirEntIndex = findDirEnt(filename,0); //get directory entry of that file
 
     if(dirEntIndex == -1)  //error opening filename //file doesn't exist
         return (-1);
@@ -93,8 +93,6 @@ int b_open (const char* filename, int flags){  //cannot open directory
     // printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
 
     int retVal = LBAread(b_openDE,vcb->deBlkCnt, dirEntIndex);
-
-    
 
     if(b_openDE->dataIndex == -1) //in case of unitialized file
     {
@@ -118,11 +116,24 @@ int b_open (const char* filename, int flags){  //cannot open directory
         openFileTables[fcbFD].pLoc = -1; //free FCB
         return -1;  //return error code
     }
+
+    if(flags & O_RDONLY){
+        openFileTables[fcbFD].flags = O_RDONLY;
+    }
+    if(flags & O_WRONLY){
+        openFileTables[fcbFD].flags = O_WRONLY;
+    }
+
+
     return (fcbFD);  //return our file descriptor
 }
 
 int b_read (int fd, char * buffer, int count)  //this is copy of bierman's version 
 {
+    if((openFileTables[fd].flags & O_ACCMODE) & O_WRONLY){
+        printf("You do not have permission to read from this file\n");
+        return -1;
+    }
     dirEnt* b_readDE = malloc(toBlockSize(sizeof(dirEnt)));  //for saving modified data to opened directory entry
     int retVal = LBAread(b_readDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
@@ -178,9 +189,9 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
             
             for(int i = 0; i < blocks; i++){
                 blockToReadFrom = getLba(b_readDE,openFileTables[fd].extOffset);
-                blocksRead = LBAread(buffer+bufferOffset,1,blockToReadFrom);                    //need to make sure that this is not reading from where it is not supposed to, because it assumes the blocks are physically contigious
+                blocksRead = LBAread(buffer+bufferOffset,1,blockToReadFrom);                 
                 openFileTables[fd].extOffset++;
-                bufferOffset += B_CHUNK_SIZE;                                                                //offset the buffer by 1 block
+                bufferOffset += B_CHUNK_SIZE;                                      //offset the buffer by 1 block
             }
             
             bytesRead = blocks* vcb->sizeOfBlocks;
@@ -224,6 +235,10 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
 
 int b_write (int fd, char * buffer, int count)
 {
+    if((openFileTables[fd].flags & O_ACCMODE) == O_RDONLY){
+        printf("You do not have permission to write to this file\n");
+        return -1;
+    }
 	if (areWeInitialized == 0) b_init();  //Initialize our system
 
 	// check that fd is between 0 and (MAX_OPEN_FILES-1)
