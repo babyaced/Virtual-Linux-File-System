@@ -10,6 +10,7 @@
 
 #define F_CREATE 0x01 //0b00000001
 #define D_CREATE 0x02 //0b00000010
+#define LOOK_UP  0x03 //0b00000011
 
 // #define TABLE_SIZE 54
 
@@ -269,7 +270,8 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
             deIndex = findDirEntDE->dataIndex;  //dataIndex holds the deIndex of the de that dot or dot dot points to
         }
         if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist or the caller wants to create a file or directory
-        { 
+        {
+            if (options == LOOK_UP) return -2; // we return -2 if no entry is found and option is LOOK_UP
             if(strcmp(remainder,"") == 0){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file or directory
               if(options & F_CREATE){
                 //create file by default for now
@@ -279,6 +281,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
                     retVal = initFile(findDirEntDE->loc,token);
               }
               else if(options & D_CREATE){
+
                 if(counter == 0)   //if the pathname is only one directory long
                     retVal = initDir(currentBlock,token);  
                 else               //

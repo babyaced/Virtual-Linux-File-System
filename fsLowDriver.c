@@ -196,7 +196,10 @@ int main (int argc, char *argv[])
 	printf("Buffer: %s\n", buffer);
 	free(buffer);*/
 
- 	//fs_delete("/file");
+	//fs_mkdir("testfile", 1);
+	findDirEnt("testfile", 1);
+
+ 	fs_delete("testfile");
 
 	/*b_close(FD);
 

@@ -6,6 +6,7 @@
 #include "dirMgr.h"
 #include "fsLow.h"
 #include "freeMgr.h"
+#include "hashTable.h"
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
@@ -225,34 +226,40 @@ int fs_stat(const char *path, struct fs_stat *buf){
 int fs_delete(char* filename){ //removes a file
     //findDirEnt()  //find location of file at pathname
 
-    int deStartBlock = findFreeBlocks(currentBlockSize);
+    printf("\nfs_delete\n");
+    //int deStartBlock = findFreeBlocks(currentBlockSize);
 
-    int deIndex = findDirEnt(filename,0);
+    int deIndex = findDirEnt(filename, 3);
+    if (deIndex==-2) return -1; // if no file found, fs_delete returns error
+    if (fs_isDir(filename)) return -1; // return error is path is a directory
+    printf("%d\n", deIndex);
 
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
-    int retVal = LBAread(de, vcb->deBlkCnt, deIndex); //read directory entry into fs_isFileDE
+    int retVal = LBAread(de, vcb->deBlkCnt, deIndex); //read directory entry into de
 
-    int lbaLoc = de->dataIndex;
-    int blockLength = de->dataBlkCnt;
-    printf("\nfs_delete()\nFile Loc = %d\n", de->loc);
-    printf("Length = %d\n", de->dataBlkCnt);
+    dir* d = malloc(toBlockSize(sizeof(dir)));
+    retVal = LBAread(d, vcb->deBlkCnt, de->parentLoc); //read directory entry into de
 
-    if(de->dataBlkCnt > 0){
-        clearFreeBlocks(lbaLoc, blockLength); // freeing file's blocks in the freespace bitmap
-    }
-        
+    //printf (d->name);
+//    getNextExt(de); // for testing delete
+//    getNextExt(de); // for testing delete
+//    getNextExt(de); // for testing delete
 
-    /// Need to remove the dirEnt
-    //removeDirEnt(deIndex)  //will check if directory entry points to file or directory and take appropriate action
+    deleteExts(de); // deleting the data / blobs of a file
 
-    printf("findFreeBlocks(were file was) = %d\n\n", findFreeBlocks(de->dataBlkCnt)); // prints blocks that were just freed (de->loc)
+    printf("\n\n");
+    bool ret = hash_table_delete(de, d);
+    if (ret) printf("de delete SUCCESS\n");
+    else printf("de delete FAILED\n");
+
+    LBAwrite(d, toBlockSize(sizeof(dir)), d->loc);
+
+    deIndex = findDirEnt(filename,3);
+    printf("INDEX = %d\n", deIndex);
 
     free(de);
-    //printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
-    deIndex = findDirEnt(filename,0);
-
-    printf("\nINDEX = %d\n", deIndex);
-    printf("deStartBlock = %d\n\n", deStartBlock);
-
+    de = NULL;
+    free(d);
+    d = NULL;
     return 0;
 }
