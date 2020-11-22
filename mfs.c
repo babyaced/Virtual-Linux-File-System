@@ -62,18 +62,9 @@ int fs_rmdir(const char *pathname){
         printf("%s does not exist.\n", pathnameCpy);
         return -1;
     }
-    //need to iterate through dirEnts[] of dir and setFreeBlocks for each //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
-    if(de->dataBlkCnt > 0) {                                            //check if the int value in the directory entry array is -1
-                                                                        //read into a directory entry
-        //clear directory entry //reset to zero values
-        //parentDir->sizeOfBlocks                                      //check the type of the directory entry you just read
-        clearFreeBlocks(index, blockLength); //if dirEnt->type == 0(its a file)
-                                             //you can call fs_delete that jay is working on, but you'll need to find a way to pass in the updated path
-                                             //OR clear the blocks here, and set the int value in the directory entry array is -1
-                                             ////if dirEnt->type == 1(its a directory)
-                                             // need to recursively delete the entries in the directory //you probably want to have a helper function, so you don't
-                                             //have to keep track of and pass in the path each time
-    }     
+    //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
+    //if the int value in the directory entry array is not -1
+    //return -1; //directory is not empty
     free(parentDir);
     free(de);
     parentDir = NULL;
