@@ -285,7 +285,7 @@ uint64_t LBAread (void * buffer, uint64_t lbaCount, uint64_t lbaPosition)
 	fl.l_type = F_UNLCK;
 	fcntl(partInfop->fd, F_SETLKW, &fl);
 	
-	return 0;
+	return 1;
 	}
 
 
