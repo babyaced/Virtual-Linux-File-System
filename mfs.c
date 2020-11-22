@@ -40,7 +40,9 @@ int fs_rmdir(const char *pathname){
     char* pathnameCpy = strndup(pathname, strlen(pathname));
     //findDirEnt()  //find location of directory at pathname
     int dirIndex = findDirEnt(pathname, 0);                          //good
-    int parentDirEntIndex = findDirEnt(pathnameCpy, 0);              //don't need to do another find for parent
+    int parentDirEntIndex = findDirEnt(pathnameCpy, 0);              //don't need to do another find for parent //and this won't do that anyways
+                                                                     //you could remove the last part of the pathname and find the parent directory entry
+                                                                     //but just use the parentLoc member of the child directory to do the same thing
     
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
@@ -49,27 +51,30 @@ int fs_rmdir(const char *pathname){
 
     retVal = LBAread(de, vcb->deBlkCnt, dirIndex);                      //good
     
-    int blockLength = de->dataBlkCnt;                                         
+    int blockLength = de->dataBlkCnt;                                        
     int index = de->dataIndex;
     
-    //de->dataIndex = dirIndex;
-    if(!pathname) {                                                
+    //de->dataIndex = dirIndex; 
+    if(!pathname) {                                       //dont need this                                   
         printf("%s does not exist.\n", pathname);
         return -1; //return -1 if error
     }
 
-    if (parentDirEntIndex == -1) {
+    if (parentDirEntIndex == -1) {                       //check if dirIndex is == -1
         printf("%s does not exist.\n", pathnameCpy);
         return -1;
     }
     //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
     //if the int value in the directory entry array is not -1
-    //return -1; //directory is not empty
+    //return -1; //directory is not empty so return -1 but free all the stuff you malloced first
+    //if directory is empty
+    //clearFreeBlocks for the directory, and read in parent directory using parentLoc of child directory
+    //set value in parent directory's array for the directory entry loc to -1(unused and available)
     free(parentDir);
     free(de);
     parentDir = NULL;
     de = NULL;
-    return 0; //not sure what return value is supposed to represent yet
+    return 0; //
               //retVal
 }
 
