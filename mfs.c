@@ -39,21 +39,21 @@ int fs_rmdir(const char *pathname){
     printf("fs_rmdir\n");
     char* pathnameCpy = strndup(pathname, strlen(pathname));
     //findDirEnt()  //find location of directory at pathname
-    int dirIndex = findDirEnt(pathname, 0);
-    int parentDirEntIndex = findDirEnt(pathnameCpy, 0);
+    int dirIndex = findDirEnt(pathname, 0);                          //good
+    int parentDirEntIndex = findDirEnt(pathnameCpy, 0);              //don't need to do another find for parent
     
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
     dir* parentDir = malloc(toBlockSize(sizeof(dir)));
     printf("Mallocing: %ld bytes\n", sizeof(dir));
 
-    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);
+    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);                      //good
     
-    int blockLength = de->dataBlkCnt;
+    int blockLength = de->dataBlkCnt;                                         
     int index = de->dataIndex;
     
     //de->dataIndex = dirIndex;
-    if(!pathname) {
+    if(!pathname) {                                                
         printf("%s does not exist.\n", pathname);
         return -1; //return -1 if error
     }
@@ -62,12 +62,18 @@ int fs_rmdir(const char *pathname){
         printf("%s does not exist.\n", pathnameCpy);
         return -1;
     }
-    //need to iterate through dirEnts[] of dir and setFreeBlocks for each
-    if(de->dataBlkCnt > 0) {
+    //need to iterate through dirEnts[] of dir and setFreeBlocks for each //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
+    if(de->dataBlkCnt > 0) {                                            //check if the int value in the directory entry array is -1
+                                                                        //read into a directory entry
         //clear directory entry //reset to zero values
-        //parentDir->sizeOfBlocks
-        clearFreeBlocks(index, blockLength);
-    }
+        //parentDir->sizeOfBlocks                                      //check the type of the directory entry you just read
+        clearFreeBlocks(index, blockLength); //if dirEnt->type == 0(its a file)
+                                             //you can call fs_delete that jay is working on, but you'll need to find a way to pass in the updated path
+                                             //OR clear the blocks here, and set the int value in the directory entry array is -1
+                                             ////if dirEnt->type == 1(its a directory)
+                                             // need to recursively delete the entries in the directory //you probably want to have a helper function, so you don't
+                                             //have to keep track of and pass in the path each time
+    }     
     free(parentDir);
     free(de);
     parentDir = NULL;
