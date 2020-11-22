@@ -94,7 +94,7 @@ ext getNextExt (dirEnt* file){
 //        }
         count = count * 16; // starting at 5th ext, size is count*2^4
         int index = 0;
-        while (index<64){
+        while (index<MAX_SEC_EXTENTS){
             if (file->dExt[index].count == 0) break;
             count = count * 2;
             index++;
@@ -182,7 +182,7 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
     }
 
     int index = 0;
-    while (index<64){
+    while (index<MAX_SEC_EXTENTS){
         if (file->dExt[index].count == 0) break;
         clearFreeBlocks(file->dExt[index].lba, file->dExt[index].count);
         printf("deleted dEXT%d, actually EXT%d\n", index, index+5);
