@@ -17,7 +17,7 @@ void initExts (dirEnt* file, int count){
 
 ext getNextExt (dirEnt* file){
     ext nextExt;
-    int count = 10; // how many blocks for first extent, doubles each time
+    int count = 1; // how many blocks for first extent, doubles each time
 //    int lbaPos = findFreeBlocks(count);
 //    setFreeBlocks(lbaPos, count);
 
@@ -92,14 +92,14 @@ ext getNextExt (dirEnt* file){
 //                if (index==64) printf("no more ext left, add tertiary extents\n");
 //            }
 //        }
-        count = count * 16; // starting at 5th ext, size is count*2^4
+        // count = count * 16; // starting at 5th ext, size is count*2^4
         int index = 0;
         while (index<MAX_SEC_EXTENTS){
             if (file->dExt[index].count == 0) break;
             count = count * 2;
             index++;
         }
-        if (index==64) { // if invalid extent
+        if (index==MAX_SEC_EXTENTS) { // if invalid extent
             printf("Ran out of extents\n");
             ext nullExt;
             return nullExt;
@@ -120,7 +120,7 @@ ext getNextExt (dirEnt* file){
             file->dExt[index].lba = lbaPos;
             file->dExt[index].count = count;
             printf("ADD dEXT%d, actually EXT%d\n", index, index+5);
-//            printf("lba = %d\n", lbaPos);
+            printf("lba = %d\n", lbaPos);
         }
     }
 
