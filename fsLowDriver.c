@@ -199,24 +199,50 @@ int main (int argc, char *argv[])
 	retVal = b_write(FD, buff2048+860, 432);
 	retVal = b_write(FD, buff2048+1292, 21);
 	retVal = b_write(FD, buff2048+1313,735);
+	b_close(FD);
+
+	/*b_open("file",0);
 	
-	//retVal = b_write(FD, buff2048, 256);
-	//retVal = b_write(FD, buff2048, 1024);
-	//retVal = b_write(FD, buff2048, 768);
+	char* buffer2 = malloc(2048);
+	int readCount = b_read(FD, buffer2, 2048);
+	printf("Buffer: %s\n", buffer2);
+	free(buffer2);
+	buffer2 = NULL;
+	b_close(FD);*/
 
-	//retVal = b_write(FD,buff2048,512);
+	b_open("file",0);
+	
+	char* buffer = malloc(2048);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer,      43);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+43,   54);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+97,   98);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+195,  32);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+227,   3);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+230,  87);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+317, 543);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+860, 432);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+1292, 21);
+	printf("Buffer: %s\n\n", buffer);
+	retVal = b_read(FD, buffer+1313,735);
+	printf("Buffer: %s\n\n", buffer);
+	
+	free(buffer);
+	b_close(FD);
 
-	/*for(int i = 0; i < 2; i++){
-		retVal = b_write(FD, buff2048,1024);
-	}
-	char* buffer = malloc(2049);
-	int readCount = b_read(FD, buffer, 2048);
-	printf("Buffer: %s\n", buffer);
-	free(buffer);*/
+
 
  	//fs_delete("/file");
 
-	b_close(FD);
+	
 
  	// testing extents
  	/*dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
