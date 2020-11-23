@@ -96,6 +96,7 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     dirp->dirpItemInfo->d_reclen = sizeof(fdDir);
     dirp->dirpItemInfo->fileType = fs_readdirDE->type;
     strncpy(dirp->dirpItemInfo->d_name,fs_readdirDE->name, strlen(fs_readdirDE->name));
+    dirp->dirpItemInfo->d_name[strlen(fs_readdirDE->name)] = '\0';
 
     free(fs_readdirDE);
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
