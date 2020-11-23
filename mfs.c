@@ -277,3 +277,86 @@ int fs_delete(char* filename){ //removes a file
     parentD = NULL;
     return ret;
 }
+
+int fs_move(char* srcPath, char* destPath){
+    int srcDEInd, destDEInd, retVal, validMove;
+    bool rename = false;
+    dirEnt* srcDE  = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* destDE = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* srcParentDE = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* destParentDE = malloc(toBlockSize(sizeof(dirEnt)));
+    dir* srcParentD = malloc(toBlockSize(sizeof(dir)));
+    dir* destParentD = malloc(toBlockSize(sizeof(dir)));
+    
+
+
+    srcDEInd = findDirEnt(srcPath, 0);
+    if(srcDEInd == -1){
+        //src path not found, file to be moved not found so we must return error
+        validMove = -1;
+    }
+    destDEInd = findDirEnt(destPath, 0);
+    if(destDEInd == -1){
+        //dest path not found, but user may be intending to move the file and rename it,
+        destDEInd = findDirEnt(destPath, 1);    //pass in create flag and try again
+        if(destDEInd == -1){
+            validMove = -1;                //error could be invalid pathname
+        }
+        retVal = LBAread(destDE, vcb->deBlkCnt, destDEInd);
+        rename = true;
+        //so don't return just yet
+    }else{  //destDEInd exists, fine if it is directory, not fine if it is a file
+        retVal = LBAread(destDE, vcb->deBlkCnt, destDEInd);
+        if(destDE->type == 0){  //we are going to overwrite file
+            validMove = -1;         //return error
+        }
+    }
+
+    retVal = LBAread(srcDE, vcb->deBlkCnt, srcDEInd);
+    if(srcDE->type == 1){
+        //cant move a directory
+        validMove = -1;
+    }
+    
+    if(validMove != -1){
+        //first delete the srcDE from its parent directory 
+        retVal = LBAread(srcParentDE, vcb->deBlkCnt, srcDE->parentLoc);
+        retVal = LBAread(srcParentD, vcb->dBlkCnt, srcParentDE->dataIndex);
+        hash_table_delete(srcParentD, srcDE);
+
+        if(rename == true){ //we need to rename the srcDE to and move it to the parent directory of the destDE we just created
+            strncpy(srcDE->name, destDE->name, strlen(destDE->name));  //rename                            
+            srcDE->name[strlen(destDE->name)] = '\0';                  //explicitly null terminate the name 
+            srcDE->parentLoc = destDE->parentLoc;                      //copy parent directory entry location because that may change  
+            retVal = LBAread(destParentDE,vcb->deBlkCnt, destDE->parentLoc);
+            retVal = LBAread(destParentD, vcb->dBlkCnt,destParentDE->dataIndex);  
+            removeDirEnt(destParentD,destDE);                          //remove temporary destDE
+        }
+        else{//or we need to move the srcDE to the directory at destDE
+            retVal = LBAread(destParentD, vcb->dBlkCnt, destDE->dataIndex);
+            srcDE->parentLoc = destDE->loc;  
+            if(retVal == -1){
+                return -1;   //directory is likely full
+            }
+        }
+        addDirEnt(destParentD, srcDE);                             //add our srcDE to destDE's parent directory's directory entries
+        retVal = LBAwrite(srcDE, vcb->deBlkCnt, srcDE->loc);       //write the updated src directory entry to disk
+        validMove = 0;
+    }
+
+
+    //free all the things
+    free(srcDE);
+    srcDE = NULL;
+    free(destDE);
+    destDE = NULL;
+    free(srcParentDE);
+    srcParentDE = NULL;
+    free(destParentDE);
+    destParentDE = NULL;
+    free(srcParentD);
+    srcParentD = NULL;
+    free(destParentD);
+    destParentD = NULL;
+    return validMove;
+}
