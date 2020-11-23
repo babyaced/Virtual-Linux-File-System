@@ -56,6 +56,7 @@ void b_init()
         openFileTables[i].dirEntIndex = 0;        //open directory entry's location in lba
         //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
         // openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
+        openFileTables[i].flags = 0;
     }
     areWeInitialized = 1;
 }
@@ -88,6 +89,16 @@ int b_open (const char* filename, int flags){  //cannot open directory
         return (-1);
     
     int fcbFD = b_getFCB();
+
+    if((flags & O_ACCMODE) == O_RDONLY){
+        openFileTables[fcbFD].flags |= O_RDONLY;
+    }
+    if((flags & O_ACCMODE) == O_WRONLY){
+        openFileTables[fcbFD].flags |= O_WRONLY;
+    }
+    if(flags & O_TRUNC){
+        openFileTables[fcbFD].flags |= O_TRUNC;
+    }
     
     dirEnt* b_openDE = malloc(toBlockSize(sizeof(dirEnt)));
     // printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
@@ -117,12 +128,7 @@ int b_open (const char* filename, int flags){  //cannot open directory
         return -1;  //return error code
     }
 
-    if(flags & O_RDONLY){
-        openFileTables[fcbFD].flags = O_RDONLY;
-    }
-    if(flags & O_WRONLY){
-        openFileTables[fcbFD].flags = O_WRONLY;
-    }
+
 
 
     return (fcbFD);  //return our file descriptor
@@ -434,4 +440,5 @@ void b_close (int fd){
     openFileTables[fd].pLoc = -1;
     openFileTables[fd].bytesInBuffer = 0;
     openFileTables[fd].ourBufferOffset = 0;
+    openFileTables[fd].flags = 0;
 }

@@ -183,7 +183,7 @@ int main (int argc, char *argv[])
 	//===============================================
 	// test b_write()
 	//===============================================
-	int FD = b_open("file", O_RDONLY | O_CREAT );
+	int FD = b_open("file", O_WRONLY | O_CREAT );
 	if(FD == -1){
 		printf("Error could not open file");
 	}
@@ -212,7 +212,7 @@ int main (int argc, char *argv[])
 	buffer2 = NULL;
 	b_close(FD);*/
 
-	b_open("file",O_WRONLY);
+	b_open("file",O_RDONLY);
 	if(FD == -1){
 		printf("Error could not open file\n");
 	}else{
