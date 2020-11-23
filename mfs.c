@@ -45,16 +45,23 @@ int fs_rmdir(const char *pathname){
                                                                      //but just use the parentLoc member of the child directory to do the same thing
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+
+    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);                   //good
+
+    dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+
+    retVal = LBAread(parentDE, vcb->deBlkCnt, de->parentLoc);
+
     dir* parentDir = malloc(toBlockSize(sizeof(dir)));
     printf("Mallocing: %ld bytes\n", sizeof(dir));
-    int length = sizeof(parentDir->dirEnts) / sizeof(parentDir->dirEnts[0]);
 
-    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);                      //good
+    retVal = LBAread(parentDir, vcb->dBlkCnt, parentDE->dataIndex);
+
+    int length = sizeof(parentDir->dirEnts) / sizeof(parentDir->dirEnts[0]);
     
     int blockLength = de->dataBlkCnt;                                        
     int index = de->dataIndex;
-    
-    //de->dataIndex = dirIndex; 
 
     if (dirIndex == -1) {                       //check if dirIndex is == -1
         printf("%s does not exist.\n", pathname);
@@ -64,21 +71,37 @@ int fs_rmdir(const char *pathname){
     for(int i = 0; i < length; i++) {
         //if the int value in the directory entry array is not -1 //
         if(parentDir->dirEnts[i] != -1) {
-            free(parentDir);
             free(de);
-            parentDir = NULL;
             de = NULL;
+            free(parentDE);
+            parentDE = NULL;
+            free(parentDir);
+            parentDir = NULL;
             return -1;     //return -1; //directory is not empty so return -1 but free all the stuff you malloced first //
         }
         //if directory is empty //
         clearFreeBlocks(index, blockLength);     //clearFreeBlocks for the directory, and read in parent directory using parentLoc of child directory
-        parentDir->parentLoc = -1;     //set value in parent directory's array for the directory entry loc to -1(unused and available)
+        //parentDir->parentLoc = -1;     //set value in parent directory's array for the directory entry loc to -1(unused and available)
+        parentDir->loc = -1;
     }
 
-    free(parentDir);
+    deleteExts(de); //
+
+    bool ret = hash_table_delete(de, parentDir);
+    if (ret) {
+        printf("Delete success\n");
+    } else {
+        printf("Delete failed\n");
+    }
+
+    LBAwrite(parentDir, toBlockSize(sizeof(dir)), parentDir->loc); //not sure if this is needed
+
     free(de);
-    parentDir = NULL;
     de = NULL;
+    free(parentDE);
+    parentDE = NULL;
+    free(parentDir);
+    parentDir = NULL;
     return 0; //
               //retVal
 }
