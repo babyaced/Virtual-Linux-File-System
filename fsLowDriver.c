@@ -183,7 +183,8 @@ int main (int argc, char *argv[])
 	//===============================================
 	// test b_write()
 	//===============================================
-	int FD = b_open("file", O_WRONLY | O_CREAT );
+	int FD = b_open("file",O_WRONLY|O_CREAT);
+	int FD4 = b_open("file2",O_CREAT);
 	if(FD == -1){
 		printf("Error could not open file");
 	}
@@ -202,15 +203,41 @@ int main (int argc, char *argv[])
 		b_close(FD);
 	}
 
+	//===============================================
+	// test b_move
+	//===============================================
 
-	/*b_open("file",0);
+	//retVal = fs_move("file", "file2"); //WORKING
+
+	retVal = fs_mkdir("/test", 0);
+	retVal = fs_mkdir("test/test2", 0);
+	
+	retVal = fs_move("file", "/test"); //WORKING
+	retVal = fs_move( "/test/file", "file2");  //should return -1
+	if(retVal == -1){
+		printf("File already exists\n");
+	}
+	
+	int FD2 = b_open("/test/file",0);
 	
 	char* buffer2 = malloc(2048);
-	int readCount = b_read(FD, buffer2, 2048);
+	int readCount = b_read(FD2, buffer2, 2048);
 	printf("Buffer: %s\n", buffer2);
 	free(buffer2);
 	buffer2 = NULL;
-	b_close(FD);*/
+	b_close(FD2);
+
+	retVal = fs_move( "/test/file", "test/test2/file3");  
+
+	int FD3 = b_open("/test/test2/file3",0);
+	char* buffer3 = malloc(2048);
+	readCount = b_read(FD3, buffer3, 2048);
+	printf("Buffer: %s\n", buffer3);
+	free(buffer3);
+	buffer3 = NULL;
+	b_close(FD3);
+
+
 
 	/*b_open("file",O_RDONLY);
 	if(FD == -1){
@@ -276,7 +303,7 @@ int main (int argc, char *argv[])
 	//=============================================
 	//Test cp
 	//=============================================
-	char buf[200];
+	/*char buf[200];
 	int readcnt;
 	int testfs_src_fd = b_open ("file", O_RDONLY);
 	int testfs_dest_fd = b_open ("file2", O_WRONLY | O_CREAT | O_TRUNC);
@@ -286,7 +313,7 @@ int main (int argc, char *argv[])
 		b_write (testfs_dest_fd, buf, readcnt);
 		} while (readcnt == 200);
 	b_close (testfs_src_fd);
-	b_close (testfs_dest_fd);
+	b_close (testfs_dest_fd);*/
 	
 
  	// testing extents
@@ -304,6 +331,9 @@ int main (int argc, char *argv[])
 	
 	free(testDe);
 	testDe = NULL;*/
+
+	b_close(FD);
+	b_close(FD2);
 
 	
 

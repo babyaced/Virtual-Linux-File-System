@@ -67,6 +67,8 @@ int fs_isFile(char * path);	//return 1 if file, 0 otherwise
 int fs_isDir(char * path);		//return 1 if directory, 0 otherwise
 int fs_delete(char* filename);	//removes a file
 
+int fs_move(char* srcPath, char* destPath);
+
 //helper functions
 void strcatF(char* dest, char* src);
 // int deleteDirEnt(int deIndex);

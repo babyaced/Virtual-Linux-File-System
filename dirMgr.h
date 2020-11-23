@@ -57,7 +57,8 @@ void initDirEntries(dir* d);
 
 int mkFile(char *pathname, dir* d);
 int findDirEnt(const char* pathName, u_int8_t options);
-void addDirEnt(dir* parentDir, dirEnt* de);
+int addDirEnt(dir* parentDir, dirEnt* de);
+int removeDirEnt(dir* parentDir, dirEnt* de);
 
 
 int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex);

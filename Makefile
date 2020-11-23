@@ -34,8 +34,8 @@
 #
 
 
-#ROOTNAME= fsLowDriver
-ROOTNAME= fsshell
+ROOTNAME= fsLowDriver
+#ROOTNAME= fsshell
 HW=
 FOPTION= 
 RUNOPTIONS=SampleVolume 10000000 512 

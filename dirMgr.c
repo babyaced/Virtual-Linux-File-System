@@ -332,30 +332,36 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
                     //OR if file is present at that directory entry then it will have returned a directory entry associated with a file (b_open and potentially other functions)
 }
 
-void addDirEnt(dir* parentDir, dirEnt* dE){
-    bool success;
-    int retVal;
-    if(dE->type ==1)  // if type of directory entry is directory
-    {
-        success = hash_table_insert(dE,parentDir);  //need to edit hash_table_insert to take other info (ie. location)
-        if(success == false){
-            printf("ERROR: Failed to add Directory, parent directory is full!\n");
-        }
-        else{
-            retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
-        }
-        
+int addDirEnt(dir* parentDir, dirEnt* dE){
+    bool success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
+    if(success == false){
+        printf("ERROR: Failed to add file, parent directory is full!\n");
+        return -1;
     }
-    else if(dE->type == 0)//else if type is file
-    {
-        success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
-        if(success == false){
-            printf("ERROR: Failed to add file, parent directory is full!\n");
+    else{
+        int retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
+        if(retVal != vcb->dBlkCnt){
+            return -1;
         }
-        else{
-            retVal = LBAwrite(parentDir,vcb->deBlkCnt,parentDir->loc);
+    }
+    return 0; 
+}
+
+int removeDirEnt(dir* parentDir, dirEnt* dE){
+    bool success = hash_table_delete(dE,parentDir); 
+    if(success == false){
+        printf("ERROR: Failed to delete Directory Entry\n");
+        return -1;
+    }
+    else{
+        //need to free directory entry's space
+        //clearFreeBlocks(dE->loc,vcb->deBlkCnt);
+        int retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
+        if(retVal != vcb->dBlkCnt){
+            return -1;
         }
-    }   
+    }
+    return 0;
 }
 
 int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex){
