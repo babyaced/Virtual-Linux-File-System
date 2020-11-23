@@ -252,7 +252,7 @@ int main (int argc, char *argv[])
 	//===============================================
 	// test O_TRUNC
 	//===============================================
-	int FD2 = b_open("file", O_WRONLY | O_TRUNC );
+	/*int FD2 = b_open("file", O_WRONLY | O_TRUNC );
 	if(FD == -1){
 		printf("Error could not open file");
 	}
@@ -269,10 +269,24 @@ int main (int argc, char *argv[])
 		retVal = b_write(FD2, buff2048+1292, 21);
 		retVal = b_write(FD2, buff2048+1313,735);
 		b_close(FD);
-	}
+	}*/
 
  	//fs_delete("file");
 
+	//=============================================
+	//Test cp
+	//=============================================
+	char buf[200];
+	int readcnt;
+	int testfs_src_fd = b_open ("file", O_RDONLY);
+	int testfs_dest_fd = b_open ("file2", O_WRONLY | O_CREAT | O_TRUNC);
+	do 
+		{
+		readcnt = b_read (testfs_src_fd, buf, 200);
+		b_write (testfs_dest_fd, buf, readcnt);
+		} while (readcnt == 200);
+	b_close (testfs_src_fd);
+	b_close (testfs_dest_fd);
 	
 
  	// testing extents
