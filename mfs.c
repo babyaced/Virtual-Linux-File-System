@@ -322,7 +322,7 @@ int fs_move(char* srcPath, char* destPath){
         //first delete the srcDE from its parent directory 
         retVal = LBAread(srcParentDE, vcb->deBlkCnt, srcDE->parentLoc);
         retVal = LBAread(srcParentD, vcb->dBlkCnt, srcParentDE->dataIndex);
-        removeDirEnt(srcParentD, srcDE);
+        hash_table_delete(srcParentD, srcDE);
 
         if(rename == true){ //we need to rename the srcDE to and move it to the parent directory of the destDE we just created
             strncpy(srcDE->name, destDE->name, strlen(destDE->name));  //rename                            

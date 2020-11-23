@@ -355,7 +355,7 @@ int removeDirEnt(dir* parentDir, dirEnt* dE){
     }
     else{
         //need to free directory entry's space
-        //clearFreeBlocks(dE->loc,vcb->deBlkCnt);
+        clearFreeBlocks(dE->loc,vcb->deBlkCnt);
         int retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
         if(retVal != vcb->dBlkCnt){
             return -1;
