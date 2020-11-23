@@ -166,18 +166,26 @@ int getLba (dirEnt* file, int logicalAddress){ // gets the lba block within a fi
 void deleteExts (dirEnt* file){ // call when a file is deleted to set the extents lba blocks to be free
     if (file->ext1.count > 0){
         clearFreeBlocks(file->ext1.lba, file->ext1.count);
+        file->ext1.lba = 0;
+        file->ext1.count = 0;
         printf("deleted ext1\n");
     }
     if (file->ext2.count > 0){
         clearFreeBlocks(file->ext2.lba, file->ext2.count);
+        file->ext2.lba = 0;
+        file->ext2.count = 0;
         printf("deleted ext2\n");
     }
     if (file->ext3.count > 0){
         clearFreeBlocks(file->ext3.lba, file->ext3.count);
+        file->ext3.lba = 0;
+        file->ext3.count = 0;
         printf("deleted ext3\n");
     }
     if (file->ext4.count > 0){
         clearFreeBlocks(file->ext4.lba, file->ext4.count);
+        file->ext4.lba = 0;
+        file->ext4.count = 0;
         printf("deleted ext4\n");
     }
 
@@ -185,6 +193,8 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
     while (index<MAX_SEC_EXTENTS){
         if (file->dExt[index].count == 0) break;
         clearFreeBlocks(file->dExt[index].lba, file->dExt[index].count);
+        file->dExt[index].lba = 0;
+        file->dExt[index].count = 0;
         printf("deleted dEXT%d, actually EXT%d\n", index, index+5);
         index++;
     }

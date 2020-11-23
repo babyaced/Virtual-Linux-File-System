@@ -249,7 +249,29 @@ int main (int argc, char *argv[])
 	//fs_mkdir("testfile", 1);
 	//findDirEnt("testfile", 1);
 
- 	fs_delete("file");
+	//===============================================
+	// test O_TRUNC
+	//===============================================
+	int FD2 = b_open("file", O_WRONLY | O_TRUNC );
+	if(FD == -1){
+		printf("Error could not open file");
+	}
+	else{
+		char buff2048[2048] = "Whereas many of our subjects in divers parts of our Colonies and Plantations in North America, misled by dangerous and ill designing men, and forgetting the allegiance which they owe to the power that has protected and supported them; after various disorderly acts committed in disturbance of the publick peace, to the obstruction of lawful commerce, and to the oppression of our loyal subjects carrying on the same; have at length proceeded to open and avowed rebellion, by arraying themselves in a hostile manner, to withstand the execution of the law, and traitorously preparing, ordering and levying war against us: And whereas, there is reason to apprehend that such rebellion hath been much promoted and encouraged by the traitorous correspondence, counsels and comfort of divers wicked and desperate persons within this Realm: To the end therefore, that none of our subjects may neglect or violate their duty through ignorance thereof, or through any doubt of the protection which the law will afford to their loyalty and zeal, we have thought fit, by and with the advice of our Privy Council, to issue our Royal Proclamation, hereby declaring, that not only all our Officers, civil and military, are obliged to exert their utmost endeavours to suppress such rebellion, and to bring the traitors to justice, but that all our subjects of this Realm, and the dominions thereunto belonging, are bound by law to be aiding and assisting in the suppression of such rebellion, and to disclose and make known all traitorous conspiracies and attempts against us, our crown and dignity; and we do accordingly strictly charge and command all our Officers, as well civil as military, and all others our obedient and loyal subjects, to use their utmost endeavours to withstand and suppress such rebellion, and to disclose and make known all treasons and traitorous conspiracies which they shall know to be against us, our crown and dignity; and for that purpose, that they transmit to one of our principal Secretaries of State, or other proper officer, d";
+		retVal = b_write(FD2, buff2048,      43);
+		retVal = b_write(FD2, buff2048+43,   54);
+		retVal = b_write(FD2, buff2048+97,   98);
+		retVal = b_write(FD2, buff2048+195,  32);
+		retVal = b_write(FD2, buff2048+227,   3);
+		retVal = b_write(FD2, buff2048+230,  87);
+		retVal = b_write(FD2, buff2048+317, 543);
+		retVal = b_write(FD2, buff2048+860, 432);
+		retVal = b_write(FD2, buff2048+1292, 21);
+		retVal = b_write(FD2, buff2048+1313,735);
+		b_close(FD);
+	}
+
+ 	//fs_delete("file");
 
 	
 

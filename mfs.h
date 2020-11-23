@@ -69,6 +69,7 @@ int fs_delete(char* filename);	//removes a file
 
 //helper functions
 void strcatF(char* dest, char* src);
+// int deleteDirEnt(int deIndex);
 
 
 
