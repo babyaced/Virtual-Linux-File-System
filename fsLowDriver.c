@@ -212,7 +212,7 @@ int main (int argc, char *argv[])
 	buffer2 = NULL;
 	b_close(FD);*/
 
-	b_open("file",O_RDONLY);
+	/*b_open("file",O_RDONLY);
 	if(FD == -1){
 		printf("Error could not open file\n");
 	}else{
@@ -240,16 +240,16 @@ int main (int argc, char *argv[])
 		printf("Buffer: %s\n\n", buffer);
 		free(buffer);
 		b_close(FD);
-	}
+	}*/
 	
 
 
 
 
 	//fs_mkdir("testfile", 1);
-	findDirEnt("testfile", 1);
+	//findDirEnt("testfile", 1);
 
- 	fs_delete("testfile");
+ 	fs_delete("file");
 
 	
 

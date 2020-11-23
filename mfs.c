@@ -229,16 +229,20 @@ int fs_delete(char* filename){ //removes a file
     printf("\nfs_delete\n");
     //int deStartBlock = findFreeBlocks(currentBlockSize);
 
-    int deIndex = findDirEnt(filename, 3);
-    if (deIndex==-2) return -1; // if no file found, fs_delete returns error
+    int deIndex = findDirEnt(filename, 0);
+    if (deIndex==-1) return -1; // if no file found, fs_delete returns error
     if (fs_isDir(filename)) return -1; // return error is path is a directory
     printf("%d\n", deIndex);
 
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(de, vcb->deBlkCnt, deIndex); //read directory entry into de
 
-    dir* d = malloc(toBlockSize(sizeof(dir)));
-    retVal = LBAread(d, vcb->deBlkCnt, de->parentLoc); //read directory entry into de
+    dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));
+
+    retVal =  LBAread(parentDE, vcb->deBlkCnt, de->parentLoc);
+
+    dir* parentD = malloc(toBlockSize(sizeof(dir)));
+    retVal = LBAread(parentD, vcb->dBlkCnt, parentDE->dataIndex); //read directory entry into de
 
     //printf (d->name);
 //    getNextExt(de); // for testing delete
@@ -248,18 +252,20 @@ int fs_delete(char* filename){ //removes a file
     deleteExts(de); // deleting the data / blobs of a file
 
     printf("\n\n");
-    bool ret = hash_table_delete(de, d);
+    bool ret = hash_table_delete(de, parentD);
     if (ret) printf("de delete SUCCESS\n");
     else printf("de delete FAILED\n");
 
-    LBAwrite(d, toBlockSize(sizeof(dir)), d->loc);
+    LBAwrite(parentD, toBlockSize(sizeof(dir)), parentD->loc);
 
-    deIndex = findDirEnt(filename,3);
+    deIndex = findDirEnt(filename,0);
     printf("INDEX = %d\n", deIndex);
 
     free(de);
     de = NULL;
-    free(d);
-    d = NULL;
+    free(parentDE);
+    parentDE = NULL;
+    free(parentD);
+    parentD = NULL;
     return 0;
 }
