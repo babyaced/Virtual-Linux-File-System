@@ -17,6 +17,7 @@
 #include "dirMgr.h"
 #include "fsLow.h"
 #include "freeMgr.h"
+#include "mfs.h"
 
 #define B_CHUNK_SIZE vcb->sizeOfBlocks
 #define MAX_OPEN_FILES 20
@@ -35,7 +36,7 @@ typedef struct FD {
     // int pOffset;            //offset of blocks for a file of block length greater than 1
     // int blocksAlloced;      //how many blocks were initially allocated to the file
     int flags;
-
+    int truncated;          //indicates whether file was already truncated
 }FD;
 
 FD openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
@@ -57,6 +58,7 @@ void b_init()
         //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
         // openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
         openFileTables[i].flags = 0;              //maybe initialize this to -1 instead because 0 is O_RDONLY
+        openFileTables[i].truncated = 0;           //file is not truncated yet       
     }
     areWeInitialized = 1;
 }
@@ -245,6 +247,9 @@ int b_write (int fd, char * buffer, int count)
         printf("You do not have permission to write to this file\n");
         return -1;
     }
+
+
+
 	if (areWeInitialized == 0) b_init();  //Initialize our system
 
 	// check that fd is between 0 and (MAX_OPEN_FILES-1)
@@ -268,6 +273,17 @@ int b_write (int fd, char * buffer, int count)
     // printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
     retVal = LBAread(b_writeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
+    if(openFileTables[fd].flags & O_TRUNC){
+        if(openFileTables[fd].truncated == 0){  //if file was not already truncated
+            deleteExts(b_writeDE);              //free extents allocated to the file
+            b_writeDE->dataIndex = 0;           //reset data index to zero
+            b_writeDE->dataBlkCnt = 0;          //reset data blocks written to zero
+            b_writeDE->dataSize = 0;            //reset size in bytes to zero
+            openFileTables[fd].pLoc = -2;       //this ensures that new extents will be allocated
+            openFileTables[fd].truncated = 1;   //prevents file from being truncated when we don't want
+            //the only thing we don't want to change is the directory entry's presence/location in its parent directory
+        }
+    }
 
 	if(count >= B_CHUNK_SIZE){
 		if(openFileTables[fd].bytesInBuffer == 0)  //if there are no bytes in our buffer
@@ -441,4 +457,5 @@ void b_close (int fd){
     openFileTables[fd].bytesInBuffer = 0;
     openFileTables[fd].ourBufferOffset = 0;
     openFileTables[fd].flags = 0;
+    openFileTables[fd].truncated = 0;
 }

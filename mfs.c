@@ -226,6 +226,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
 
 int fs_delete(char* filename){ //removes a file
     //findDirEnt()  //find location of file at pathname
+    int ret;
 
     printf("\nfs_delete\n");
     //int deStartBlock = findFreeBlocks(currentBlockSize);
@@ -246,18 +247,24 @@ int fs_delete(char* filename){ //removes a file
     retVal = LBAread(parentD, vcb->dBlkCnt, parentDE->dataIndex); //read directory entry into de
 
     //printf (d->name);
-//    getNextExt(de); // for testing delete
-//    getNextExt(de); // for testing delete
-//    getNextExt(de); // for testing delete
+    //getNextExt(de); // for testing delete
+    //getNextExt(de); // for testing delete
+    //getNextExt(de); // for testing delete
 
     deleteExts(de); // deleting the data / blobs of a file
 
     printf("\n\n");
-    bool ret = hash_table_delete(de, parentD);
-    if (ret) printf("de delete SUCCESS\n");
-    else printf("de delete FAILED\n");
+    bool success = hash_table_delete(de, parentD);
+    if (success){
+        ret = 0;
+        printf("de delete SUCCESS\n");
+    }
+    else{
+        ret = -1;
+        printf("de delete FAILED\n");
+    } 
 
-    LBAwrite(parentD, toBlockSize(sizeof(dir)), parentD->loc);
+    retVal = LBAwrite(parentD, toBlockSize(sizeof(dir)), parentD->loc);
 
     deIndex = findDirEnt(filename,0);
     printf("INDEX = %d\n", deIndex);
@@ -268,5 +275,5 @@ int fs_delete(char* filename){ //removes a file
     parentDE = NULL;
     free(parentD);
     parentD = NULL;
-    return 0;
+    return ret;
 }
