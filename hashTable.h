@@ -10,8 +10,8 @@ unsigned int hash(char* dirEntName);
 //find word in table
 int hash_table_lookup(char* dirEntName, dir* d);
 
-bool hash_table_insert(dirEnt* dE, dir* d);
+bool hash_table_insert(dir* d, dirEnt* dE);
 
-bool hash_table_delete(dirEnt* dE, dir* d);
+bool hash_table_delete(dir* d,dirEnt* dE);
 
 #endif

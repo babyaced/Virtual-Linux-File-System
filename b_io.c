@@ -56,7 +56,7 @@ void b_init()
         openFileTables[i].ourBufferOffset = 0;    //how many bytes are written into the file's buffer at the moment
         openFileTables[i].dirEntIndex = 0;        //open directory entry's location in lba
         //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
-        // openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
+        //openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
         openFileTables[i].flags = 0;              //maybe initialize this to -1 instead because 0 is O_RDONLY
         openFileTables[i].truncated = 0;           //file is not truncated yet       
     }

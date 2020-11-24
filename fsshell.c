@@ -351,6 +351,7 @@ int cmd_mv (int argcnt, char *argvec[])
 	// **** TODO ****  For you to implement
 	char * src;
 	char * dest;
+	int retVal;
 	switch (argcnt)
 	{
 		case 2:	//only one name provided
@@ -365,7 +366,11 @@ int cmd_mv (int argcnt, char *argvec[])
 			printf("Usage: mv srcfile [dest]\n");
 			return (-1);
 	}
-	return fs_move(src, dest);
+	retVal = fs_move(src, dest);
+	if(retVal != 0){
+		printf("Could not move the file\n");
+	}
+	return retVal;
 	#endif
 }
 
