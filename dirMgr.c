@@ -333,7 +333,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
 }
 
 int addDirEnt(dir* parentDir, dirEnt* dE){
-    bool success = hash_table_insert(dE,parentDir);  //need to only pass pointer to dirEnt
+    bool success = hash_table_insert(parentDir, dE);  //need to only pass pointer to dirEnt
     if(success == false){
         printf("ERROR: Failed to add file, parent directory is full!\n");
         return -1;
@@ -348,7 +348,7 @@ int addDirEnt(dir* parentDir, dirEnt* dE){
 }
 
 int removeDirEnt(dir* parentDir, dirEnt* dE){
-    bool success = hash_table_delete(dE,parentDir); 
+    bool success = hash_table_delete(parentDir, dE); 
     if(success == false){
         printf("ERROR: Failed to delete Directory Entry\n");
         return -1;

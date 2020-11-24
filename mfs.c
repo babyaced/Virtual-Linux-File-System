@@ -254,7 +254,7 @@ int fs_delete(char* filename){ //removes a file
     deleteExts(de); // deleting the data / blobs of a file
 
     printf("\n\n");
-    bool success = hash_table_delete(de, parentD);
+    bool success = removeDirEnt(parentD, de);
     if (success){
         ret = 0;
         printf("de delete SUCCESS\n");
@@ -323,6 +323,7 @@ int fs_move(char* srcPath, char* destPath){
         retVal = LBAread(srcParentDE, vcb->deBlkCnt, srcDE->parentLoc);
         retVal = LBAread(srcParentD, vcb->dBlkCnt, srcParentDE->dataIndex);
         hash_table_delete(srcParentD, srcDE);
+        retVal = LBAwrite(srcParentD, vcb->dBlkCnt, srcParentDE->dataIndex); //write the directory with the deleted src file to disk
 
         if(rename == true){ //we need to rename the srcDE to and move it to the parent directory of the destDE we just created
             strncpy(srcDE->name, destDE->name, strlen(destDE->name));  //rename                            

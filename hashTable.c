@@ -50,7 +50,7 @@ int hash_table_lookup(char* dirEntName, dir* d) { //pass by value or pass by ref
 	return -1;
 }
 
-bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by reference?
+bool hash_table_insert(dir* d, dirEnt* dE) { //pass by value or pass by reference?
 	if (dE == NULL) return false;
     int index = hash(dE->name);
 	for(int i = 0; i < TABLE_SIZE; i++){
@@ -63,7 +63,7 @@ bool hash_table_insert(dirEnt* dE, dir* d) { //pass by value or pass by referenc
 	return false;
 }
 
-bool hash_table_delete(dirEnt* dE, dir* d){
+bool hash_table_delete(dir* d, dirEnt* dE){
 	int retVal;
 	dirEnt* htdDE = malloc(toBlockSize(sizeof(dirEnt)));
 	int index = hash(dE->name);
