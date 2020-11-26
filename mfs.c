@@ -37,12 +37,74 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 int fs_rmdir(const char *pathname){
     int retVal;
     printf("Path Name: %s\n", pathname);
-
+    printf("fs_rmdir\n");
+    //char* pathnameCpy = strndup(pathname, strlen(pathname));
     //findDirEnt()  //find location of directory at pathname
-    //need to iterate through dirEnts[] of dir and setFreeBlocks for each
-    //clear directory entry //reset to zero values
-    //setFreeBlocks(vcb,fsl, dir->loc, dir->sizeInBlocks)
-    return 0; //not sure what return value is supposed to represent yet
+    int dirIndex = findDirEnt(pathname, 0);                          //good
+    //int parentDirEntIndex = findDirEnt(pathnameCpy, 0);              //don't need to do another find for parent //and this won't do that anyways
+                                                                     //you could remove the last part of the pathname and find the parent directory entry
+                                                                     //but just use the parentLoc member of the child directory to do the same thing
+    dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+
+    retVal = LBAread(de, vcb->deBlkCnt, dirIndex);                   //good
+
+    dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));
+    printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
+
+    retVal = LBAread(parentDE, vcb->deBlkCnt, de->parentLoc);
+
+    dir* parentDir = malloc(toBlockSize(sizeof(dir)));
+    printf("Mallocing: %ld bytes\n", sizeof(dir));
+
+    retVal = LBAread(parentDir, vcb->dBlkCnt, parentDE->dataIndex);
+
+    int length = sizeof(parentDir->dirEnts) / sizeof(parentDir->dirEnts[0]);
+    
+    int blockLength = de->dataBlkCnt;                                        
+    int index = de->dataIndex;
+
+    if (dirIndex == -1) {                       //check if dirIndex is == -1
+        printf("%s does not exist.\n", pathname);
+        return -1;
+    }
+    //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
+    for(int i = 0; i < length; i++) {
+        //if the int value in the directory entry array is not -1 //
+        if(parentDir->dirEnts[i] != -1) {
+            free(de);
+            de = NULL;
+            free(parentDE);
+            parentDE = NULL;
+            free(parentDir);
+            parentDir = NULL;
+            return -1;     //return -1; //directory is not empty so return -1 but free all the stuff you malloced first //
+        }
+        //if directory is empty //
+        clearFreeBlocks(index, blockLength);     //clearFreeBlocks for the directory, and read in parent directory using parentLoc of child directory
+        //parentDir->parentLoc = -1;     //set value in parent directory's array for the directory entry loc to -1(unused and available)
+        parentDir->loc = -1;
+    }
+
+    deleteExts(de); //
+
+    bool ret = hash_table_delete(de, parentDir);
+    if (ret) {
+        printf("Delete success\n");
+    } else {
+        printf("Delete failed\n");
+    }
+
+    LBAwrite(parentDir, toBlockSize(sizeof(dir)), parentDir->loc); //not sure if this is needed
+
+    free(de);
+    de = NULL;
+    free(parentDE);
+    parentDE = NULL;
+    free(parentDir);
+    parentDir = NULL;
+    return 0; //
+              //retVal
 }
 
 fdDir * fs_opendir(const char *name){
