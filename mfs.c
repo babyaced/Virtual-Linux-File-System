@@ -38,7 +38,6 @@ int fs_rmdir(const char *pathname){
     int retVal;
     printf("Path Name: %s\n", pathname);
     printf("fs_rmdir\n");
-    //char* pathnameCpy = strndup(pathname, strlen(pathname));
     //findDirEnt()  //find location of directory at pathname
     int dirIndex = findDirEnt(pathname, 0);                          //good
     //int parentDirEntIndex = findDirEnt(pathnameCpy, 0);              //don't need to do another find for parent //and this won't do that anyways
@@ -52,7 +51,7 @@ int fs_rmdir(const char *pathname){
     dirEnt* parentDE = malloc(toBlockSize(sizeof(dirEnt)));
     printf("Mallocing: %ld bytes\n", sizeof(dirEnt));
 
-    retVal = LBAread(parentDE, vcb->deBlkCnt, de->parentLoc);
+    retVal = LBAread(parentDE, vcb->deBlkCnt, de->parentLoc); //not sure about this
 
     dir* parentDir = malloc(toBlockSize(sizeof(dir)));
     printf("Mallocing: %ld bytes\n", sizeof(dir));
@@ -60,6 +59,7 @@ int fs_rmdir(const char *pathname){
     retVal = LBAread(parentDir, vcb->dBlkCnt, parentDE->dataIndex);
 
     int length = sizeof(parentDir->dirEnts) / sizeof(parentDir->dirEnts[0]);
+    printf("length: %d\n", length);
     
     int blockLength = de->dataBlkCnt;                                        
     int index = de->dataIndex;
@@ -68,6 +68,11 @@ int fs_rmdir(const char *pathname){
         printf("%s does not exist.\n", pathname);
         return -1;
     }
+    if (fs_isFile(pathname)) {
+        printf("File provided, directory is needed.\n");
+        return -1; // return error if path is a file
+    }
+
     //you can use a for loop and use i < sizeof(d->dirEnts)/(sizeof(d->dirEnts[0])
     for(int i = 0; i < length; i++) {
         //if the int value in the directory entry array is not -1 //
@@ -81,21 +86,29 @@ int fs_rmdir(const char *pathname){
             return -1;     //return -1; //directory is not empty so return -1 but free all the stuff you malloced first //
         }
         //if directory is empty //
-        clearFreeBlocks(index, blockLength);     //clearFreeBlocks for the directory, and read in parent directory using parentLoc of child directory
-        //parentDir->parentLoc = -1;     //set value in parent directory's array for the directory entry loc to -1(unused and available)
-        parentDir->loc = -1;
+        clearFreeBlocks(index, blockLength);     //clearFreeBlocks for the directory, 
+        retVal = LBAread(parentDir, vcb->deBlkCnt, de->parentLoc);//and read in parent directory using parentLoc of child directory //not sure about this
+        //parentDir->parentLoc = -1;     
+        parentDir->loc = -1; //set value in parent directory's array for the directory entry loc to -1(unused and available)
     }
 
-    deleteExts(de); //
+    dirIndex = findDirEnt(pathname, 0);
+    
 
-    bool ret = hash_table_delete(de, parentDir);
+    deleteExts(de); //
+    int r;
+    bool ret = removeDirEnt(parentDir, de);
     if (ret) {
+        r = 0;
         printf("Delete success\n");
     } else {
+        r = -1;
         printf("Delete failed\n");
     }
 
-    LBAwrite(parentDir, toBlockSize(sizeof(dir)), parentDir->loc); //not sure if this is needed
+    retVal = LBAwrite(parentDir, toBlockSize(sizeof(dir)), parentDir->loc); //not sure if this is needed
+
+    dirIndex = findDirEnt(pathname, 0);
 
     free(de);
     de = NULL;
@@ -295,7 +308,10 @@ int fs_delete(char* filename){ //removes a file
 
     int deIndex = findDirEnt(filename, 0);
     if (deIndex==-1) return -1; // if no file found, fs_delete returns error
-    if (fs_isDir(filename)) return -1; // return error is path is a directory
+    if (fs_isDir(filename)) {
+        printf("Path is a directory, file needed\n");
+        return -1; // return error is path is a directory
+    }
     printf("%d\n", deIndex);
 
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
