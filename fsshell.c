@@ -704,7 +704,7 @@ void processcommand (char * cmd)
 			return;
 			}
 		}
-	printf("%s is not a regonized command.\n", cmdv[0]);
+	printf("%s is not a recognized command.\n", cmdv[0]);
 	cmd_help(cmdc, cmdv);	
 	free (cmdv);
 	cmdv = NULL;
