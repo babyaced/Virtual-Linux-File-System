@@ -184,7 +184,7 @@ int main (int argc, char *argv[])
 	// test b_write()
 	//===============================================
 	int FD = b_open("file",O_WRONLY|O_CREAT);
-	int FD4 = b_open("file2",O_CREAT);
+	//int FD4 = b_open("file2",O_CREAT);
 	if(FD == -1){
 		printf("Error could not open file");
 	}
@@ -197,9 +197,9 @@ int main (int argc, char *argv[])
 		retVal = b_write(FD, buff2048+227,   3);
 		retVal = b_write(FD, buff2048+230,  87);
 		retVal = b_write(FD, buff2048+317, 543);
-		retVal = b_write(FD, buff2048+860, 432);
-		retVal = b_write(FD, buff2048+1292, 21);
-		retVal = b_write(FD, buff2048+1313,735);
+		// retVal = b_write(FD, buff2048+860, 432);
+		// retVal = b_write(FD, buff2048+1292, 21);
+		// retVal = b_write(FD, buff2048+1313,735);
 		b_close(FD);
 	}
 
@@ -209,7 +209,7 @@ int main (int argc, char *argv[])
 
 	//retVal = fs_move("file", "file2"); //WORKING
 
-	retVal = fs_mkdir("/test", 0);
+	/*retVal = fs_mkdir("/test", 0);
 	retVal = fs_mkdir("test/test2", 0);
 	
 	retVal = fs_move("file", "/test"); //WORKING
@@ -235,7 +235,7 @@ int main (int argc, char *argv[])
 	printf("Buffer: %s\n", buffer3);
 	free(buffer3);
 	buffer3 = NULL;
-	b_close(FD3);
+	b_close(FD3);*/
 
 
 
@@ -259,12 +259,12 @@ int main (int argc, char *argv[])
 		printf("Buffer: %s\n\n", buffer);
 		retVal = b_read(FD, buffer+317, 543);
 		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+860, 432);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+1292, 21);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+1313,735);
-		printf("Buffer: %s\n\n", buffer);
+		//retVal = b_read(FD, buffer+860, 432);
+		//printf("Buffer: %s\n\n", buffer);
+		//retVal = b_read(FD, buffer+1292, 21);
+		//printf("Buffer: %s\n\n", buffer);
+		//retVal = b_read(FD, buffer+1313,735);
+		//printf("Buffer: %s\n\n", buffer);
 		free(buffer);
 		b_close(FD);
 	}*/
@@ -332,8 +332,8 @@ int main (int argc, char *argv[])
 	free(testDe);
 	testDe = NULL;*/
 
-	b_close(FD);
-	b_close(FD2);
+	// b_close(FD);
+	// b_close(FD2);
 
 	
 

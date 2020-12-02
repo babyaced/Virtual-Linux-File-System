@@ -162,6 +162,8 @@ int fs_setcwd(char *buf){ //linux chdir  //cd
     //buf is path the user wants to change to
 
     retVal = LBAread(fs_setcwdDE, currentBlockSize, dirEntIndex);
+    if(fs_setcwdDE->type == 0)
+        return -1;
     currentBlock = fs_setcwdDE->loc;                          //set currentBlock to desired directory(NOT DIRECTORY ENTRY)
     // printf("Freeing: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_setcwdDE);
@@ -216,7 +218,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
 
     int retVal = LBAread(fs_statDE,vcb->sizeOfBlocks, dirEntIndex);
     buf->st_blksize = vcb->sizeOfBlocks;
-    buf->st_size =  fs_statDE->dataSize;
+    buf->st_size =  fs_statDE->dataByteCnt;
     buf->st_blocks = fs_statDE->dataBlkCnt;
 
     free(fs_statDE);

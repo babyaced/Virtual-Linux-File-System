@@ -278,7 +278,7 @@ int b_write (int fd, char * buffer, int count)
             deleteExts(b_writeDE);              //free extents allocated to the file
             b_writeDE->dataIndex = 0;           //reset data index to zero
             b_writeDE->dataBlkCnt = 0;          //reset data blocks written to zero
-            b_writeDE->dataSize = 0;            //reset size in bytes to zero
+            b_writeDE->dataByteCnt = 0;            //reset size in bytes to zero
             openFileTables[fd].pLoc = -2;       //this ensures that new extents will be allocated
             openFileTables[fd].truncated = 1;   //prevents file from being truncated when we don't want
             //the only thing we don't want to change is the directory entry's presence/location in its parent directory
@@ -339,6 +339,7 @@ int b_write (int fd, char * buffer, int count)
 			int bytesNeeded = count - callerBufferOffset;  //decrement count by bytes copied into our buffer and store in bytesNeeded
 			openFileTables[fd].bytesInBuffer = 0;  // reset our buffer
 			openFileTables[fd].ourBufferOffset = 0;
+            openFileTables[fd].buffer = "";
 			while(bytesNeeded >= bytesWritten + B_CHUNK_SIZE){  //if there is more than B_CHUNK_SIZE bytes needed to be written
 
                 if(openFileTables[fd].pLoc == -2){ //if this is a clean file
@@ -391,6 +392,7 @@ int b_write (int fd, char * buffer, int count)
 
 			openFileTables[fd].bytesInBuffer = 0;  //Buffer is now empty
 			openFileTables[fd].ourBufferOffset = 0; //Reset our offset
+            openFileTables[fd].buffer = "";
 			memcpy(openFileTables[fd].buffer, buffer + callerBufferOffset, count - callerBufferOffset);  // copy remaining bytes into buffer
 			openFileTables[fd].bytesInBuffer += count - callerBufferOffset; // increment our byte count
 			openFileTables[fd].ourBufferOffset += count - callerBufferOffset; //increment our offset
@@ -426,11 +428,13 @@ void b_close (int fd){
     dirEnt* b_closeDE = malloc(toBlockSize(sizeof(dirEnt)));  //for saving modified data to opened directory entry
     // printf("Malloced %d bytes for b_closeDE\n",toBlockSize(sizeof(dirEnt)));
     int blockToWriteTo;
+    char* remainingBytes = malloc(512);
 
     int retVal = LBAread(b_closeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
     if(openFileTables[fd].bytesInBuffer > 0){ // if there are bytes remaining in the buffer
-
+        strncpy(remainingBytes, openFileTables[fd].buffer, openFileTables[fd].bytesInBuffer);
+        remainingBytes[openFileTables[fd].bytesInBuffer-1] = '\0';
     if(openFileTables[fd].pLoc == -2){ //if this is a clean file
         openFileTables[fd].pLoc = getLba(b_closeDE,openFileTables[fd].extOffset);
         b_closeDE->dataIndex = openFileTables[fd].pLoc;  //record that initial position of the extent in the data index
@@ -450,8 +454,10 @@ void b_close (int fd){
     b_closeDE = NULL;
     // printf("Freed %d bytes for b_closeDE and set b_closeDE to NULL\n",toBlockSize(sizeof(dirEnt)));
     free(openFileTables[fd].buffer);
+    // free(remainingBytes);
     // printf("Freed %d bytes for openFileTables[%d].buffer and set openFileTables[%d].buffer to NULL\n",B_CHUNK_SIZE,fd,fd);
     openFileTables[fd].buffer = NULL;
+    // remainingBytes = NULL;
     openFileTables[fd].extOffset = 0;
     openFileTables[fd].pLoc = -1;
     openFileTables[fd].bytesInBuffer = 0;

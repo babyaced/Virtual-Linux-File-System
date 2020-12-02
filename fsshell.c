@@ -704,7 +704,7 @@ void processcommand (char * cmd)
 			return;
 			}
 		}
-	printf("%s is not a regonized command.\n", cmdv[0]);
+	printf("%s is not a recognized command.\n", cmdv[0]);
 	cmd_help(cmdc, cmdv);	
 	free (cmdv);
 	cmdv = NULL;
@@ -739,6 +739,18 @@ int main (int argc, char * argv[])
 		
 	using_history();
 	stifle_history(200);	//max history entries
+
+	int FD = b_open("file",O_CREAT | O_WRONLY);
+	if(FD == -1){
+		printf("Error could not open file");
+	}
+	else{
+		char buff[892] = "I would rate my level of motivation in researching volunteer, internship, and career options right now at this moment as a 0. My only focus right now is completing all the assignments remaining in my classes, and that's it. During the winter break, I will definitely do some research into volunteer or internship opportunities. I will also try to probably to start researching/developing another skill that would be useful for my desired career. I would rate my level of motivation in researching volunteer, internship, and career options right now at this moment as a 0. My only focus right now is completing all the assignments remaining in my classes, and that's it. During the winter break, I will definitely do some research into volunteer or internship opportunities. I will also try to probably to start researching/developing another skill that would be useful for my desired career.";
+		retVal = b_write(FD, buff, 892);
+		// retVal = b_write(FD, buff2048+1292, 21);
+		// retVal = b_write(FD, buff2048+1313,735);
+		b_close(FD);
+	}
 	
 	while (1)
 		{
