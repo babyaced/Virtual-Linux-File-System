@@ -72,10 +72,6 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
         initDirDE->parentLoc = parentDE->loc;
     }
     
-
-    strncpy(initDirD->name,name,strlen(name));
-    initDirD->name[strlen(name)] = '\0';
-
     initDirEntries(initDirD);  //initialize dirEnts
     
     
@@ -347,7 +343,7 @@ int addDirEnt(dir* parentDir, dirEnt* dE){
     return 0; 
 }
 
-int removeDirEnt(dir* parentDir, dirEnt* dE){
+bool removeDirEnt(dir* parentDir, dirEnt* dE){
     bool success = hash_table_delete(parentDir, dE); 
     if(success == false){
         printf("ERROR: Failed to delete Directory Entry\n");
@@ -358,10 +354,10 @@ int removeDirEnt(dir* parentDir, dirEnt* dE){
         clearFreeBlocks(dE->loc,vcb->deBlkCnt);
         int retVal = LBAwrite(parentDir,vcb->dBlkCnt,parentDir->loc);
         if(retVal != vcb->dBlkCnt){
-            return -1;
+            return false;
         }
     }
-    return 0;
+    return true;
 }
 
 int findNextDirEnt(int directoryIndex, int startingDirectoryEntryIndex){
