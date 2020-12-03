@@ -36,13 +36,49 @@ int fs_mkdir(const char *pathname, mode_t mode){ //ignore mode for now
 
 int fs_rmdir(const char *pathname){
     int retVal;
-    printf("Path Name: %s\n", pathname);
+    int dirEntIndex = findDirEnt(pathname,0);    //findDirEnt()  //find location of directory at pathname
+    if(dirEntIndex == -1){
+        return -1;
+    }
 
-    //findDirEnt()  //find location of directory at pathname
+    dirEnt* fs_rmdirPDE = malloc(toBlockSize(sizeof(dirEnt)));
+    dirEnt* fs_rmdirDE = malloc(toBlockSize(sizeof(dirEnt)));
+    dir* fs_rmdirD = malloc(toBlockSize(sizeof(dir)));
+    dir* fs_rmdirPD = malloc(toBlockSize(sizeof(dir)));
+    
+    retVal = LBAread(fs_rmdirDE, vcb->deBlkCnt, dirEntIndex);
+
+    int directoryEntryCount = 0;
+    if(fs_rmdirDE->type == 1){
+        
+        retVal = LBAread(fs_rmdirD, vcb->dBlkCnt, fs_rmdirDE->dataIndex);
+
+        for(int i = 0; i < (sizeof(fs_rmdirD->dirEnts)/sizeof(fs_rmdirD->dirEnts[0])); i++){
+            if(fs_rmdirD->dirEnts[i] != -1){
+                directoryEntryCount++;
+                if(directoryEntryCount > 2){
+                    retVal = -1;
+                    break;
+                }
+            }
+        }
+        retVal = LBAread(fs_rmdirPDE, vcb->deBlkCnt, fs_rmdirDE->parentLoc);
+        retVal = LBAread(fs_rmdirPD, vcb->dBlkCnt, fs_rmdirPDE->dataIndex);
+        bool success = removeDirEnt(fs_rmdirPD, fs_rmdirDE);
+        retVal= 0;
+    }else{
+        retVal = -1;
+    }
+    free(fs_rmdirDE);// = malloc(toBlockSize(sizeof(dirEnt)));
+    fs_rmdirDE = NULL;
+    free(fs_rmdirD);//= malloc(toBlockSize(sizeof(dir)));
+    fs_rmdirD = NULL;
+    free(fs_rmdirPD);// = malloc(toBlockSize(sizeof(dir)));
+    fs_rmdirPD = NULL;
+    return retVal;    
     //need to iterate through dirEnts[] of dir and setFreeBlocks for each
     //clear directory entry //reset to zero values
     //setFreeBlocks(vcb,fsl, dir->loc, dir->sizeInBlocks)
-    return 0; //not sure what return value is supposed to represent yet
 }
 
 fdDir * fs_opendir(const char *name){
@@ -227,11 +263,9 @@ int fs_stat(const char *path, struct fs_stat *buf){
 }
 
 int fs_delete(char* filename){ //removes a file
-    //findDirEnt()  //find location of file at pathname
     int ret;
 
     printf("\nfs_delete\n");
-    //int deStartBlock = findFreeBlocks(currentBlockSize);
 
     int deIndex = findDirEnt(filename, 0);
     if (deIndex==-1) return -1; // if no file found, fs_delete returns error
@@ -265,8 +299,6 @@ int fs_delete(char* filename){ //removes a file
         ret = -1;
         printf("de delete FAILED\n");
     } 
-
-    retVal = LBAwrite(parentD, toBlockSize(sizeof(dir)), parentD->loc);
 
     deIndex = findDirEnt(filename,0);
     printf("INDEX = %d\n", deIndex);
