@@ -362,7 +362,7 @@ int fs_move(char* srcPath, char* destPath){
         if(rename == true){ //we need to rename the srcDE to and move it to the parent directory of the destDE we just created
             strncpy(srcDE->name, destDE->name, strlen(destDE->name));  //rename                            
             srcDE->name[strlen(destDE->name)] = '\0';                  //explicitly null terminate the name 
-            srcDE->parentLoc = destDE->parentLoc;                      //copy parent directory entry location because that may change  
+            srcDE->parentLoc = destDE->parentLoc;                      //copy parent directory entry location because that may change
             retVal = LBAread(destParentDE,vcb->deBlkCnt, destDE->parentLoc);
             retVal = LBAread(destParentD, vcb->dBlkCnt,destParentDE->dataIndex);  
             removeDirEnt(destParentD,destDE);                          //remove temporary destDE

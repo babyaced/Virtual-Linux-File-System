@@ -180,7 +180,8 @@ int initFile(int parentDEBlock, char* name){ //takes in parent directory data bl
     initFileDE->type = 0;
     initFileDE->loc = deStartBlock;
     initFileDE->dataIndex = -1;      //right now its just an empty file with no data
-    initFileDE->dataBlkCnt = 0;     //right now its just an empty file with no data
+    initFileDE->dataBlkCnt = 0;      //right now its just an empty file with no data
+    initFileDE->dataByteCnt = 0;     //right now its just an empty file with no data
 
     // extents, init count to 0
     initFileDE->ext1.count = 0;
