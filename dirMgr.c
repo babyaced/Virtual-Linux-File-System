@@ -47,7 +47,7 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     if(parentDEBlock == 0){  //initialize root directory
         initDirD->parentLoc = dirStartBlock;  //parent is itself
         //initialize root directory variables of vcb
-         
+
         vcb->dBlkCnt = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
         vcb->deBlkCnt = toBlockSize(sizeof(dirEnt))/vcb->sizeOfBlocks;
         currentBlockSize = toBlockSize(sizeof(dir))/vcb->sizeOfBlocks;
@@ -123,15 +123,22 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
 
     //write dot directory entry of directory to disk
     retVal = LBAwrite(dot,vcb->deBlkCnt, dotStartBlock);
-    
+
 
     if(parentDEBlock == 0){  //if directory is root
+        int dotDotStartBlock = findFreeBlocks(vcb->deBlkCnt);
+        setFreeBlocks(dotDotStartBlock,vcb->deBlkCnt);
+
+        dotDot->loc = dotDotStartBlock;
         strncpy(dotDot->name,"..", 3);
         dotDot->type = dot->type;
-        dotDot->loc = dot->loc;
+        dotDot->loc = dotDotStartBlock;
         dotDot->dataBlkCnt = dot->dataBlkCnt;
         dotDot->dataIndex  = dot->dataIndex;
         vcb->rdLoc = initDirDE->loc;
+
+        //write dotDot directory entry of directory to disk
+        retVal = LBAwrite(dotDot,vcb->deBlkCnt, dotDotStartBlock);
 
         //addDirEnt(initDirD,initDirDE);                                //add root directory entry to root directory's directory entries
         addDirEnt(initDirD,dot);                                      //add dot directory entry to root directory's directory entries
