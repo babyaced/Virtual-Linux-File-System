@@ -236,6 +236,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
         dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
         retVal = LBAread(currentBlockDE,vcb->deBlkCnt,vcb->rdLoc);
         retVal = LBAread(findDirEntD,vcb->dBlkCnt,currentBlockDE->dataIndex);  //read root directory into our starting directory
+        deIndex =  vcb->rdLoc;
         free(currentBlockDE);
         currentBlockDE = NULL;
     }
@@ -246,6 +247,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
         dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
         retVal = LBAread(currentBlockDE,vcb->deBlkCnt,currentBlock); // read current block into our directory
         retVal = LBAread(findDirEntD, vcb->dBlkCnt, currentBlockDE->dataIndex);
+        deIndex =  currentBlock;
         free(currentBlockDE);
         currentBlockDE = NULL;
     }

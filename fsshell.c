@@ -732,7 +732,16 @@ int main (int argc, char * argv[])
 		}
 		
 	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
-	formatVolume(filename, volumeSize, blockSize);
+	vCB* testVCB = malloc(blockSize);
+	retVal = LBAread(testVCB,1,0);
+	if(testVCB->magicNum == 0x6f8e66c7d3c61738){
+		initGlobals(volumeSize, blockSize);
+	}
+	else{
+		formatVolume(filename, volumeSize, blockSize);
+	}
+	free(testVCB);
+	testVCB = NULL;
 	char * cmdin;
 	char * cmd;
 	HIST_ENTRY *he;

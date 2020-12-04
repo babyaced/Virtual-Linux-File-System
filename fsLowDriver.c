@@ -28,6 +28,7 @@
 //#include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
+#include "fsshell.c"
 
 extern unsigned int* freeSpaceBitmap;  //global for whole damn program
 extern vCB* vcb;  //global for whole damn program
@@ -35,7 +36,7 @@ extern int currentBlock; //holds current LBA block for use with relative pathnam
 extern int currentBlockSize;
 
 int main (int argc, char *argv[])
-	{	
+{	
 	char * filename;
 	uint64_t volumeSize;
 	uint64_t blockSize;
@@ -54,292 +55,51 @@ int main (int argc, char *argv[])
 		}
 		
 	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
-	formatVolume(filename, volumeSize, blockSize);
-	// initGlobals(volumeSize,blockSize);
-	int retval = 0;
-
-
-	//===============================================
-	//Testing collisions and overflow
-	//===============================================
-	/*for(int i = 0; i < 40; i++){
-		printf("%d : %d\n", i, freeSpaceBitmap[i]);
-	}
-	//char* dirName = malloc(3);
-	for(int i = 0; i < 62;i++){
-		if(i%32 == 0){
-			printf("switching int in bitmap\n");
-		}
-		sprintf(dirName, "%d", i);
-		retVal = fs_mkdir(dirName, 2);  //WORKING
-	}
-
-	free(dirName);
-
-	for(int i = 0; i < 40; i++){
-		printf("%d : %ud\n", i, freeSpaceBitmap[i]);
-	}*/
-
-	//===============================================
-	//Testing fs_mkdir()
-	//===============================================
-	/*retVal = fs_mkdir("/test", 0);  //WORKING
-
-	retVal = fs_mkdir("../test/test2", 0);  //WORKING
-
-	//===============================================
-	//Testing b_open and initFile
-	//===============================================
-	/*int FD = b_open("file",0);
-	
-	
-	//retVal = b_open("../test/file",0);*/
-
-	//===============================================
-	//Testing fs_setcwd
-	//===============================================
-	/*retVal = fs_setcwd("/test");
-	printf("Current Block: %d\n", currentBlock);
-
-	retVal = fs_setcwd("/");
-	printf("Current Block: %d\n", currentBlock);
-
-	// path = "test2";
-	// retVal = fs_setcwd(path);
-	// printf("Current Block: %d\n", currentBlock);
-
-	retVal = fs_setcwd("..");
-	printf("Current Block: %d\n", currentBlock);
-
-    retVal = fs_setcwd("test/test2");
-	printf("Current Block: %d\n", currentBlock);
-
-	retVal = fs_setcwd("..");
-	printf("Current Block: %d\n", currentBlock);
-
-	// retVal = fs_setcwd("..");
-	// printf("Current Block: %d\n", currentBlock);
-
-
-
-	//===============================================
-	//Testing fs_isDir()
-	//===============================================
-	retVal = fs_isDir("/test/test2");
-
-	if(retVal == 1)
-		printf("'test2' was a directory\n");
-	
-	//===============================================
-	//Testing fs_isFile()
-	//===============================================
-	retVal = fs_isFile("/file");
-
-	if(retVal == 1)
-		printf("'file' was a file\n");
-
-
-
-	// retVal = b_open("/test/file",0);
-
-	//===============================================
-	//Testing fs_getcwd
-	//===============================================
-	char* buf = malloc(257);
-	char* ret;
-	ret = fs_getcwd(buf, 256);
-	printf("CWD is %s\n",ret);
-
-	free(buf);
-	buf = NULL;
-
-	retVal = fs_setcwd("..");
-	printf("Current Block: %d\n", currentBlock);
-
-	char* buf2 = malloc(256);
-	char* ret2;
-	
-	ret2 = fs_getcwd(buf2, 256);
-	printf("CWD is %s\n",ret2);
-	free(buf2);
-	buf2 = NULL;
-
-	char* buf3 = malloc(256);
-	char* ret3;
-
-	retVal = fs_setcwd("/test/test2");
-	printf("Current Block: %d\n", currentBlock);
-	
-	ret3 = fs_getcwd(buf3, 256);
-	printf("CWD is %s\n",ret3);
-	free(buf3);
-	buf3 = NULL;*/
-
-
-
-
-
-
-	//===============================================
-	// test b_write()
-	//===============================================
-	int FD = b_open("file",O_WRONLY|O_CREAT);
-	//int FD4 = b_open("file2",O_CREAT);
-	if(FD == -1){
-		printf("Error could not open file");
+	vCB* volumeControlBlock = malloc(blockSize);
+	retVal = LBAread(volumeControlBlock,1,0);
+	if(volumeControlBlock->magicNum == 0x6f8e66c7d3c61738){
+		initGlobals(volumeSize, blockSize);
 	}
 	else{
-		char buff2048[2048] = "The unanimous Declaration of the thirteen united States of America, When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness.--That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, --That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government, laying its foundation on such principles and organizing its powers in such form, as to them shall seem most likely to effect their Safety and Happiness. Prudence, indeed, will dictate that Governments long established should not be changed for light and transient causes; and accordingly all experience hath shewn, that mankind are more disposed to suffer, while evils are sufferable, than to right themselves by abolishing the forms to which they are accustomed. But when a long train of abuses and usurpations, pursuing invariably the same Object evinces a design to reduce them under absolute Despotism, it is their right, it is their duty, to throw off such Government, and to provide new Guards for their future security.--Such has been the patient sufferance of these Colonies; and such is now the necessity which constrains them to alter their former Systems of Government. The history of the present King of Great Britain is a history of repeated injuries and usurpations, all having in direct object the establishment of an absolute Tyranny over these States. To";
-		retVal = b_write(FD, buff2048,      43);
-		retVal = b_write(FD, buff2048+43,   54);
-		retVal = b_write(FD, buff2048+97,   98);
-		retVal = b_write(FD, buff2048+195,  32);
-		retVal = b_write(FD, buff2048+227,   3);
-		retVal = b_write(FD, buff2048+230,  87);
-		retVal = b_write(FD, buff2048+317, 543);
-		// retVal = b_write(FD, buff2048+860, 432);
-		// retVal = b_write(FD, buff2048+1292, 21);
-		// retVal = b_write(FD, buff2048+1313,735);
-		b_close(FD);
+		formatVolume(filename, volumeSize, blockSize);
 	}
-
-	//===============================================
-	// test b_move
-	//===============================================
-
-	//retVal = fs_move("file", "file2"); //WORKING
-
-	/*retVal = fs_mkdir("/test", 0);
-	retVal = fs_mkdir("test/test2", 0);
+	free(volumeControlBlock);
+	volumeControlBlock = NULL;
 	
-	retVal = fs_move("file", "/test"); //WORKING
-	retVal = fs_move( "/test/file", "file2");  //should return -1
-	if(retVal == -1){
-		printf("File already exists\n");
-	}
-	
-	int FD2 = b_open("/test/file",0);
-	
-	char* buffer2 = malloc(2048);
-	int readCount = b_read(FD2, buffer2, 2048);
-	printf("Buffer: %s\n", buffer2);
-	free(buffer2);
-	buffer2 = NULL;
-	b_close(FD2);
+	/*int retval = 0;
 
-	retVal = fs_move( "/test/file", "test/test2/file3");  
+	dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
 
-	int FD3 = b_open("/test/test2/file3",0);
-	char* buffer3 = malloc(2048);
-	readCount = b_read(FD3, buffer3, 2048);
-	printf("Buffer: %s\n", buffer3);
-	free(buffer3);
-	buffer3 = NULL;
-	b_close(FD3);*/
+	retVal = LBAread(de,vcb->deBlkCnt, vcb->rdLoc);
 
+	printf("Root directory entry: \n");
+	printf("DE->LOC: %d\n",de->loc);
+	printf("DE->TYPE: %d\n",de->type);
 
+	printf("TESTING MEMORY BUG WITH LS -L\n");
+	fs_mkdir("test",0);
+	fs_mkdir("test2",0);
+	printf("MADE TEST DIRECTORIES\n");
+	retVal = LBAread(de,vcb->deBlkCnt, vcb->rdLoc);
+	printf("DE->LOC: %d\n",de->loc);
+	printf("DE->TYPE: %d\n",de->type);
+	fdDir* dirp;
 
-	/*b_open("file",O_RDONLY);
-	if(FD == -1){
-		printf("Error could not open file\n");
-	}else{
-		char* buffer = malloc(2048);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer,      43);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+43,   54);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+97,   98);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+195,  32);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+227,   3);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+230,  87);
-		printf("Buffer: %s\n\n", buffer);
-		retVal = b_read(FD, buffer+317, 543);
-		printf("Buffer: %s\n\n", buffer);
-		//retVal = b_read(FD, buffer+860, 432);
-		//printf("Buffer: %s\n\n", buffer);
-		//retVal = b_read(FD, buffer+1292, 21);
-		//printf("Buffer: %s\n\n", buffer);
-		//retVal = b_read(FD, buffer+1313,735);
-		//printf("Buffer: %s\n\n", buffer);
-		free(buffer);
-		b_close(FD);
-	}*/
+	dirp = fs_opendir("");
+	printf("DE->LOC: %d\n",de->loc);
+	printf("DE->TYPE: %d\n",de->type);
+	printf("OPENED ROOT\n");
+	//retVal = displayFiles(dirp, 0,1);
+	printf("LS -L");
+	fs_closedir(dirp);
 	
 
-
-
-
-	//fs_mkdir("testfile", 1);
-	//findDirEnt("testfile", 1);
-
-	//===============================================
-	// test O_TRUNC
-	//===============================================
-	/*int FD2 = b_open("file", O_WRONLY | O_TRUNC );
-	if(FD == -1){
-		printf("Error could not open file");
-	}
-	else{
-		char buff2048[2048] = "Whereas many of our subjects in divers parts of our Colonies and Plantations in North America, misled by dangerous and ill designing men, and forgetting the allegiance which they owe to the power that has protected and supported them; after various disorderly acts committed in disturbance of the publick peace, to the obstruction of lawful commerce, and to the oppression of our loyal subjects carrying on the same; have at length proceeded to open and avowed rebellion, by arraying themselves in a hostile manner, to withstand the execution of the law, and traitorously preparing, ordering and levying war against us: And whereas, there is reason to apprehend that such rebellion hath been much promoted and encouraged by the traitorous correspondence, counsels and comfort of divers wicked and desperate persons within this Realm: To the end therefore, that none of our subjects may neglect or violate their duty through ignorance thereof, or through any doubt of the protection which the law will afford to their loyalty and zeal, we have thought fit, by and with the advice of our Privy Council, to issue our Royal Proclamation, hereby declaring, that not only all our Officers, civil and military, are obliged to exert their utmost endeavours to suppress such rebellion, and to bring the traitors to justice, but that all our subjects of this Realm, and the dominions thereunto belonging, are bound by law to be aiding and assisting in the suppression of such rebellion, and to disclose and make known all traitorous conspiracies and attempts against us, our crown and dignity; and we do accordingly strictly charge and command all our Officers, as well civil as military, and all others our obedient and loyal subjects, to use their utmost endeavours to withstand and suppress such rebellion, and to disclose and make known all treasons and traitorous conspiracies which they shall know to be against us, our crown and dignity; and for that purpose, that they transmit to one of our principal Secretaries of State, or other proper officer, d";
-		retVal = b_write(FD2, buff2048,      43);
-		retVal = b_write(FD2, buff2048+43,   54);
-		retVal = b_write(FD2, buff2048+97,   98);
-		retVal = b_write(FD2, buff2048+195,  32);
-		retVal = b_write(FD2, buff2048+227,   3);
-		retVal = b_write(FD2, buff2048+230,  87);
-		retVal = b_write(FD2, buff2048+317, 543);
-		retVal = b_write(FD2, buff2048+860, 432);
-		retVal = b_write(FD2, buff2048+1292, 21);
-		retVal = b_write(FD2, buff2048+1313,735);
-		b_close(FD);
-	}*/
-
- 	//fs_delete("file");
-
-	//=============================================
-	//Test cp
-	//=============================================
-	/*char buf[200];
-	int readcnt;
-	int testfs_src_fd = b_open ("file", O_RDONLY);
-	int testfs_dest_fd = b_open ("file2", O_WRONLY | O_CREAT | O_TRUNC);
-	do 
-		{
-		readcnt = b_read (testfs_src_fd, buf, 200);
-		b_write (testfs_dest_fd, buf, readcnt);
-		} while (readcnt == 200);
-	b_close (testfs_src_fd);
-	b_close (testfs_dest_fd);*/
-	
-
- 	// testing extents
- 	/*dirEnt* testDe = malloc(toBlockSize(sizeof(dirEnt)));   //malloc memory for directory entry we want to initialize
- 	initExts(testDe, MAX_SEC_EXTENTS);
- 	int index;
- 	for (index = 0; index < MAX_SEC_EXTENTS; index++){
-        getNextExt(testDe);
-	}
-
- 	//printf("extent of logical block = %d\n", getLba(testDe, 1));
- 	int t = 10000;
- 	printf("getLba for logical block %d = %d\n", t, getLba(testDe, t));
-    deleteExts(testDe);
-	
-	free(testDe);
-	testDe = NULL;*/
-
-	// b_close(FD);
-	// b_close(FD2);
-
-	
-
+	free(de);
+	de = NULL;*/
  	retVal = closePartitionSystem();
-
 	freeGlobals();
+
+
 		
 	return 0;	
 	}

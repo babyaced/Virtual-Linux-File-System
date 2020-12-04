@@ -102,9 +102,13 @@ fdDir * fs_opendir(const char *name){
             fs_open_fddir->d_reclen = sizeof(fs_open_fddir);                        //what does this mean?
             fs_open_fddir->isInitialized = 1;                                       //set initialized to true
         }
+        else{
+            return NULL;
+        }        
     }
 
     free(fs_opendirDE);
+    fs_opendirDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     return fs_open_fddir;
@@ -135,8 +139,10 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     dirp->dirpItemInfo->d_name[strlen(fs_readdirDE->name)] = '\0';
 
     free(fs_readdirDE);
+    fs_readdirDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_readdirD);
+    fs_readdirD = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
 
     dirp->dirEntryPosition++;
@@ -258,6 +264,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
     buf->st_blocks = fs_statDE->dataBlkCnt;
 
     free(fs_statDE);
+    fs_statDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     return 0;
 }
