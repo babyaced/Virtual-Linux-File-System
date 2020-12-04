@@ -85,6 +85,7 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     initDirDE->type = 1;
     initDirDE->dataBlkCnt = vcb->dBlkCnt;
     initDirDE->dataIndex = dirStartBlock;
+    initDirDE->dataByteCnt = toBlockSize(sizeof(dirEnt));
     // initialize extents of directory entry
     initDirDE->ext1.count = 0;
     initDirDE->ext2.count = 0;

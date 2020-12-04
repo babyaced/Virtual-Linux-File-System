@@ -415,7 +415,7 @@ int b_write (int fd, char * buffer, int count)
     return -1;
 }
 
-int b_seek (int fd, off_t offset, int whence){
+/*int b_seek (int fd, off_t offset, int whence){
 
     if (areWeInitialized == 0) b_init();  //Initialize our system
 
@@ -456,7 +456,8 @@ int b_seek (int fd, off_t offset, int whence){
     }
 
 
-}
+}*/
+
 void b_close (int fd){
     //closePartitionSystem?
     //free everything associated with fd?

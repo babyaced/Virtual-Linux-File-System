@@ -26,7 +26,7 @@ ext getNextExt (dirEnt* file){
 
     if (file->ext1.count == 0){
         // add ext to ext1
-        printf("ADD EXT1\n");
+        // printf("ADD EXT1\n");
         int lbaPos = findFreeBlocks(count);
         setFreeBlocks(lbaPos, count);
 
@@ -35,7 +35,7 @@ ext getNextExt (dirEnt* file){
 
         file->ext1.lba = lbaPos;
         file->ext1.count = count;
-        printf("lba = %d\n", lbaPos);
+        // printf("lba = %d\n", lbaPos);
 
     }
     else if (file->ext2.count == 0){
@@ -50,7 +50,7 @@ ext getNextExt (dirEnt* file){
 
         file->ext2.lba = lbaPos;
         file->ext2.count = count;
-        printf("lba = %d\n", lbaPos);
+        // printf("lba = %d\n", lbaPos);
 
     }
     else if (file->ext3.count == 0){
@@ -64,7 +64,7 @@ ext getNextExt (dirEnt* file){
         nextExt.count = count;
         file->ext3.lba = lbaPos;
         file->ext3.count = count;
-        printf("lba = %d\n", lbaPos);
+        // printf("lba = %d\n", lbaPos);
 
     }
     else if (file->ext4.count == 0){
@@ -78,7 +78,7 @@ ext getNextExt (dirEnt* file){
         nextExt.count = count;
         file->ext4.lba = lbaPos;
         file->ext4.count = count;
-        printf("lba = %d\n", lbaPos);
+        // printf("lba = %d\n", lbaPos);
 
     }
     else { // if primary extents ar filled
@@ -119,8 +119,8 @@ ext getNextExt (dirEnt* file){
             setFreeBlocks(lbaPos, count);
             file->dExt[index].lba = lbaPos;
             file->dExt[index].count = count;
-            printf("ADD dEXT%d, actually EXT%d\n", index, index+5);
-            printf("lba = %d\n", lbaPos);
+            // printf("ADD dEXT%d, actually EXT%d\n", index, index+5);
+            // printf("lba = %d\n", lbaPos);
         }
     }
 
@@ -168,25 +168,25 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
         clearFreeBlocks(file->ext1.lba, file->ext1.count);
         file->ext1.lba = 0;
         file->ext1.count = 0;
-        printf("deleted ext1\n");
+        // printf("deleted ext1\n");
     }
     if (file->ext2.count > 0){
         clearFreeBlocks(file->ext2.lba, file->ext2.count);
         file->ext2.lba = 0;
         file->ext2.count = 0;
-        printf("deleted ext2\n");
+        // printf("deleted ext2\n");
     }
     if (file->ext3.count > 0){
         clearFreeBlocks(file->ext3.lba, file->ext3.count);
         file->ext3.lba = 0;
         file->ext3.count = 0;
-        printf("deleted ext3\n");
+        // printf("deleted ext3\n");
     }
     if (file->ext4.count > 0){
         clearFreeBlocks(file->ext4.lba, file->ext4.count);
         file->ext4.lba = 0;
         file->ext4.count = 0;
-        printf("deleted ext4\n");
+        // printf("deleted ext4\n");
     }
 
     int index = 0;
@@ -195,7 +195,7 @@ void deleteExts (dirEnt* file){ // call when a file is deleted to set the extent
         clearFreeBlocks(file->dExt[index].lba, file->dExt[index].count);
         file->dExt[index].lba = 0;
         file->dExt[index].count = 0;
-        printf("deleted dEXT%d, actually EXT%d\n", index, index+5);
+        // printf("deleted dEXT%d, actually EXT%d\n", index, index+5);
         index++;
     }
 }

@@ -57,8 +57,13 @@ int fs_rmdir(const char *pathname){
             if(fs_rmdirD->dirEnts[i] != -1){
                 directoryEntryCount++;
                 if(directoryEntryCount > 2){
-                    retVal = -1;
-                    break;
+                    free(fs_rmdirDE);// = malloc(toBlockSize(sizeof(dirEnt)));
+                    fs_rmdirDE = NULL;
+                    free(fs_rmdirD);//= malloc(toBlockSize(sizeof(dir)));
+                    fs_rmdirD = NULL;
+                    free(fs_rmdirPD);// = malloc(toBlockSize(sizeof(dir)));
+                    fs_rmdirPD = NULL;
+                    return -1;
                 }
             }
         }
@@ -277,7 +282,7 @@ int fs_delete(char* filename){ //removes a file
     int deIndex = findDirEnt(filename, 0);
     if (deIndex==-1) return -1; // if no file found, fs_delete returns error
     if (fs_isDir(filename)) return -1; // return error is path is a directory
-    printf("%d\n", deIndex);
+    // printf("%d\n", deIndex);
 
     dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
     int retVal = LBAread(de, vcb->deBlkCnt, deIndex); //read directory entry into de
@@ -296,7 +301,7 @@ int fs_delete(char* filename){ //removes a file
 
     deleteExts(de); // deleting the data / blobs of a file
 
-    printf("\n\n");
+    // printf("\n\n");
     bool success = removeDirEnt(parentD, de);
     if (success){
         ret = 0;
@@ -308,7 +313,7 @@ int fs_delete(char* filename){ //removes a file
     } 
 
     deIndex = findDirEnt(filename,0);
-    printf("INDEX = %d\n", deIndex);
+    // printf("INDEX = %d\n", deIndex);
 
     free(de);
     de = NULL;
