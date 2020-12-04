@@ -54,7 +54,7 @@ void b_init()
         openFileTables[i].pLoc = -1;              //physical start location of file data on lba
         openFileTables[i].bytesInBuffer = 0;      //how many bytes are in the buffer assigned to the file at the moment
         openFileTables[i].ourBufferOffset = 0;    //how many bytes are written into the file's buffer at the moment
-        openFileTables[i].dirEntIndex = 0;        //open directory entry's location in lba
+        openFileTables[i].dirEntIndex = -1;        //open directory entry's location in lba
         openFileTables[i].bytesWR = 0;           //bytes written or read // to compare with file size
         //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
         //openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
@@ -106,7 +106,7 @@ int b_open (const char* filename, int flags){  //cannot open directory
 
     if(flags & O_TRUNC){
         deleteExts(b_openDE);              //free extents allocated to the file
-        b_openDE->dataIndex = 0;           //reset data index to zero
+        b_openDE->dataIndex = -1;           //reset data index to null
         b_openDE->dataBlkCnt = 0;          //reset data blocks written to zero
         b_openDE->dataByteCnt = 0;            //reset size in bytes to zero
         retVal = LBAwrite(b_openDE,vcb->deBlkCnt, dirEntIndex);  //save the changes
@@ -394,6 +394,8 @@ int b_write (int fd, char * buffer, int count)
             openFileTables[fd].bytesInBuffer = B_CHUNK_SIZE;  //buffer is full
             openFileTables[fd].ourBufferOffset = B_CHUNK_SIZE;
 
+            printf("b_write buffer: %s\n", openFileTables[fd].buffer);
+
             blocksDirectlyWritten = LBAwrite(openFileTables[fd].buffer, 1, blockToWriteTo);  //Write full buffer to file
 
             openFileTables[fd].extOffset++;     //increment our extent offset
@@ -404,6 +406,9 @@ int b_write (int fd, char * buffer, int count)
             openFileTables[fd].ourBufferOffset = 0; //Reset our offset
             //openFileTables[fd].buffer = "";
             memcpy(openFileTables[fd].buffer, buffer + callerBufferOffset, count - callerBufferOffset);  // copy remaining bytes into buffer
+            if(strlen(openFileTables[fd].buffer) == 0){
+                printf("Buffer is empty?!");
+            }
             openFileTables[fd].bytesInBuffer += count - callerBufferOffset; // increment our byte count
             openFileTables[fd].ourBufferOffset += count - callerBufferOffset; //increment our offset
         }
@@ -412,7 +417,7 @@ int b_write (int fd, char * buffer, int count)
     free(b_writeDE);
     b_writeDE = NULL;
     // printf("Freed   %d bytes for b_writeDE and set b_writeDE to NULL\n",toBlockSize(sizeof(dirEnt)));
-    return -1;
+    return 0;
 }
 
 /*int b_seek (int fd, off_t offset, int whence){
@@ -496,8 +501,10 @@ void b_close (int fd){
     openFileTables[fd].buffer = NULL;
     // remainingBytes = NULL;
     openFileTables[fd].extOffset = 0;
+    openFileTables[fd].dirEntIndex = -1;
     openFileTables[fd].pLoc = -1;
     openFileTables[fd].bytesInBuffer = 0;
     openFileTables[fd].ourBufferOffset = 0;
+    openFileTables[fd].bytesWR = 0;
     openFileTables[fd].flags = 0;
 }
