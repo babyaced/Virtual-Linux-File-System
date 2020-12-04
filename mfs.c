@@ -57,8 +57,13 @@ int fs_rmdir(const char *pathname){
             if(fs_rmdirD->dirEnts[i] != -1){
                 directoryEntryCount++;
                 if(directoryEntryCount > 2){
-                    retVal = -1;
-                    break;
+                    free(fs_rmdirDE);// = malloc(toBlockSize(sizeof(dirEnt)));
+                    fs_rmdirDE = NULL;
+                    free(fs_rmdirD);//= malloc(toBlockSize(sizeof(dir)));
+                    fs_rmdirD = NULL;
+                    free(fs_rmdirPD);// = malloc(toBlockSize(sizeof(dir)));
+                    fs_rmdirPD = NULL;
+                    return -1;
                 }
             }
         }
