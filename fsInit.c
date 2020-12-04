@@ -17,14 +17,13 @@ char currentBlockName[255];
 void initGlobals(uint64_t volumeSize, uint64_t blockSize){
     int retVal;
     // printf("Mallocing: %ld bytes\n", blockSize);
-    vcb = malloc(toBlockSize(sizeof(vCB)));
+    vcb = malloc(blockSize);
     retVal = LBAread(vcb,1,0); //read already existing vcb from disk
     int blockCount = volumeSize/ blockSize;
-    int bmSize = blockCount/8 +1;
-    int bmElements = (blockCount/32) +1;  //number of blocks divided by bits in int
-    // printf("Callocing: %ld bytes\n", bmElements*sizeof(freeSpaceBitmap[0]));
-    freeSpaceBitmap = calloc(bmElements,sizeof(freeSpaceBitmap[0]));
-    // printf("Mallocing: %d bytes\n", vcb->fslBytes);
+    int bmSize = toBlockSize(blockCount/8); //divide number of blocks by 
+    int bmElements = (bmSize/4);  //number of blocks divided by bits in int
+    // printf("Callocing: %ld bytes\n", bmElements*sizeof(int));
+    freeSpaceBitmap = calloc(bmElements,sizeof(int));
     retVal = LBAread(freeSpaceBitmap, vcb->fslBlkCnt,1);  //read already existing freeSpaceBitmap from disk
     currentBlock = vcb->rdLoc;   //initialize current directory to root directory
     currentBlockSize = vcb->dBlkCnt; //initialize current directory block size to root directory block size
@@ -41,6 +40,7 @@ void formatVolume(char* volumeName, uint64_t volumeSize, uint64_t blockSize){
     setFreeBlocks(1,vcb->fslBlkCnt);
     retVal = LBAwrite(freeSpaceBitmap,vcb->fslBlkCnt,1);
     retVal = initDir(0,"");
+    vcb->magicNum = 0x6f8e66c7d3c61738;
     retVal = LBAwrite(vcb,1,0);
 }
 

@@ -33,10 +33,10 @@ typedef struct FD {
     int bytesInBuffer;      //how many bytes are in the buffer assigned to the file at the moment
     int ourBufferOffset;    //how many bytes are written into the file's buffer at the moment
     int dirEntIndex;        //open directory entry's location in lba
+    int bytesWR;           //bytes written or read to/from file // to compare with file size
     // int pOffset;            //offset of blocks for a file of block length greater than 1
     // int blocksAlloced;      //how many blocks were initially allocated to the file
     int flags;
-    int truncated;          //indicates whether file was already truncated
 }FD;
 
 FD openFileTables[MAX_OPEN_FILES]; // fd is index in fd openFileTables[]
@@ -55,10 +55,10 @@ void b_init()
         openFileTables[i].bytesInBuffer = 0;      //how many bytes are in the buffer assigned to the file at the moment
         openFileTables[i].ourBufferOffset = 0;    //how many bytes are written into the file's buffer at the moment
         openFileTables[i].dirEntIndex = 0;        //open directory entry's location in lba
+        openFileTables[i].bytesWR = 0;           //bytes written or read // to compare with file size
         //openFileTables[i].pOffset = 0;            //how many blocks we are into a file originally allocated blocks
         //openFileTables[i].blocksAlloced = 0;      //how many blocks were initially allocated to the file
-        openFileTables[i].flags = 0;              //maybe initialize this to -1 instead because 0 is O_RDONLY
-        openFileTables[i].truncated = 0;           //file is not truncated yet
+        openFileTables[i].flags = 0;              //maybe initialize this to -1 instead because 0 is O_RDONLY    
     }
     areWeInitialized = 1;
 }
@@ -98,14 +98,20 @@ int b_open (const char* filename, int flags){  //cannot open directory
     if((flags & O_ACCMODE) == O_WRONLY){
         openFileTables[fcbFD].flags |= O_WRONLY;
     }
-    if(flags & O_TRUNC){
-        openFileTables[fcbFD].flags |= O_TRUNC;
-    }
 
     dirEnt* b_openDE = malloc(toBlockSize(sizeof(dirEnt)));
     // printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
 
     int retVal = LBAread(b_openDE,vcb->deBlkCnt, dirEntIndex);
+
+    if(flags & O_TRUNC){
+        deleteExts(b_openDE);              //free extents allocated to the file
+        b_openDE->dataIndex = 0;           //reset data index to zero
+        b_openDE->dataBlkCnt = 0;          //reset data blocks written to zero
+        b_openDE->dataByteCnt = 0;            //reset size in bytes to zero
+        retVal = LBAwrite(b_openDE,vcb->deBlkCnt, dirEntIndex);  //save the changes
+    }
+    
 
     if(b_openDE->dataIndex == -1) //in case of unitialized file
     {
@@ -201,8 +207,14 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
                 openFileTables[fd].extOffset++;
                 bufferOffset += B_CHUNK_SIZE;                                      //offset the buffer by 1 block
             }
-
-            bytesRead = blocks* vcb->sizeOfBlocks;
+            
+            if(openFileTables[fd].bytesWR > b_readDE->dataByteCnt){
+                bytesRead = b_readDE->dataByteCnt%vcb->sizeOfBlocks;
+            }
+            else{
+                bytesRead = blocks* vcb->sizeOfBlocks;
+            }
+      
             part3 = bytesRead;
             part2 = part2 - part3;  //part 2 is now < B_CHUNK_SIZE, or file is exusted
         }
@@ -213,7 +225,13 @@ int b_read (int fd, char * buffer, int count)  //this is copy of bierman's versi
         if(strlen(openFileTables[fd].buffer)==0){  //LBAread read an empty block
             bytesRead = 0;
         }else{
-            bytesRead = blocksRead*B_CHUNK_SIZE;
+            openFileTables[fd].bytesWR += blocksRead* vcb->sizeOfBlocks;
+            if(openFileTables[fd].bytesWR > b_readDE->dataByteCnt){
+                bytesRead = b_readDE->dataByteCnt%vcb->sizeOfBlocks;
+            }
+            else{
+                bytesRead = blocksRead* vcb->sizeOfBlocks;
+            }
             openFileTables[fd].ourBufferOffset = 0;
             openFileTables[fd].extOffset++;
         }
@@ -273,22 +291,11 @@ int b_write (int fd, char * buffer, int count)
     // printf("Malloced %d bytes for b_openDE\n",toBlockSize(sizeof(dirEnt)));
     retVal = LBAread(b_writeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
-    if(openFileTables[fd].flags & O_TRUNC){
-        if(openFileTables[fd].truncated == 0){  //if file was not already truncated
-            deleteExts(b_writeDE);              //free extents allocated to the file
-            b_writeDE->dataIndex = 0;           //reset data index to zero
-            b_writeDE->dataBlkCnt = 0;          //reset data blocks written to zero
-            b_writeDE->dataByteCnt = 0;            //reset size in bytes to zero
-            openFileTables[fd].pLoc = -2;       //this ensures that new extents will be allocated
-            openFileTables[fd].truncated = 1;   //prevents file from being truncated when we don't want
-            //the only thing we don't want to change is the directory entry's presence/location in its parent directory
-        }
-    }
+	if(count >= B_CHUNK_SIZE){
+		if(openFileTables[fd].bytesInBuffer == 0)  //if there are no bytes in our buffer
+		{
+			while(count >= bytesWritten + B_CHUNK_SIZE){
 
-    if(count >= B_CHUNK_SIZE){
-        if(openFileTables[fd].bytesInBuffer == 0)  //if there are no bytes in our buffer
-        {
-            while(count >= bytesWritten + B_CHUNK_SIZE){
 
                 if(openFileTables[fd].pLoc == -2){ //if this is a clean file
                     openFileTables[fd].pLoc = getLba(b_writeDE,openFileTables[fd].extOffset);
@@ -304,18 +311,18 @@ int b_write (int fd, char * buffer, int count)
                 openFileTables[fd].extOffset++;         //increment our extent offset
 
                 b_writeDE->dataBlkCnt++;                //increment the data size by 1 block
+                //b_writeDE->dataByteCnt += vcb->sizeOfBlocks;
 
-                callerBufferOffset += blocksDirectlyWritten * vcb->sizeOfBlocks;   //increment caller buffer offset
-                bytesWritten += blocksDirectlyWritten * vcb->sizeOfBlocks;  //increment byte count for this loop
-            }
-            int bytesNeeded = count - bytesWritten;
-            memcpy(openFileTables[fd].buffer, buffer + callerBufferOffset,bytesNeeded); //copy amount of bytes needed to buffer
-            openFileTables[fd].bytesInBuffer += bytesNeeded; // increment our byte count
-            openFileTables[fd].ourBufferOffset += bytesNeeded; //increment our buffer offset
-
-        }
-        else{//if there are bytes in our buffer  //no need to allocate blocks to the open fd
-            memcpy(openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, buffer, B_CHUNK_SIZE - openFileTables[fd].bytesInBuffer);  //copy what we can to our buffer
+				callerBufferOffset += blocksDirectlyWritten * vcb->sizeOfBlocks;   //increment caller buffer offset
+				bytesWritten += blocksDirectlyWritten * vcb->sizeOfBlocks;  //increment byte count for this loop
+			}
+			int bytesNeeded = count - bytesWritten;  
+			memcpy(openFileTables[fd].buffer, buffer + callerBufferOffset,bytesNeeded); //copy amount of bytes needed to buffer
+			openFileTables[fd].bytesInBuffer += bytesNeeded; // increment our byte count
+			openFileTables[fd].ourBufferOffset += bytesNeeded; //increment our buffer offset
+		}
+		else{//if there are bytes in our buffer  //no need to allocate blocks to the open fd
+			memcpy(openFileTables[fd].buffer + openFileTables[fd].ourBufferOffset, buffer, B_CHUNK_SIZE - openFileTables[fd].bytesInBuffer);  //copy what we can to our buffer
             bytesWritten = B_CHUNK_SIZE - openFileTables[fd].bytesInBuffer;
             openFileTables[fd].ourBufferOffset += B_CHUNK_SIZE - openFileTables[fd].bytesInBuffer; //increment our buffer offset
             openFileTables[fd].bytesInBuffer += B_CHUNK_SIZE - openFileTables[fd].bytesInBuffer; // increment our byte count
@@ -335,6 +342,7 @@ int b_write (int fd, char * buffer, int count)
 
             openFileTables[fd].extOffset++;     //increment our extent offset
             b_writeDE->dataBlkCnt++;                //increment the data size by 1 block
+            b_writeDE->dataByteCnt += vcb->sizeOfBlocks;
 
             int bytesNeeded = count - callerBufferOffset;  //decrement count by bytes copied into our buffer and store in bytesNeeded
             openFileTables[fd].bytesInBuffer = 0;  // reset our buffer
@@ -354,6 +362,7 @@ int b_write (int fd, char * buffer, int count)
 
                 openFileTables[fd].extOffset++;     //increment our extent offset
                 b_writeDE->dataBlkCnt++;                //increment the data size by 1 block
+                b_writeDE->dataByteCnt += vcb->sizeOfBlocks;
 
                 callerBufferOffset += blocksDirectlyWritten * vcb->sizeOfBlocks;  //offset the caller buffer
                 bytesWritten += blocksDirectlyWritten * vcb->sizeOfBlocks;  //increment our bytesWritten
@@ -389,6 +398,7 @@ int b_write (int fd, char * buffer, int count)
 
             openFileTables[fd].extOffset++;     //increment our extent offset
             b_writeDE->dataBlkCnt++;                //increment the data size by 1 block
+            b_writeDE->dataByteCnt += vcb->sizeOfBlocks;
 
             openFileTables[fd].bytesInBuffer = 0;  //Buffer is now empty
             openFileTables[fd].ourBufferOffset = 0; //Reset our offset
@@ -453,27 +463,28 @@ void b_close (int fd){
     dirEnt* b_closeDE = malloc(toBlockSize(sizeof(dirEnt)));  //for saving modified data to opened directory entry
     // printf("Malloced %d bytes for b_closeDE\n",toBlockSize(sizeof(dirEnt)));
     int blockToWriteTo;
-    //char* remainingBytes = malloc(512);
 
     int retVal = LBAread(b_closeDE, vcb->deBlkCnt, openFileTables[fd].dirEntIndex);
 
-    if(openFileTables[fd].bytesInBuffer > 0){ // if there are bytes remaining in the buffer
-        //strncpy(remainingBytes, openFileTables[fd].buffer, openFileTables[fd].bytesInBuffer);
-        //remainingBytes[openFileTables[fd].bytesInBuffer-1] = '\0';
-        if(openFileTables[fd].pLoc == -2){ //if this is a clean file
-            openFileTables[fd].pLoc = getLba(b_closeDE,openFileTables[fd].extOffset);
-            b_closeDE->dataIndex = openFileTables[fd].pLoc;  //record that initial position of the extent in the data index
-            blockToWriteTo = openFileTables[fd].pLoc;
-        } else{
-            blockToWriteTo = getLba(b_closeDE,openFileTables[fd].extOffset);
-        }
+    if(openFileTables[fd].flags & O_WRONLY){
+        if(openFileTables[fd].bytesInBuffer > 0){ // if there are bytes remaining in the buffer
+    if(openFileTables[fd].pLoc == -2){ //if this is a clean file
+        openFileTables[fd].pLoc = getLba(b_closeDE,openFileTables[fd].extOffset);
+        b_closeDE->dataIndex = openFileTables[fd].pLoc;  //record that initial position of the extent in the data index
+        blockToWriteTo = openFileTables[fd].pLoc;
+    } else{
+        blockToWriteTo = getLba(b_closeDE,openFileTables[fd].extOffset);
+    }
         retVal = LBAwrite(openFileTables[fd].buffer, B_CHUNK_SIZE/vcb->sizeOfBlocks, blockToWriteTo);  //write rest of buffer to disk
 
         openFileTables[fd].extOffset++;     //increment our extent offset
         b_closeDE->dataBlkCnt++;                //increment the data size by 1 block
+        b_closeDE->dataByteCnt += openFileTables[fd].bytesInBuffer;
 
         retVal = LBAwrite(b_closeDE, vcb->deBlkCnt, b_closeDE->loc);  //save modified directory entry to disk
     }
+    }
+
 
     free(b_closeDE);
     b_closeDE = NULL;
@@ -488,5 +499,4 @@ void b_close (int fd){
     openFileTables[fd].bytesInBuffer = 0;
     openFileTables[fd].ourBufferOffset = 0;
     openFileTables[fd].flags = 0;
-    openFileTables[fd].truncated = 0;
 }

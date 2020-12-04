@@ -180,7 +180,8 @@ int initFile(int parentDEBlock, char* name){ //takes in parent directory data bl
     initFileDE->type = 0;
     initFileDE->loc = deStartBlock;
     initFileDE->dataIndex = -1;      //right now its just an empty file with no data
-    initFileDE->dataBlkCnt = 0;     //right now its just an empty file with no data
+    initFileDE->dataBlkCnt = 0;      //right now its just an empty file with no data
+    initFileDE->dataByteCnt = 0;     //right now its just an empty file with no data
 
     // extents, init count to 0
     initFileDE->ext1.count = 0;
@@ -235,6 +236,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
         dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
         retVal = LBAread(currentBlockDE,vcb->deBlkCnt,vcb->rdLoc);
         retVal = LBAread(findDirEntD,vcb->dBlkCnt,currentBlockDE->dataIndex);  //read root directory into our starting directory
+        deIndex =  vcb->rdLoc;
         free(currentBlockDE);
         currentBlockDE = NULL;
     }
@@ -245,6 +247,7 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
         dirEnt* currentBlockDE = malloc(toBlockSize(sizeof(dirEnt)));
         retVal = LBAread(currentBlockDE,vcb->deBlkCnt,currentBlock); // read current block into our directory
         retVal = LBAread(findDirEntD, vcb->dBlkCnt, currentBlockDE->dataIndex);
+        deIndex =  currentBlock;
         free(currentBlockDE);
         currentBlockDE = NULL;
     }

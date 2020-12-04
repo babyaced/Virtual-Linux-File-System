@@ -23,7 +23,6 @@ struct dirEnt{
     int dataIndex; //can be file or directory
     int dataBlkCnt; //can be file or directory //contiguous
     int dataByteCnt; //holds size of data in bytes
-    //dirEnt* next; //in case of collisions //IGNORE FOR NOW
 
     // primary extent;
     ext ext1;

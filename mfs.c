@@ -102,9 +102,13 @@ fdDir * fs_opendir(const char *name){
             fs_open_fddir->d_reclen = sizeof(fs_open_fddir);                        //what does this mean?
             fs_open_fddir->isInitialized = 1;                                       //set initialized to true
         }
+        else{
+            return NULL;
+        }        
     }
 
     free(fs_opendirDE);
+    fs_opendirDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
     return fs_open_fddir;
@@ -135,8 +139,10 @@ struct fs_diriteminfo* fs_readdir(fdDir *dirp){ //every time I call read it will
     dirp->dirpItemInfo->d_name[strlen(fs_readdirDE->name)] = '\0';
 
     free(fs_readdirDE);
+    fs_readdirDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     free(fs_readdirD);
+    fs_readdirD = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dir)));
 
     dirp->dirEntryPosition++;
@@ -258,6 +264,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
     buf->st_blocks = fs_statDE->dataBlkCnt;
 
     free(fs_statDE);
+    fs_statDE = NULL;
     // printf("Freed: %d bytes\n", toBlockSize(sizeof(dirEnt)));
     return 0;
 }
@@ -362,7 +369,7 @@ int fs_move(char* srcPath, char* destPath){
         if(rename == true){ //we need to rename the srcDE to and move it to the parent directory of the destDE we just created
             strncpy(srcDE->name, destDE->name, strlen(destDE->name));  //rename                            
             srcDE->name[strlen(destDE->name)] = '\0';                  //explicitly null terminate the name 
-            srcDE->parentLoc = destDE->parentLoc;                      //copy parent directory entry location because that may change  
+            srcDE->parentLoc = destDE->parentLoc;                      //copy parent directory entry location because that may change
             retVal = LBAread(destParentDE,vcb->deBlkCnt, destDE->parentLoc);
             retVal = LBAread(destParentD, vcb->dBlkCnt,destParentDE->dataIndex);  
             removeDirEnt(destParentD,destDE);                          //remove temporary destDE

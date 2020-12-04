@@ -19,6 +19,9 @@ typedef struct{
 
     int dBlkCnt;        //size of directories in blocks
     int deBlkCnt;       //size of directory entries in blocks
+
+    uint64_t magicNum;
+
 }vCB;
 
 
