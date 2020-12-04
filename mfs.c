@@ -258,7 +258,7 @@ int fs_stat(const char *path, struct fs_stat *buf){
     dirEnt* fs_statDE = malloc(toBlockSize(sizeof(dirEnt)));
     // printf("Malloced: %d bytes\n", toBlockSize(sizeof(dirEnt)));
 
-    int retVal = LBAread(fs_statDE,vcb->sizeOfBlocks, dirEntIndex);
+    int retVal = LBAread(fs_statDE,vcb->deBlkCnt, dirEntIndex);
     buf->st_blksize = vcb->sizeOfBlocks;
     buf->st_size =  fs_statDE->dataByteCnt;
     buf->st_blocks = fs_statDE->dataBlkCnt;

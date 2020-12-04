@@ -66,7 +66,7 @@ int main (int argc, char *argv[])
 	free(volumeControlBlock);
 	volumeControlBlock = NULL;
 	
-	/*int retval = 0;
+	int retval = 0;
 
 	dirEnt* de = malloc(toBlockSize(sizeof(dirEnt)));
 
@@ -89,13 +89,12 @@ int main (int argc, char *argv[])
 	printf("DE->LOC: %d\n",de->loc);
 	printf("DE->TYPE: %d\n",de->type);
 	printf("OPENED ROOT\n");
-	//retVal = displayFiles(dirp, 0,1);
+	retVal = displayFiles(dirp, 0,1);
 	printf("LS -L");
-	fs_closedir(dirp);
 	
 
 	free(de);
-	de = NULL;*/
+	de = NULL;
  	retVal = closePartitionSystem();
 	freeGlobals();
 
