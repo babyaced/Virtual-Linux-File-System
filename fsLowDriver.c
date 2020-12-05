@@ -25,7 +25,6 @@
 #include <time.h>
 #include "b_io.h"
 #include "fsLow.h"
-//#include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
 #include "fsshell.c"
@@ -91,7 +90,6 @@ int main (int argc, char *argv[])
 	printf("OPENED ROOT\n");
 	retVal = displayFiles(dirp, 0,1);
 	printf("LS -L");
-	
 
 	free(de);
 	de = NULL;
