@@ -41,10 +41,16 @@ int fs_rmdir(const char *pathname){
         return -1;
     }
 
+    if(dirEntIndex == vcb->rdLoc){
+        return -1;
+    }
+
     dirEnt* fs_rmdirPDE = malloc(toBlockSize(sizeof(dirEnt)));
     dirEnt* fs_rmdirDE = malloc(toBlockSize(sizeof(dirEnt)));
     dir* fs_rmdirD = malloc(toBlockSize(sizeof(dir)));
     dir* fs_rmdirPD = malloc(toBlockSize(sizeof(dir)));
+    dirEnt* dotDE = malloc(toBlockSize(sizeof(dir)));
+    dirEnt* dotdotDE = malloc(toBlockSize(sizeof(dir)));
     
     retVal = LBAread(fs_rmdirDE, vcb->deBlkCnt, dirEntIndex);
 
@@ -67,9 +73,16 @@ int fs_rmdir(const char *pathname){
                 }
             }
         }
+        int dotIndex = hash_table_lookup(".",fs_rmdirD);
+        int dotdotIndex = hash_table_lookup("..", fs_rmdirD);
+        retVal = LBAread(dotDE, vcb->deBlkCnt, dotIndex);
+        retVal = LBAread(dotdotDE, vcb->deBlkCnt, dotdotIndex);
         retVal = LBAread(fs_rmdirPDE, vcb->deBlkCnt, fs_rmdirDE->parentLoc);
         retVal = LBAread(fs_rmdirPD, vcb->dBlkCnt, fs_rmdirPDE->dataIndex);
-        bool success = removeDirEnt(fs_rmdirPD, fs_rmdirDE);
+        bool success = removeDirEnt(fs_rmdirD, dotDE);
+        success = removeDirEnt(fs_rmdirD, dotdotDE);
+        success = removeDirEnt(fs_rmdirPD, fs_rmdirDE);
+        clearFreeBlocks(fs_rmdirD->loc, vcb->dBlkCnt);
         retVal= 0;
     }else{
         retVal = -1;

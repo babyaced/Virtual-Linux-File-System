@@ -730,7 +730,6 @@ int main (int argc, char * argv[])
 		printf ("Usage: fsLowDriver volumeFileName volumeSize blockSize\n");
 		return -1;
 		}
-		
 	retVal = startPartitionSystem(filename,&volumeSize, &blockSize);
 	vCB* testVCB = malloc(blockSize);
 	retVal = LBAread(testVCB,1,0);
@@ -751,6 +750,8 @@ int main (int argc, char * argv[])
 	
 	while (1)
 		{
+			int fb = findFreeBlocks(1);
+			printf("Next Free Block: %d\n", fb);
 		cmdin = readline("Prompt > ");
 #ifdef COMMAND_DEBUG
 		printf ("%s\n", cmdin);
