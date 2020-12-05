@@ -270,8 +270,6 @@ int fs_stat(const char *path, struct fs_stat *buf){
 int fs_delete(char* filename){ //removes a file
     int ret;
 
-    printf("\nfs_delete\n");
-
     int deIndex = findDirEnt(filename, 0);
     if (deIndex==-1) return -1; // if no file found, fs_delete returns error
     if (fs_isDir(filename)) return -1; // return error is path is a directory
@@ -291,7 +289,6 @@ int fs_delete(char* filename){ //removes a file
     bool success = removeDirEnt(parentD, de);
     if (success){
         ret = 0;
-        printf("de delete SUCCESS\n");
     }
     else{
         ret = -1;
