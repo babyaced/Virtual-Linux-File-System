@@ -54,7 +54,6 @@ $(ROOTNAME)$(HW)$(FOPTION): $(OBJ)
 
 clean:
 	rm *.o $(ROOTNAME)$(HW)$(FOPTION)
-	rm SampleVolume
 
 run: $(ROOTNAME)$(HW)$(FOPTION)
 	./$(ROOTNAME)$(HW)$(FOPTION) $(RUNOPTIONS)
