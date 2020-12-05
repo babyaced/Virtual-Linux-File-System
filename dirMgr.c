@@ -131,10 +131,11 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     if(parentDEBlock == 0){  //if directory is root
         strncpy(dotDot->name,"..", 3);
         dotDot->type = 1;
-        dotDot->dataBlkCnt = dot->dataBlkCnt;
-        dotDot->dataIndex  = dot->dataIndex;
+        dotDot->dataBlkCnt = vcb->dBlkCnt;
+        dotDot->dataIndex  = initDirDE->loc;
+        dotDot->dataByteCnt = toBlockSize(sizeof(dirEnt));
         int dotdotStartBlock = findFreeBlocks(vcb->deBlkCnt);
-        setFreeBlocks(dotStartBlock,vcb->deBlkCnt);
+        setFreeBlocks(dotdotStartBlock,vcb->deBlkCnt);
         dotDot->loc = dotdotStartBlock;
 
         //write dot directory entry of directory to disk
