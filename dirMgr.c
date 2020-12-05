@@ -10,12 +10,11 @@
 
 #define F_CREATE 0x01 //0b00000001
 #define D_CREATE 0x02 //0b00000010
-//#define LOOK_UP  0x03 //0b00000011
 
 // #define TABLE_SIZE 54
 
-extern unsigned int* freeSpaceBitmap;  //global for whole damn program
-extern vCB* vcb;  //global for whole damn program
+extern unsigned int* freeSpaceBitmap;  //global for whole program
+extern vCB* vcb;  //global for whole program
 extern int currentBlock; //holds LBA block of current directory for use with relative pathnames
 extern int currentBlockSize;  //holds # of blocks taken by current directory
 extern char currentBlockName[255]; //size of 255 for now
@@ -41,8 +40,6 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     
     dir* initDirD = malloc(toBlockSize(sizeof(dir)));
     dirEnt* initDirDE = malloc(toBlockSize(sizeof(dirEnt)));
-    //initDirD->sizeInBlocks = blocksNeeded;
-    //initDirD->sizeInBytes = bytesNeeded;
     initDirD->loc = dirStartBlock;
     if(parentDEBlock == 0){  //initialize root directory
         initDirD->parentLoc = dirStartBlock;  //parent is itself
@@ -71,7 +68,6 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
         initDirD->parentLoc = parentDE->loc; // parent is at block index passed in
         initDirDE->parentLoc = parentDE->loc;
 
-        //dot->parentLoc = parentDE->loc;
     }
     
     initDirEntries(initDirD);  //initialize dirEnts
@@ -114,11 +110,6 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
     dot->type = initDirDE->type;
     dot->dataBlkCnt = initDirDE->dataBlkCnt;
     dot->dataIndex  = initDirDE->loc;
-    /*dot->ext1.count = initDirDE->ext1.count;  //don't think these are needed 
-    dot->ext2.count = initDirDE->ext2.count;
-    dot->ext3.count = initDirDE->ext3.count;
-    dot->ext4.count = initDirDE->ext4.count;
-    initExts(dot, MAX_SEC_EXTENTS);*/
 
     int dotStartBlock = findFreeBlocks(vcb->deBlkCnt);
     setFreeBlocks(dotStartBlock,vcb->deBlkCnt);
@@ -280,7 +271,6 @@ int findDirEnt(const char* pathname, u_int8_t options){  // will eventually be e
         }
         if(deIndex == -1)  //if directory entry is not found, either the directory doesn't exist or the caller wants to create a file or directory
         {
-            //if (options == LOOK_UP) return -2; // we return -2 if no entry is found and option is LOOK_UP
             if(strcmp(remainder,"") == 0){ //if pathname is empty then we are on the last iteration //therefore the intention is to create a file or directory
               if(options & F_CREATE){
                 //create file by default for now

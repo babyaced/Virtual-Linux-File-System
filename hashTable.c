@@ -15,8 +15,6 @@ extern int currentBlock;
 extern int currentBlockSize;
 extern char currentBlockName[255]; //size of 255 for now
 
-//#define TABLE_SIZE 54 //maximum size to keep dirEnt under 512 bytes
-
 unsigned int hash(char* dirEntName) {   
 	unsigned int hash_value = 0;
 	for (int i = 0; i < strlen(dirEntName); i++) { //Hash Function
