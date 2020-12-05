@@ -168,15 +168,12 @@ int fs_closedir(fdDir *dirp){
 
 char * fs_getcwd(char *buf, size_t size){
     int retVal;
-    if(strlen(buf) != 0)
-        buf = "";
     //get and append all directory names to buf
     dirEnt* fs_getcwdDE = malloc(toBlockSize(sizeof(dirEnt)));
     retVal = LBAread(fs_getcwdDE,vcb->deBlkCnt,currentBlock);
     if(strncmp(fs_getcwdDE->name,"",2) == 0){ //if cwd is root
         strcatF(buf,fs_getcwdDE->name);
-        if(buf[0] != "/")
-            strcatF(buf,"/");
+        strcatF(buf,"/");
     }
     else  //if cwd is not root
     {
