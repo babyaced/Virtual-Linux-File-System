@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-
 #include "mfs.h"
 #include "fsInit.h"
 #include "dirMgr.h"
@@ -174,7 +173,8 @@ char * fs_getcwd(char *buf, size_t size){
     retVal = LBAread(fs_getcwdDE,vcb->deBlkCnt,currentBlock);
     if(strncmp(fs_getcwdDE->name,"",2) == 0){ //if cwd is root
         strcatF(buf,fs_getcwdDE->name);
-        strcatF(buf,"/");
+        if(buf[0] != "/")
+            strcatF(buf,"/");
     }
     else  //if cwd is not root
     {
