@@ -70,6 +70,8 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
         
         initDirD->parentLoc = parentDE->loc; // parent is at block index passed in
         initDirDE->parentLoc = parentDE->loc;
+
+        //dot->parentLoc = parentDE->loc;
     }
     
     initDirEntries(initDirD);  //initialize dirEnts
@@ -128,10 +130,16 @@ int initDir(int parentDEBlock, char* name){  //pass in block of whatever directo
 
     if(parentDEBlock == 0){  //if directory is root
         strncpy(dotDot->name,"..", 3);
-        dotDot->type = dot->type;
-        dotDot->loc = dot->loc;
+        dotDot->type = 1;
         dotDot->dataBlkCnt = dot->dataBlkCnt;
         dotDot->dataIndex  = dot->dataIndex;
+        int dotdotStartBlock = findFreeBlocks(vcb->deBlkCnt);
+        setFreeBlocks(dotStartBlock,vcb->deBlkCnt);
+        dotDot->loc = dotdotStartBlock;
+
+        //write dot directory entry of directory to disk
+        retVal = LBAwrite(dot,vcb->deBlkCnt, dotStartBlock);
+        retVal = LBAwrite(dotDot, vcb->deBlkCnt, dotdotStartBlock);
         vcb->rdLoc = initDirDE->loc;
 
         //addDirEnt(initDirD,initDirDE);                                //add root directory entry to root directory's directory entries
